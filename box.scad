@@ -29,8 +29,8 @@ module box(
   explode = 0,
   spacing = 0,
   double_doors = false,
-  door_knob = 0
-) {
+  door_knob = 0)
+{
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
   d = inner ? depth + 2 * thickness : depth;
