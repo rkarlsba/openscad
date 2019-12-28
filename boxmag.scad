@@ -1,3 +1,5 @@
+// vim:ts=2:sw=2:sws=2:et:ai:fdm=marker
+
 w_divider_color = "CadetBlue";
 h_divider_color = "CornflowerBlue";
 front_color = "RoyalBlue";
@@ -8,29 +10,34 @@ left_color = "MediumAquamarine";
 right_color = "MediumAquamarine";
 e = 0.01;
 
-module box(width, height, depth, thickness,
-           finger_width, // (default = 2 * thickness)
-           finger_margin, // (default = 2 * thickness)
-           inner = false, 
-           open = false, // there should be a top
-           inset = 0,
-           dividers = [ 0, 0 ], // how many dividers, facing which way?
-           holes = [],
-           hole_dia = 0,
-           ears = 0,
-           assemble = false, // show assembled or flat?
-           hole_width = false,
-	   frac = 1, // what fraction of the back should the front be?
-	   angle=true, // should the dividers/sides be cut at an angle from back to front?
-           kerf = 0.0, // width of laser cut
-           labels = false, // engrave labels on things?
-           explode = 0,
-           spacing = 0)
+module box(
+  width, height, depth, thickness,
+  finger_width, // (default = 2 * thickness)
+  finger_margin, // (default = 2 * thickness)
+  inner = false,
+  open = false,
+  inset = 0,
+  dividers = [ 0, 0 ],
+  holes = [],
+  hole_dia = 0,
+  ears = 0,
+  robust_ears = false,
+  assemble = false,
+  hole_width = false,
+  kerf = 0.0,
+  labels = false,
+  explode = 0,
+  spacing = 0,
+  double_doors = false,
+  door_knob = 0,
+  frac = 1, // what fraction of the back should the front be?
+  angle=true) // should the dividers/sides be cut at an angle from back to front? // not implemented
 {
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
   d = inner ? depth + 2 * thickness : depth;
   t = thickness;
+  dd = double_doors;
   hm = h - inset;
   fm = (finger_margin == undef) ? thickness * 2 : finger_margin;
   fw = (finger_width == undef) ? thickness * 2 : finger_width;
@@ -43,29 +50,60 @@ module box(width, height, depth, thickness,
   module compkerf() { offset(delta = kc) children(); }
 
   // 2D panels with finger cuts
+  /* {{{
+  module left() { cut_left() panel2d(d, h); }
+  module right() { cut_right() panel2d(d, h); }
+  }}} */
   module left() { cut_left() panel2d(d, h, frac); }
   module right() { cut_right() panel2d(d, h, frac, r=1); }
   module top() { 
-    if (ears_radius > 0) {
-      difference() {
-        panel2d(w, d);
-        translate([t, d-t+e]) panel2d(2*t, t);
-        translate([t, -e]) panel2d(2*t, t);
+    if (dd) {
+      if (robust_ears) {
+        echo("WARNING: Ignoring robust_ears with double_doors");
+      }
+      if (ears_radius > 0) {
+        difference() {
+          panel2d(w/2-thickness/4, d);
+          translate([w/4*3/2,d/2]) circle(d=door_knob);
+          translate([t, d-t+e]) panel2d(2*t, t);
+          translate([t, -e]) panel2d(2*t, t);
+        }
+        translate([w,0,0])
+          mirror([1,0,0])
+            difference() {
+              panel2d(w/2-thickness/4, d);
+              translate([w/4*3/2,d/2]) circle(d=door_knob);
+              translate([t, d-t+e]) panel2d(2*t, t);
+              translate([t, -e]) panel2d(2*t, t);
+            }
+      } else {
+        echo("Ears radius <= 0 and double doors? You must be kidding...");
+        cut_top() panel2d(w/2, d);
       }
     } else {
-      cut_top() panel2d(w, d);
+      if (ears_radius > 0) {
+        difference() {
+          panel2d(w+(robust_ears ? t : 0), d);
+          translate([(w+(robust_ears ? t : 0))/4*3,d/2]) circle(d=door_knob);
+          translate([t+(robust_ears ? t : 0), d-t+e]) panel2d(2*t, t);
+          translate([t+(robust_ears ? t : 0), -e]) panel2d(2*t, t);
+        }
+      } else {
+        cut_top() panel2d(w, d);
+      }
     }
   }
   module bottom() { cut_bottom() panel2d(w, d); }
   module ears_outer(is_front) {
     translate([is_front ? 0 : w, h]) 
-      circle(ears_radius, [0, 0]);
+      circle(ears_radius);
   }
   module ears_inner(is_front) {
     translate([is_front ? 0 : w, h])
       difference() {
-      circle(ears_radius-ears_width, [0, 0]);
-      square([t, t]);
+      circle(ears_radius-ears_width);
+      translate([-+(robust_ears ? t : 0),0])
+        square([t+((robust_ears && !double_doors) ? t : 0), t]);
     }
   }
   module back() {
@@ -89,7 +127,7 @@ module box(width, height, depth, thickness,
     cut_front() difference() {
       union()
       {
-        panel2d(w, h*frac); 
+        panel2d(w, h); 
         if (ears_radius > 0)
           ears_outer(true);
       }
@@ -101,6 +139,10 @@ module box(width, height, depth, thickness,
     }
   }
 
+/* {{{
+  module w_divider() { cut_w_divider() translate([0, t, 0]) panel2d(w, h-t); }
+  module h_divider() { cut_h_divider() translate([0, t, 0]) panel2d(d, h-t); }
+}}} */
   module w_divider() { cut_w_divider() translate([0, t, 0]) panel2d(w, h-t, frac, r=1); }
   module h_divider() { cut_h_divider() translate([0, t, 0]) panel2d(d, h-t, frac, r=1); }
 
@@ -207,7 +249,7 @@ module box(width, height, depth, thickness,
       x5 = w + 2 * kc + e + spacing;
       translate([x5,y1]) compkerf() top();
     }
-    x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing;
+    x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + ((robust_ears && !double_doors) ? t : 0);
     translate([x6,y1]) compkerf() w_dividers();
     translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)]) compkerf() h_dividers();
   }
@@ -295,7 +337,6 @@ module box(width, height, depth, thickness,
       }
     }
   }
-
 
   module cut_bottom() { cut_top() children(); }
   module cut_right() { cut_left() children(); }
@@ -391,6 +432,11 @@ module box(width, height, depth, thickness,
     }
   }
 
+/* {{{
+  module panel2d(x, y) {
+    square([x,y]);
+  }
+}}} */
   module panel2d(x, y, frac=1, r=0) {
     if (frac==1) {
        square([x,y]);
