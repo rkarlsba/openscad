@@ -1,4 +1,5 @@
 // vim:ts=2:sw=2:sws=2:et:ai
+
 w_divider_color = "CadetBlue";
 h_divider_color = "CornflowerBlue";
 front_color = "RoyalBlue";
@@ -26,7 +27,8 @@ module box(width, height, depth, thickness,
            labels = false,
            explode = 0,
            spacing = 0,
-           double_doors = 1)
+           double_doors = false,
+           door_knob = 0)
 {
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
@@ -48,14 +50,40 @@ module box(width, height, depth, thickness,
   module left() { cut_left() panel2d(d, h); }
   module right() { cut_right() panel2d(d, h); }
   module top() { 
-    if (ears_radius > 0) {
-      difference() {
-        panel2d(w+(robust_ears ? t : 0), d);
-        translate([t+(robust_ears ? t : 0), d-t+e]) panel2d(2*t, t);
-        translate([t+(robust_ears ? t : 0), -e]) panel2d(2*t, t);
+    if (dd) {
+      if (robust_ears) {
+        echo("WARNING: Ignoring robust_ears with double_doors");
+      }
+      if (ears_radius > 0) {
+        difference() {
+          panel2d(w/2-thickness/4, d);
+          translate([w/4*3/2,d/2]) circle(d=door_knob);
+          translate([t, d-t+e]) panel2d(2*t, t);
+          translate([t, -e]) panel2d(2*t, t);
+        }
+        translate([w,0,0])
+          mirror([1,0,0])
+            difference() {
+              panel2d(w/2-thickness/4, d);
+              translate([w/4*3/2,d/2]) circle(d=door_knob);
+              translate([t, d-t+e]) panel2d(2*t, t);
+              translate([t, -e]) panel2d(2*t, t);
+            }
+      } else {
+        echo("Ears radius <= 0 and double doors? You must be kidding...");
+        cut_top() panel2d(w/2, d);
       }
     } else {
-      cut_top() panel2d(w, d);
+      if (ears_radius > 0) {
+        difference() {
+          panel2d(w+(robust_ears ? t : 0), d);
+          translate([(w+(robust_ears ? t : 0))/4*3,d/2]) circle(d=door_knob);
+          translate([t+(robust_ears ? t : 0), d-t+e]) panel2d(2*t, t);
+          translate([t+(robust_ears ? t : 0), -e]) panel2d(2*t, t);
+        }
+      } else {
+        cut_top() panel2d(w, d);
+      }
     }
   }
   module bottom() { cut_bottom() panel2d(w, d); }
