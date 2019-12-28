@@ -36,6 +36,7 @@ box(options);
      1x thickness longer in the back.
  * double_doors (boolean) - Create double doors on top
  * door_knob (diameter) - Create hole for door knob, diameter given in millimetres
+ * spacing (length) - Add more spacing, given in millimetres, between the objects.
 
 ## Examples
 
