@@ -1,3 +1,6 @@
+// vim:ts=2:sw=2:sws=2:et:ai
+w_divider_color = "CadetBlue";
+h_divider_color = "CornflowerBlue";
 front_color = "RoyalBlue";
 back_color = "RoyalBlue";
 bottom_color = "SlateBlue";
@@ -7,23 +10,26 @@ right_color = "MediumAquamarine";
 e = 0.01;
 
 module box(width, height, depth, thickness,
-	   finger_width, // (default = 2 * thickness)
-	   finger_margin, // (default = 2 * thickness)
-	   open = false,
-	   inset = 0,
-	   dividers = [ 0, 0 ],
-       holes = [],
-       hole_dia = 0,
-	   ears = 0,
-	   assemble = false,
-	   hole_width = false,
-	   kerf = 0.0,
-	   labels = false,
-	   explode = 0)
+           finger_width, // (default = 2 * thickness)
+           finger_margin, // (default = 2 * thickness)
+           inner = false,
+           open = false,
+           inset = 0,
+           dividers = [ 0, 0 ],
+           holes = [],
+           hole_dia = 0,
+           ears = 0,
+           robust_ears = false,
+           assemble = false,
+           hole_width = false,
+           kerf = 0.0,
+           labels = false,
+           explode = 0,
+           spacing = 0)
 {
-  w = width;
-  h = height;
-  d = depth;
+  w = inner ? width + 2 * thickness : width;
+  h = inner ? height + 2 * thickness : height;
+  d = inner ? depth + 2 * thickness : depth;
   t = thickness;
   hm = h - inset;
   fm = (finger_margin == undef) ? thickness * 2 : finger_margin;
@@ -42,9 +48,15 @@ module box(width, height, depth, thickness,
   module top() { 
     if (ears_radius > 0) {
       difference() {
-        panel2d(w, d);
-        translate([t, d-t+e]) panel2d(2*t, t);
-        translate([t, -e]) panel2d(2*t, t);
+        if (robust_ears) {
+          panel2d(w+t, d);
+          translate([2*t, d-t+e]) panel2d(2*t, t);
+          translate([2*t, -e]) panel2d(2*t, t);
+        } else {
+          panel2d(w, d);
+          translate([t, d-t+e]) panel2d(2*t, t);
+          translate([t, -e]) panel2d(2*t, t);
+        }
       }
     } else {
       cut_top() panel2d(w, d);
@@ -53,14 +65,14 @@ module box(width, height, depth, thickness,
   module bottom() { cut_bottom() panel2d(w, d); }
   module ears_outer(is_front) {
     translate([is_front ? 0 : w, h]) 
-        circle(ears_radius, [0, 0]);
+      circle(ears_radius);
   }
   module ears_inner(is_front) {
     translate([is_front ? 0 : w, h])
       difference() {
-        circle(ears_radius-ears_width, [0, 0]);
-        square([t, t]);
-      }
+      circle(ears_radius-ears_width);
+      square([t, t]);
+    }
   }
   module back() {
     cut_back() difference() {
@@ -92,7 +104,7 @@ module box(width, height, depth, thickness,
           hole(holes[i]);
       if (ears_radius > 0)
         ears_inner(true);
-      }
+    }
   }
 
   module w_divider() { cut_w_divider() translate([0, t, 0]) panel2d(w, h-t); }
@@ -145,33 +157,34 @@ module box(width, height, depth, thickness,
 
   module w_divider3d() {
     if (dividers[0] > 0) {
-      ndivs = dividers[0]+1;
-      for (i = [d/ndivs : d/ndivs : d-d/ndivs])
-        translate([0,i+t/2,0])
-        rotate(90, [1,0,0])
-        panelize(w,h, "Divider", front_color)
-        w_divider();
+      ndivs = dividers[0];
+      for (i = [ 1 : 1 : ndivs ])
+        translate([0, d/(ndivs+1)*i+t/2,0])
+          rotate(90, [1,0,0])
+          panelize(w,h, "Divider", w_divider_color)
+          w_divider();
     }
   }
 
   module h_divider3d() {
-    if (dividers[1] > 0) {
-      ndivs = dividers[1]+1;
-      for (i = [w/ndivs : w/ndivs : w-w/ndivs])
-        translate([i-t/2,0,0])
-        rotate(90, [1,0,0])
-        rotate(90, [0,1,0])
-        panelize(d,h, "Divider", front_color)
-        h_divider();
-    }
+    translate([0,0,explode > e && dividers[0] > 0 ? h + explode : explode])
+      if (dividers[1] > 0) {
+        ndivs = dividers[1];
+        for (i = [1 : 1 : ndivs])
+          translate([w/(ndivs+1)*i-t/2,0,0])
+            rotate(90, [1,0,0])
+            rotate(90, [0,1,0])
+            panelize(d,h, "Divider", h_divider_color)
+            h_divider();
+      }
   }
 
   module w_dividers() {
     if (dividers[0] > 0) {
       ndivs = dividers[0];
       for (i = [0 : 1 : ndivs-1])
-        translate([i*(w+e),0,0])
-        w_divider();
+        translate([i*(w+e)+spacing*(i+1),0,0])
+          w_divider();
     }
   }
 
@@ -179,30 +192,30 @@ module box(width, height, depth, thickness,
     if (dividers[1] > 0) {
       ndivs = dividers[1];
       for (i = [0 : 1 : ndivs-1])
-        translate([i*(d+e),0,0])
-        h_divider();
+        translate([i*(d+e)+spacing*(i+1),0,0])
+          h_divider();
     }
   }
 
   // Panelized 2D rendering for cutting
   module box2d() {
     compkerf() front();
-    x1 = w + kc * 2 + e;
+    x1 = w + kc * 2 + e + spacing;
     translate([x1,0]) compkerf() back();
-    x2 = x1 + w + 2 * kc + e + ears_radius;
+    x2 = x1 + w + 2 * kc + e + ears_radius + spacing;
     translate([x2,0]) compkerf() left();
-    x3 = x2 + d + 2 * kc + e;
+    x3 = x2 + d + 2 * kc + e + spacing;
     translate([x3,0]) compkerf() right();
-    y1 = h + kc * 2 + e + ears_radius;
+    y1 = h + kc * 2 + e + ears_radius + spacing;
     x4 = 0;
     translate([x4,y1]) compkerf() bottom();
     if (keep_top) {
-      x5 = w + 2 * kc + e;
+      x5 = w + 2 * kc + e + spacing;
       translate([x5,y1]) compkerf() top();
     }
-    x6 = w + 2 * kc + (keep_top ? w+e : 0) + e;
+    x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + (robust_ears ? t : 0);
     translate([x6,y1]) compkerf() w_dividers();
-    translate([x6,y1]) compkerf() h_dividers();
+    translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)]) compkerf() h_dividers();
   }
 
   // Assembled box in 3D
@@ -227,9 +240,9 @@ module box(width, height, depth, thickness,
       movecutsleft(w, h) cuts(h);
       movecutsright(w, h) cuts(h);
       if (dividers[1] > 0) {
-        ndivs = dividers[1]+1;
-        for (i = [w/ndivs : w/ndivs : w-w/ndivs])
-          movecuts(i-t/2, 0) cuts(h, li = thickness*2);
+        ndivs = dividers[1];
+        for (i = [1 : 1 : ndivs])
+          movecuts(w/(ndivs+1)*i-t/2, 0) cuts(h, li = thickness*2);
       }
       holecuts();
     }
@@ -240,11 +253,10 @@ module box(width, height, depth, thickness,
       children();
       movecutsleft(w, h) invcuts(h, ri = thickness*2);
       movecutsright(w, h) invcuts(h, li = thickness*2);
-      // Holes in dividers - not usable yet
       if (dividers[1] > 0) {
-        ndivs = dividers[1]+1;
-        for (i = [w/ndivs : w/ndivs : w-w/ndivs])
-          movecuts(i+t/2, 0) cuts(h, li = thickness*2);
+        ndivs = dividers[1];
+        for (i = [1 : 1 : ndivs])
+          movecuts(w/(ndivs+1)*i-t/2, h/2) square([h / 2, thickness]);
       }
       holecuts();
     }
@@ -255,11 +267,10 @@ module box(width, height, depth, thickness,
       children();
       movecutsleft(d, h) invcuts(h, ri = thickness*2);
       movecutsright(d, h) invcuts(h, li = thickness*2);
-      // Holes in dividers - not usable yet
       if (dividers[0] > 0) {
-        ndivs = dividers[1]+1;
-        for (i = [d/ndivs : d/ndivs : d-d/ndivs])
-          movecuts(i+t/2, 0) cuts(h, li = thickness*2);
+        ndivs = dividers[0];
+        for (i = [1 : 1 : ndivs])
+          movecuts(d/(ndivs+1)*i-t/2, 0) square([h / 2, thickness]);
       }
       holecuts();
     }
@@ -283,9 +294,9 @@ module box(width, height, depth, thickness,
       movecutsleft(d, h) invcuts(h);
       movecutsright(d, h) invcuts(h);
       if (dividers[0] > 0) {
-        ndivs = dividers[0]+1;
-        for (i = [d/ndivs : d/ndivs : d-d/ndivs])
-          movecuts(i-t/2, 0) cuts(h, li = thickness*2);
+        ndivs = dividers[0];
+        for (i = [1 : 1 : ndivs])
+          movecuts(d/(ndivs+1)*i-t/2, 0) cuts(h, li = thickness*2);
       }
     }
   }
@@ -299,10 +310,10 @@ module box(width, height, depth, thickness,
     if (hole_width) {
       r = hole_height / 2;
       hull() {
-	translate([w/2 - hole_width/2 + r, h - hole_margin - r])
-	  circle(r = r);
-	translate([w/2 + hole_width/2 - r, h - hole_margin - r])
-	  circle(r = r);
+        translate([w/2 - hole_width/2 + r, h - hole_margin - r])
+          circle(r = r);
+        translate([w/2 + hole_width/2 - r, h - hole_margin - r])
+          circle(r = r);
       }
     }
   }
@@ -329,10 +340,10 @@ module box(width, height, depth, thickness,
 
     if (tw >= 3 * fw_minimum) {
       translate([li,0])
-	for (i = [0:tc]) {
-	  translate([x+i*stepsize*2,-e])
-	    square([stepsize, t+e]);
-	}
+        for (i = [0:tc]) {
+          translate([x+i*stepsize*2,-e])
+            square([stepsize, t+e]);
+        }
     }
   }
 
@@ -376,11 +387,11 @@ module box(width, height, depth, thickness,
   module panelize(x, y, name, cl) {
     color(cl)
       linear_extrude(height = t)
-	 children();
+      children();
     if (labels) {
-	 color("Yellow")
-	      translate([x/2,y/2,t+1])
-	      text(text = name, halign = "center", valign="center");
+      color("Yellow")
+        translate([x/2,y/2,t+1])
+        text(text = name, halign = "center", valign="center");
     }
   }
 
