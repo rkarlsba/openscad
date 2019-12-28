@@ -31,6 +31,9 @@ box(options);
  * holes (array) - Where to place rivet holes
  * hole_dia (length) - Diameter of rivet holes
  * ears (boolean) - If true, 'ears' for hinges are generated
+ * robust_ears (boolean) - If true, 'ears' are double the length (2x thickness
+     instead of 1x), making them slightly tougher and also, making the top lid
+     1x thickness longer in the back.
 
 ## Examples
 
