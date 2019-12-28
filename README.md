@@ -5,8 +5,8 @@ flat panels (e.g. plywood or acrylic). The boxes dimensions are
 customizable, supports opening the top, insetting the bottom, and
 adding handles.
 
-Forked from [https://github.com/larsch/lasercut-box-openscad/] by [Roy Sigurd Karlsbakk]
-(<roy@karlsbakk.net>)
+Forked from [https://github.com/larsch/lasercut-box-openscad/] by
+[Roy Sigurd Karlsbakk]mailto:roy@karlsbakk.net
 
 ## Synopsis
 
