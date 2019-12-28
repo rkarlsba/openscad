@@ -10,26 +10,27 @@ left_color = "MediumAquamarine";
 right_color = "MediumAquamarine";
 e = 0.01;
 
-module box(width, height, depth, thickness,
-           finger_width, // (default = 2 * thickness)
-           finger_margin, // (default = 2 * thickness)
-           inner = false,
-           open = false,
-           inset = 0,
-           dividers = [ 0, 0 ],
-           holes = [],
-           hole_dia = 0,
-           ears = 0,
-           robust_ears = false,
-           assemble = false,
-           hole_width = false,
-           kerf = 0.0,
-           labels = false,
-           explode = 0,
-           spacing = 0,
-           double_doors = false,
-           door_knob = 0)
-{
+module box(
+  width, height, depth, thickness,
+  finger_width, // (default = 2 * thickness)
+  finger_margin, // (default = 2 * thickness)
+  inner = false,
+  open = false,
+  inset = 0,
+  dividers = [ 0, 0 ],
+  holes = [],
+  hole_dia = 0,
+  ears = 0,
+  robust_ears = false,
+  assemble = false,
+  hole_width = false,
+  kerf = 0.0,
+  labels = false,
+  explode = 0,
+  spacing = 0,
+  double_doors = false,
+  door_knob = 0
+) {
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
   d = inner ? depth + 2 * thickness : depth;
