@@ -91,13 +91,25 @@ module box(
   module ears_outer(is_front) {
     translate([is_front ? 0 : w, h]) 
       circle(ears_radius);
+    if (dd) {
+      translate([(!is_front) ? 0 : w, h]) 
+      circle(ears_radius, [0, 0]);
+    }
   }
   module ears_inner(is_front) {
     translate([is_front ? 0 : w, h])
       difference() {
-      circle(ears_radius-ears_width);
-      translate([-+(robust_ears ? t : 0),0])
+        circle(ears_radius-ears_width);
+        translate([-+(robust_ears ? t : 0),0])
         square([t+((robust_ears && !double_doors) ? t : 0), t]);
+      }
+    if (dd) {
+      translate([(!is_front) ? 0 : w, h])
+        difference() {
+          circle(ears_radius-ears_width, [0, 0]);
+//        square([t, t]);
+          square([t+((robust_ears && !double_doors) ? t : 0), t]);
+        }
     }
   }
   module back() {
@@ -225,8 +237,10 @@ module box(
 
   // Panelized 2D rendering for cutting
   module box2d() {
+    ddspacing = dd ? ears_radius*2 : 0;
+
     compkerf() front();
-    x1 = w + kc * 2 + e + spacing;
+    x1 = w + kc * 2 + e + spacing + ddspacing;
     translate([x1,0]) compkerf() back();
     x2 = x1 + w + 2 * kc + e + ears_radius + spacing;
     translate([x2,0]) compkerf() left();

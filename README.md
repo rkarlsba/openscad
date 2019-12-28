@@ -80,6 +80,7 @@ The target finger size can be adjusted using the ```finger_width``` option, but 
 
  * robust_ears isn't supported (ignored) with double_doors
  * boxmag.scad added, borrowed by jmankoff from [issue 6](https://github.com/larsch/lasercut-box-openscad/issues/6), but not merged into box.scad because of issues.
+ * 3d rendering of box with robust ears and double doors looks wrong, but the 2d model is ok
 
 ## License
 
