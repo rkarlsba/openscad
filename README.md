@@ -34,6 +34,8 @@ box(options);
  * robust_ears (boolean) - If true, 'ears' are double the length (2x thickness
      instead of 1x), making them slightly tougher and also, making the top lid
      1x thickness longer in the back.
+ * double_doors (boolean) - Create double doors on top
+ * door_knob (diameter) - Create hole for door knob, diameter given in millimetres
 
 ## Examples
 
@@ -66,6 +68,10 @@ You can use another box as a lid:
 The target finger size can be adjusted using the ```finger_width``` option, but it will be adjusted depending on the box dimensions:
 
 ![Dynamic finger adjustment](anim.gif)
+
+## Todo
+
+ * robust_ears isn't supported (ignored) with double_doors
 
 ## License
 

@@ -96,7 +96,7 @@ module box(width, height, depth, thickness,
       difference() {
       circle(ears_radius-ears_width);
       translate([-+(robust_ears ? t : 0),0])
-        square([t+(robust_ears ? t : 0), t]);
+        square([t+((robust_ears && !double_doors) ? t : 0), t]);
     }
   }
   module back() {
@@ -238,7 +238,7 @@ module box(width, height, depth, thickness,
       x5 = w + 2 * kc + e + spacing;
       translate([x5,y1]) compkerf() top();
     }
-    x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + (robust_ears ? t : 0);
+    x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + ((robust_ears && !double_doors) ? t : 0);
     translate([x6,y1]) compkerf() w_dividers();
     translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)]) compkerf() h_dividers();
   }
