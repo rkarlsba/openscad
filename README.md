@@ -38,9 +38,11 @@ box(options);
  * robust_ears (boolean) - if true, 'ears' are double the length (2x thickness
      instead of 1x), making them slightly tougher and also, making the top lid
      1x thickness longer in the back.
- * double_doors (boolean) - create double doors on top
- * door_knob (diameter) - create hole for door knob, diameter given in millimetres
- * spacing (length) - add more spacing, given in millimetres, between the objects.
+ * double_doors (boolean) - create double doors, for use with 'ears'
+ * door_knob (diameter) - create hole for door knob (but not the knob itself)
+ * spacing (length) - add more spacing between the objects.
+
+All values are given in millimetres unless specified otherwise.
 
 ## examples
 
