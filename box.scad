@@ -25,12 +25,14 @@ module box(width, height, depth, thickness,
            kerf = 0.0,
            labels = false,
            explode = 0,
-           spacing = 0)
+           spacing = 0,
+           double_doors = 1)
 {
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
   d = inner ? depth + 2 * thickness : depth;
   t = thickness;
+  dd = double_doors;
   hm = h - inset;
   fm = (finger_margin == undef) ? thickness * 2 : finger_margin;
   fw = (finger_width == undef) ? thickness * 2 : finger_width;
@@ -48,15 +50,9 @@ module box(width, height, depth, thickness,
   module top() { 
     if (ears_radius > 0) {
       difference() {
-        if (robust_ears) {
-          panel2d(w+t, d);
-          translate([2*t, d-t+e]) panel2d(2*t, t);
-          translate([2*t, -e]) panel2d(2*t, t);
-        } else {
-          panel2d(w, d);
-          translate([t, d-t+e]) panel2d(2*t, t);
-          translate([t, -e]) panel2d(2*t, t);
-        }
+        panel2d(w+(robust_ears ? t : 0), d);
+        translate([t+(robust_ears ? t : 0), d-t+e]) panel2d(2*t, t);
+        translate([t+(robust_ears ? t : 0), -e]) panel2d(2*t, t);
       }
     } else {
       cut_top() panel2d(w, d);
@@ -71,7 +67,8 @@ module box(width, height, depth, thickness,
     translate([is_front ? 0 : w, h])
       difference() {
       circle(ears_radius-ears_width);
-      square([t, t]);
+      translate([-+(robust_ears ? t : 0),0])
+        square([t+(robust_ears ? t : 0), t]);
     }
   }
   module back() {
