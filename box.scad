@@ -18,6 +18,7 @@ module box(
   open = false,
   inset = 0,
   dividers = [ 0, 0 ],
+  divpercent = 0,
   holes = [],
   hole_dia = 0,
   ears = 0,
@@ -272,7 +273,7 @@ module box(
   }
 
   // Finger cutting operators
-  module cut_front() {
+  module cut_front(is_back = 0) {
     difference() {
       children();
       translate([0,inset]) cuts(w);
@@ -281,8 +282,21 @@ module box(
       movecutsright(w, h) cuts(h);
       if (dividers[1] > 0) {
         ndivs = dividers[1];
+        if (divpercent > 0 && ndivs == 1) {
+          echo("WARNING: Front and back will be wrong - manual override needed!");
+          if (is_back == 1) {
+            movecuts((w/2-t/2)*((100-divpercent)/100)*2, 0) cuts(h, li = thickness*2);
+          } else {
+            movecuts((w/2-t/2)*(divpercent/100)*2, 0) cuts(h, li = thickness*2);
+          }
+        } else {
+          for (i = [1 : 1 : ndivs])
+            movecuts(w/(ndivs+1)*i-t/2, 0) cuts(h, li = thickness*2);
+        }
+        /*
         for (i = [1 : 1 : ndivs])
           movecuts(w/(ndivs+1)*i-t/2, 0) cuts(h, li = thickness*2);
+         */
       }
       holecuts();
     }
@@ -343,7 +357,7 @@ module box(
 
   module cut_bottom() { cut_top() children(); }
   module cut_right() { cut_left() children(); }
-  module cut_back() { cut_front() children(); }
+  module cut_back() { cut_front(is_back = 1) children(); }
 
   // Handle hole
   module holecuts() {
