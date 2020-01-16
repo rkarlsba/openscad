@@ -30,7 +30,12 @@ module box(
   explode = 0,
   spacing = 0,
   double_doors = false,
-  door_knob = 0)
+  door_knob = 0,
+  perf_size = 0,
+  perf_all = false,
+  perf_walls = false,
+  perf_top = false,
+  perf_floor = false)
 {
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
@@ -45,12 +50,16 @@ module box(
   ears_radius = ears;
   ears_width = 3;
 
+  perf_walls = (perf_walls || perf_all);
+  perf_floor = (perf_floor || perf_all);
+  perf_top = (perf_top || perf_all);
+
   // Kerf compensation modifier
   module compkerf() { offset(delta = kc) children(); }
 
   // 2D panels with finger cuts
-  module left() { cut_left() panel2d(d, h); }
-  module right() { cut_right() panel2d(d, h); }
+  module left() { cut_left() panel2d(d, h, perf_walls); }
+  module right() { cut_right() panel2d(d, h, perf_walls); }
   module top() { 
     if (dd) {
       if (robust_ears) {
@@ -148,6 +157,15 @@ module box(
 
   module w_divider() { cut_w_divider() translate([0, t, 0]) panel2d(w, h-t); }
   module h_divider() { cut_h_divider() translate([0, t, 0]) panel2d(d, h-t); }
+
+  // Roof
+  module roof(slated=1) {
+    if (slated) {
+      echo("wow!");
+    } else {
+      echo("Only slated works for now");
+    }
+  }
 
   // Panels positioned in 3D
   module front3d() {
@@ -299,6 +317,7 @@ module box(
          */
       }
       holecuts();
+      perfcuts();
     }
   }
 
@@ -358,6 +377,19 @@ module box(
   module cut_bottom() { cut_top() children(); }
   module cut_right() { cut_left() children(); }
   module cut_back() { cut_front(is_back = 1) children(); }
+
+  // Handle perforation
+  module perfcuts() {
+    echo("NOT implemented!");
+    if (perf_size) {
+      if (h > perf_size*4) {
+        echo("perf_size is ", perf_size, ", w is ", w, "h = ", h);
+        translate([w/2, h/2]) {
+          circle(r = perf_size);
+        }
+      }
+    }
+  }
 
   // Handle hole
   module holecuts() {
@@ -449,8 +481,11 @@ module box(
     }
   }
 
-  module panel2d(x, y) {
+  module panel2d(x, y, perf=false) {
     square([x,y]);
+    if (perf) {
+
+    }
   }
 
   if (assemble)
