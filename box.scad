@@ -174,7 +174,10 @@ module box(
         [0,1,2]
     ];
     polyhedron(points=triangle_points, faces=triangle_faces);*/
-    polygon(triangle_points)
+    difference() {
+      polygon(triangle_points);
+      // translate([w*.12,0,0]) cuts(w/2);
+    }
     echo(triangle_points);
   }
 
@@ -288,12 +291,11 @@ module box(
     translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)]) compkerf() h_dividers();
     if (roof) {
       echo(x6);
-      translate([x4 + w + spacing + (keep_top ? w+e : 0),y1]) { slated_roof_sides(); }
-      translate([x4 + w*1.1 + spacing + (keep_top ? w+e : 0),y1*1.8]) { mirror([0,1,0]) slated_roof_sides(); }
+      translate([x4 + w + spacing + (keep_top ? w+e : 0),y1]) { compkerf() slated_roof_sides(); }
+      translate([x4 + w*1.1 + spacing + (keep_top ? w+e : 0),y1*1.8]) { compkerf() mirror([0,1,0]) slated_roof_sides(); }
       rd=sqrt(d*d/2);
-      translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) { cut_roof_left() panel2d(rd, d);}
-      //translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) { cut_roof_left() square([rd,d]); }
-      translate([x4 + w*2.4 + spacing + (keep_top ? w+e : 0),y1]) { cut_roof_right() panel2d(rd, d);}
+      translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) { compkerf() cut_roof_left() panel2d(rd, d);}
+      translate([x4 + w*2.4 + spacing + (keep_top ? w+e : 0),y1]) { compkerf() cut_roof_right() panel2d(rd, d);}
       echo("jadda", x4, y1, x4 + w + spacing);
     } else {
       echo("no roof");
