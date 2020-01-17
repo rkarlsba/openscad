@@ -3,7 +3,7 @@ include </Users/roy/driiiiit/Nextcloud/Dokumenter/Bitraf/Laserkutterting/lasercu
 width = 95;
 depth = 70;
 height = 80;
-thickness = 3;
+thickness = 3.2;
 extra = thickness + 2;
 spacing = 1;
 assemble = false;
