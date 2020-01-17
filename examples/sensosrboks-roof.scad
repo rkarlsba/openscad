@@ -17,9 +17,10 @@ if (assemble) {
     difference() {
         the_box();
         
-        translate([width*0.16,thickness+extra+22]) sprekk(lengde=width-35, bredde=4);
-        translate([width*0.16,thickness+extra+37]) sprekk(lengde=width-35, bredde=4);
-        translate([width*0.16,thickness+extra+52]) sprekk(lengde=width-35, bredde=4);
+        translate([width*0.16,thickness+extra+15]) sprekk(lengde=width-35, bredde=4);
+        translate([width*0.16,thickness+extra+30]) sprekk(lengde=width-35, bredde=4);
+        translate([width*0.16,thickness+extra+45]) sprekk(lengde=width-35, bredde=4);
+        translate([width*0.16,thickness+extra+60]) sprekk(lengde=width-35, bredde=4);
 
         translate([width*1.21,thickness+extra+22]) sprekk(lengde=width-35, bredde=4);
         translate([width*1.21,thickness+extra+37]) sprekk(lengde=width-35, bredde=4);
@@ -27,7 +28,7 @@ if (assemble) {
             
         usbport([width*2+depth/2+spacing*2,thickness+extra+15]);
         
-        for (i = [-20:20:20]) translate([width*2+depth*0.5+spacing*2-i,thickness+extra+15]) circle(d = 7);
+        for (i = [-20:40:20]) translate([width*2+depth*0.5+spacing*2-i,thickness+extra+15]) circle(d = 7);
         for (i = [-10:20:10]) translate([width*2+depth*0.5+spacing*2-i,thickness+extra+30]) circle(d = 7);
         for (i = [-20:20:20]) translate([width*2+depth*0.5+spacing*2-i,thickness+extra+45]) circle(d = 7);
         for (i = [-10:20:10]) translate([width*2+depth*0.5+spacing*2-i,thickness+extra+60]) circle(d = 7);
