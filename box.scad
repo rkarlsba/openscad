@@ -35,7 +35,8 @@ module box(
   perf_all = false,
   perf_walls = false,
   perf_top = false,
-  perf_floor = false)
+  perf_floor = false,
+  roof = false)
 {
   w = inner ? width + 2 * thickness : width;
   h = inner ? height + 2 * thickness : height;
@@ -60,7 +61,7 @@ module box(
   // 2D panels with finger cuts
   module left() { cut_left() panel2d(d, h, perf_walls); }
   module right() { cut_right() panel2d(d, h, perf_walls); }
-  module top() { 
+  module top(w=w,d=d) { 
     if (dd) {
       if (robust_ears) {
         echo("WARNING: Ignoring robust_ears with double_doors");
@@ -159,12 +160,22 @@ module box(
   module h_divider() { cut_h_divider() translate([0, t, 0]) panel2d(d, h-t); }
 
   // Roof
-  module roof(slated=1) {
-    if (slated) {
-      echo("wow!");
-    } else {
-      echo("Only slated works for now");
-    }
+  module slated_roof_sides() {
+    r=d/2;
+    rh=d/2;
+    echo("w is ", w, " and d is ", d);
+    triangle_points = [
+        [0,0],
+        [d,0],
+        [rh,r]
+    ];
+    /*
+    triangle_faces = [
+        [0,1,2]
+    ];
+    polyhedron(points=triangle_points, faces=triangle_faces);*/
+    polygon(triangle_points)
+    echo(triangle_points);
   }
 
   // Panels positioned in 3D
@@ -251,13 +262,13 @@ module box(
       for (i = [0 : 1 : ndivs-1])
         translate([i*(d+e)+spacing*(i+1),0,0])
           h_divider();
-    }
+
+      }
   }
 
   // Panelized 2D rendering for cutting
   module box2d() {
     ddspacing = dd ? ears_radius*2 : 0;
-
     compkerf() front();
     x1 = w + kc * 2 + e + spacing + ddspacing;
     translate([x1,0]) compkerf() back();
@@ -275,6 +286,18 @@ module box(
     x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + ((robust_ears && !double_doors) ? t : 0);
     translate([x6,y1]) compkerf() w_dividers();
     translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)]) compkerf() h_dividers();
+    if (roof) {
+      echo(x6);
+      translate([x4 + w + spacing + (keep_top ? w+e : 0),y1]) { slated_roof_sides(); }
+      translate([x4 + w*1.1 + spacing + (keep_top ? w+e : 0),y1*1.8]) { mirror([0,1,0]) slated_roof_sides(); }
+      rd=sqrt(d*d/2);
+      translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) { cut_roof_left() panel2d(rd, d);}
+      //translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) { cut_roof_left() square([rd,d]); }
+      translate([x4 + w*2.4 + spacing + (keep_top ? w+e : 0),y1]) { cut_roof_right() panel2d(rd, d);}
+      echo("jadda", x4, y1, x4 + w + spacing);
+    } else {
+      echo("no roof");
+    }
   }
 
   // Assembled box in 3D
@@ -317,7 +340,7 @@ module box(
          */
       }
       holecuts();
-      perfcuts();
+      // perfcuts();
     }
   }
 
@@ -346,6 +369,20 @@ module box(
           movecuts(d/(ndivs+1)*i-t/2, 0) square([h / 2, thickness]);
       }
       holecuts();
+    }
+  }
+
+  module cut_roof_left() {
+    difference() {
+      children();
+      movecutsleft(w, d) invcuts(d);
+    }
+  }
+
+  module cut_roof_right() {
+    difference() {
+      children();
+      movecutsleft(w, d) cuts(d);
     }
   }
 
@@ -483,9 +520,6 @@ module box(
 
   module panel2d(x, y, perf=false) {
     square([x,y]);
-    if (perf) {
-
-    }
   }
 
   if (assemble)
