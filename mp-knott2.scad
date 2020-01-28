@@ -1,7 +1,9 @@
 $fn = 64;
 
-font = "Helvetica:style=Regular";
+font = "Helvetica:style=Bold";
 font_size=3.5;
+reklamefont_size=3.0;
+reklame = "roy@karlsbakk.net";
 
 /* Mulig bug eller mulig jeg ikke forstår noe her.
  * minkowski() tar høyden til cube() og cylinder() og legger dem sammen,
@@ -31,21 +33,38 @@ module inniknott(height, width, length) {
 }
 
 module mpknott(x, y, radius, bunnh, topph, indreb, indreh, vegg) {
-    miniround([x,y,bunnh], radius);
+    teksth = bunnh/2;
+    tekst=(str("b:", indreb, " h:", indreh, " v:", vegg));
+    
+    difference() {
+        miniround([x,y,bunnh], radius);
+        translate ([2,2,teksth]) {
+            linear_extrude(height = teksth) {
+                text(tekst, font = font, size = font_size);
+            }
+        }
+        translate ([2,y-reklamefont_size-2,teksth]) {
+            linear_extrude(height = teksth) {
+                text(reklame, font = font, size = reklamefont_size);
+            }
+        }
+    }
     translate([x/2,y/2,bunnh]) {
         difference() {
             inniknott(height=topph, width=indreb+vegg, length=indreh+vegg);
             inniknott(height=topph, width=indreb, length=indreh);
         }
     }
-    tekst=(str("b:", indreb, " h:", indreh, " v:", vegg));
-    translate ([2,2,bunnh]) {
-        linear_extrude(height = 1.2) {
-            text(tekst, font = font, size = font_size);
-        }
-    }
 }
 
 
-mpknott(40, 30, 2, 2, 15, 9, 13, 3);
-
+/*
+mpknott(40, 30, 2, 2, 15, 8, 12, 3);
+translate([0,35,0]) {
+    mpknott(40, 30, 2, 2, 15, 8.5, 12.5, 3);
+}
+translate([0,70,0]) {
+    mpknott(40, 30, 2, 2, 15, 9, 13, 3);
+}
+*/
+ mpknott(40, 30, 2, 2, 15, 8.5, 12.5, 4);
