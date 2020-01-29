@@ -1,7 +1,7 @@
 $fn=64;
 //$fn=16;
 
-diameter=210;
+diameter=220;
 width=12;
 thickness=3;
 hulldim=5;
@@ -10,9 +10,10 @@ font="Copperplate:style=Bold";
 textheight=1.5;
 fontsize=10;
 fontspacing=1;
-in_height=30;
+in_height=20;
 pin_length=10;
 pin_diameter=4;
+hole_diameter=3;
 clearance=0.1;
 
 module sector(h, d, a1, a2) {
@@ -99,9 +100,9 @@ module gitter(hann=true) {
 
     module monteringshull() {
         translate([-diameter*.3,width/2,0])
-            cylinder(h=thickness,d=pin_diameter);
+            cylinder(h=thickness,d1=hole_diameter,d2=hole_diameter*2);
         translate([diameter*.3,width/2,0])
-            cylinder(h=thickness,d=pin_diameter);
+            cylinder(h=thickness,d1=hole_diameter,d2=hole_diameter*2);
     }
     
     module logo(hann=true) {
@@ -133,5 +134,5 @@ module gitter(hann=true) {
 }
 
 
-gitter(hann=true);
+gitter(hann=false);
 
