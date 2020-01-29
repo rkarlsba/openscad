@@ -12,9 +12,7 @@ clearance=0.1;
 logo="Ullevål B21";
 font="Copperplate Normal";
 fontsize=7;
-test=true;
-
-echo(test);
+test=false;
 
 module logo() {
     rotate([90,0,0]) linear_extrude(height=2) text(logo, font=font, size=fontsize);
@@ -36,12 +34,26 @@ module arm(length, height=h, up=0, cut_corners = 1, text=undef) {
     }
 }
 
-
-if (test) {
+    // Corner
+    if (!test) {
+        difference() {
+            translate([w,w,0]) cylinder(d=w*2,h=h);
+            translate([w*2,w*2,0]) cylinder(d=w*2,h=h);
+        }
+        difference() {
+            arm(l);
+            translate([10,2,3]) logo();
+        }
+    }
     translate([(test ? 0 : l-hl),0,test ? 0 : h]) arm(hl, h2);
     translate([(test ? 0 : l-hl)+w+h,w/2,(test ? 0 : h)+h2]) cylinder(d=pin_d-clearance, h=pin_h-1);
     translate([(test ? 0 : l-hl)+w+h*2,w/2,(test ? 0 : h)+h2]) cylinder(d=pin_d-clearance, h=pin_h-1);
-    
+    if (!test) {
+        difference() {
+            arm(l, up=1);
+            rotate([0,0,270]) translate([-59,2,3]) logo();
+        }
+    }
     translate([0,test ? -2 : 0,0]) 
         rotate([0,0,test ? 270 : 0])
             difference() {
@@ -49,30 +61,7 @@ if (test) {
                 translate([w/2,(test ? 0 : l-hl)+w+h,(test ? 0 : h)+h2-pin_h+1]) cylinder(d=pin_d+clearance, h=pin_h+1);
                 translate([w/2,(test ? 0 : l-hl)+w+h*2,(test ? 0 : h)+h2-pin_h+1]) cylinder(d=pin_d+clearance, h=pin_h+1);
             }
-} else {
-    // Corner
-    difference() {
-        translate([w,w,0]) cylinder(d=w*2,h=h);
-        translate([w*2,w*2,0]) cylinder(d=w*2,h=h);
-    }
-    difference() {
-        arm(l);
-        translate([10,2,3]) logo();
-    }
 
-    translate([l-hl,0,h]) arm(hl, h2);
-    translate([l-hl+w+h,w/2,h+h2]) cylinder(d=pin_d-clearance, h=pin_h-1);
-    translate([l-hl+w+h*2,w/2,h+h2]) cylinder(d=pin_d-clearance, h=pin_h-1);
-
-    difference() {
-        arm(l, up=1);
-        rotate([0,0,270]) translate([-59,2,3]) logo();
-    }
-    difference() {
-        translate([0,l-hl,h]) arm(hl, h2, up=1);
-        translate([w/2,l-hl+w+h,h+h2-pin_h+1]) cylinder(d=pin_d+clearance, h=pin_h+1);
-        translate([w/2,l-hl+w+h*2,h+h2-pin_h+1]) cylinder(d=pin_d+clearance, h=pin_h+1);
-    }
 }
 
 //arm(

@@ -1,12 +1,22 @@
 include </Users/roy/driiiiit/Nextcloud/Dokumenter/Bitraf/Laserkutterting/lasercut-box-openscad/box.scad>
 
-depth=250;
-width=160;
-height=40;
-thickness=3.6;
+depth = 250;
+width = 160;
+height = 40;
+thickness = 3.6;
 spacing = 1;
-assemble = true;
+assemble = false;
 open = true;
+name = "Anafon";
+font = "Copperplate Normal";
+textspacing = 1;
+textsize = 10;
+
+if (!assemble) {
+    translate([0,0,-0.5])
+        linear_extrude(height=1)
+            text(name, size=textsize, spacing=textspacing, font=font);
+}
 
 box(
     width = width,
@@ -17,3 +27,4 @@ box(
     assemble = assemble,
     spacing = spacing
 );
+

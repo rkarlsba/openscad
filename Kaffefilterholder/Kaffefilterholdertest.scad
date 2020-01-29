@@ -39,24 +39,10 @@ module arm(length, height=h, up=0, cut_corners = 1, text=undef) {
 }
 
 
-if (!test) {
-    // Corner
-    difference() {
-        translate([w,w,0]) cylinder(d=w*2,h=h);
-        translate([w*2,w*2,0]) cylinder(d=w*2,h=h);
-    }
-    difference() {
-        arm(l);
-        translate([10,2,3]) logo();
-    }
-}
 translate([l-hl,0,h]) arm(hl, h2);
 translate([l-hl+w+h,w/2,h+h2]) cylinder(d=pin_d-clearance, h=pin_h-1);
 translate([l-hl+w+h*2,w/2,h+h2]) cylinder(d=pin_d-clearance, h=pin_h-1);
 
-difference() {
-    arm(l, up=1);
-    rotate([0,0,270]) translate([-59,2,3]) logo();
 }
 difference() {
     translate([0,l-hl,h]) arm(hl, h2, up=1);
