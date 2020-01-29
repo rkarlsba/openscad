@@ -112,9 +112,9 @@ module gitter(hann=true) {
                     linear_extrude(height=textheight)
                         text(logo, font=font, size=fontsize, spacing=fontspacing);
         } else {
-            translate([-44,2,thickness-textheight])
+            translate([44,10,thickness-textheight])
                 linear_extrude(height=textheight)
-                    rotate([0,0,0])
+                    rotate([0,0,180])
                         text(logo, font=font, size=fontsize, spacing=fontspacing);
         }
     }
