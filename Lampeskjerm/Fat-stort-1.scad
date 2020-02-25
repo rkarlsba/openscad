@@ -22,7 +22,7 @@ resolution = 64; //[3:255]
 shell_thickness_in_millimeter = 1.0;
 
 // [All lamp shapes] Set the diameter of the base of the lamp shade. The base is the position, where the bulb fitting is located. This parameter is used for all lamp shapes.
-lamp_shade_base_diameter_in_millimeter = 350.0; //[1:300]
+lamp_shade_base_diameter_in_millimeter = 340.0; //[1:300]
 
 // [Simple and flower shape] Set the diameter of the head of the lamp shade. The head is the top position of the lamp shade. If this value is higher or lower than the base diameter, you get a cone or pyramide. Lower value can be used for desk lamp, higher value can be used for ceiling lamp. This parameter is used for simple and flower shape.
 lamp_shade_head_diameter_in_millimeter = 10.0; //[1:300]
@@ -31,7 +31,7 @@ lamp_shade_head_diameter_in_millimeter = 10.0; //[1:300]
 lamp_shade_height_in_millimeter = 110.0; //[1:300]
 
 // [Sphere and dodecahedron shape] Set the cut height of the head of the shape. 0 means a closed top. It is like sclicing the top of an apple with a knife. This parameter is used for sphere and dodecahedron shape.
-head_cut_height_in_millimeter = 320.0; //[0:200]
+head_cut_height_in_millimeter = 315.0; //[0:200]
 
 // [Sphere shape only] Set the cut height from the base of the shape. It is like sclicing the bottom of an apple with a knife. This parameter is used for sphere and dodecahedron shape.
 base_cut_height_in_millimeter = 10.0;  //[0:200]
@@ -40,15 +40,15 @@ base_cut_height_in_millimeter = 10.0;  //[0:200]
 number_of_flower_leaves = 8; //[2:64]
 
 // Set the diameter of the bulb bracket you want to use. Add a little extra for tolerance like 2mm if you are using a outside threaded bracket + nut/ring. If you are using a threadless bracket, it depends on the material. If it is a silicone one, you can use a little smaller hole. If it is non elastic plastic, this could be a challenge. If it is to loose, you can try to glue the gap between bracket and the lamp shade. Or do some test prints of the first 5-10 layers, before printing the whole lamp shade. Use 0, if you don't need a hole.
-//bulb_bracket_diameter_in_millimeter = 0;
-bulb_bracket_diameter_in_millimeter = 42.0;
+bulb_bracket_diameter_in_millimeter = 0;
+//bulb_bracket_diameter_in_millimeter = 42.0;
 
 // This is the additional support height for the bulb bracket. Depending on the bulb bracket you are using, this extra makes the hole more stable.
 bulb_bracket_support_height_in_millimeter = 2.0;
 
 // This is the additional support width for the bulb bracket. Depending on the bulb bracket you are using, this extra makes the hole more stable.
-bulb_bracket_support_width_in_millimeter = 13.0;
-//bulb_bracket_support_width_in_millimeter = 0.0;
+//bulb_bracket_support_width_in_millimeter = 13.0;
+bulb_bracket_support_width_in_millimeter = 0.0;
 
 // [Dodecahedron shape only] Extra support between walls and floor
 use_dodecahedron_support = true;

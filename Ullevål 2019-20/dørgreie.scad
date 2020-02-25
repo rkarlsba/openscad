@@ -1,16 +1,22 @@
-$fn=64;
+$fn=256;
 
-radius=32;
+// hva skal lages?
+handtak=true;
+underlag=true;
+
+//radius=32;
+radius=33.65;
 height=100;
 height2=10;
-thickness=0.5;
+thickness=1;
 start_a=0;
 end_a=66;
 
 //start_a=-31.5;
 //end_a=31.5;
 
-radius2=32;
+radius2=radius;
+//radius3=31.1;
 thickness2=5.0;
 
 /*
@@ -19,7 +25,6 @@ difference() {
     cylinder(r=radius-thickness, h=height);
 }
 */
-
 module sector(h, d, a1, a2) {
     if (a2 - a1 > 180) {
         difference() {
@@ -36,17 +41,20 @@ module sector(h, d, a1, a2) {
         }
     }
 }  
-
-difference() {
-    sector(height, radius*2, start_a, end_a);
-    sector(height, radius*2-thickness, start_a, end_a);
-}
-translate([0,0,height/2-height2/2]) {
-    difference() {
-        sector(height2, radius2*2+thickness2, start_a, end_a);
-        sector(height2, radius2*2, start_a, end_a);
-        sector(height2, radius2*2+thickness2/2, start_a, start_a+5);
-        sector(height2, radius2*2+thickness2/2, end_a-5, end_a);
+if (handtak) {
+    translate([0,0,height/2-height2/2]) {
+        difference() {
+            sector(height2, radius2*2+thickness2, start_a, end_a);
+            sector(height2, radius2*2, start_a, end_a);
+            sector(height2, radius2*2+thickness2/2, start_a, start_a+5);
+            sector(height2, radius2*2+thickness2/2, end_a-5, end_a);
+        }
     }
 }
+if (underlag) {
+    difference() {
+        sector(height, radius*2, start_a, end_a);
+        cylinder(h=height, r=radius-thickness);
 
+    }
+}
