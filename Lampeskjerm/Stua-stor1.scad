@@ -22,7 +22,7 @@ resolution = 64; //[3:255]
 shell_thickness_in_millimeter = 1.0;
 
 // [All lamp shapes] Set the diameter of the base of the lamp shade. The base is the position, where the bulb fitting is located. This parameter is used for all lamp shapes.
-lamp_shade_base_diameter_in_millimeter = 240.0; //[1:300]
+lamp_shade_base_diameter_in_millimeter = 225.0; //[1:300]
 
 // [Simple and flower shape] Set the diameter of the head of the lamp shade. The head is the top position of the lamp shade. If this value is higher or lower than the base diameter, you get a cone or pyramide. Lower value can be used for desk lamp, higher value can be used for ceiling lamp. This parameter is used for simple and flower shape.
 lamp_shade_head_diameter_in_millimeter = 10.0; //[1:300]
