@@ -31,7 +31,7 @@ fontd = fontb;              // Font voor text on lid
 tekstd  = tekstb;           // Negative text to print on lid
 letterd = 8;                // Height of text on lid
 rotated = 270;              // Rotate text on lid (180 for side-lid/270 for rear-lid)
-textimageb = "lakerol_logo.png"; // Instead of tekstd
+textimageb = "läkerol_logo_liten.png"; // Instead of tekstd
 textimaged = textimageb;    // Instead of tekstb
 
 // Variables to enable/disable choices
@@ -156,10 +156,11 @@ module W1() {
     if (tekst1=="Y") {
         translate([0.7,0.5*brd1,0.5*hoog1]) {
             rotate([90,0,270]) {
-                linear_extrude(height=1) {
-                    if (image1 === "Y") {
-                        import(file = textimageb);
-                    } else {
+                if (image1 == "Y") {
+                    scale([1, 1, 0.1])
+                        surface(file = textimageb, center = true);
+                } else {
+                    linear_extrude(height=1) {
                         text(tekstb,font=fontb,size=letterb,valign="center",halign="center");
                     }
                 }
@@ -229,9 +230,23 @@ module W2() {
     if (tekst2=="Y") {
         translate([0.5*lang,0.5*brd1,0.6]) { 
             rotate([0,180,rotated]){ 
-                linear_extrude(height=3) {
-                    text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
+                if (image2 == "Y") {
+                    scale([1, 1, 0.1])
+                        surface(file = textimaged, center = true);
+                } else {
+                    linear_extrude(height=1) {
+                        text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
+                    }
                 }
+            /*
+                linear_extrude(height=3) {
+                    if (image2 == "Y") {
+                        surface(file = textimaged);
+                    } else {
+                        text(tekstd,font=fontb,size=letterd,valign="center",halign="center");
+                    }
+                }
+                */
             }
         }
     }
@@ -259,7 +274,7 @@ module RearCurve() {
     }
 }
 // module for hinge opening
-module hinge1() {
+module Hinge1() {
     hull() {
         cube([1,hinge2,2.0*hinge1]);
         translate([10,0,-1])
@@ -267,7 +282,7 @@ module hinge1() {
     }
 }
 // module for hinge
-module hinge2() {
+module Hinge2() {
     hull() {
         translate([0,0,hoek])
             cube([hinge1,hinge2-2*margin,hinge1-hoek]);
@@ -277,7 +292,7 @@ module hinge2() {
     }
 }
 // module for spheres in corners for rounded look
-module corner1(diam) {
+module Corner1(diam) {
     sphere(d=diam);
 }
 

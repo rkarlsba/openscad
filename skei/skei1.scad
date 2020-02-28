@@ -22,7 +22,7 @@ module spool_bowl_taken(){
 
 module handle(){
     diamiter = diamiter*.3;
-    translate([0,0,(-diamiter/2)+handle_diamiter/2]) rotate([90,45,0]){
+    translate([0,-diamiter/2,(-diamiter/2)+handle_diamiter/2]) rotate([90,45,0]){
         cylinder(d=handle_diamiter, h=50, $fn=handle_sides);
     }
 }
