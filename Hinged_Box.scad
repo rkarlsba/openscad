@@ -1,7 +1,7 @@
 $fn = 100;
 width = 23;
 depth = 55;
-height = 25;
+//height = 25;
 wallThickness = 1.5;
 hingeOuter = 7;
 hingeInner = 4;
@@ -13,8 +13,8 @@ topFingerSize = fingerSize;
 pos = -depth/2;
 latchWidth = 8;
 z = 0;
-top_height = height;
-bottom_height = height;
+top_height = 8;
+bottom_height = 40;
 
 bottom();
 top();
