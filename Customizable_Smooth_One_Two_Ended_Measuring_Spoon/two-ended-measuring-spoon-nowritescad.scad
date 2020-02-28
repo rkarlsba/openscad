@@ -137,36 +137,36 @@ module interconnect() {
                         circle(r=a);
                     
                         translate([l,0])
-                        circle(r=b);
+                            circle(r=b);
                 
                         if (volume_2>0)
-                        translate([-hanging_hole_distance,0])
-                        circle(r=d);
+                            translate([-hanging_hole_distance,0])
+                                circle(r=d);
                                     
-                        assign(x1=a/(a+r)*m)
-                        assign(x2=l-b/(b+r)*n)
-                        translate([x1,-(c+r)])
-                        square([x2-x1,2*(c+r)]);
+                        let(x1=a/(a+r)*m)
+                            let(x2=l-b/(b+r)*n)
+                                translate([x1,-(c+r)])
+                                    square([x2-x1,2*(c+r)]);
 
                         if (volume_2>0 && hanging_hole_size>0)
-                        assign(x1=d/(d+r2)*m2-hanging_hole_distance)
-                        assign(x2=-a/(a+r2)*n2)
-                        translate([x1,-(c2+r2)])
-                        square([x2-x1,2*(c2+r2)]);
+                            let(x1=d/(d+r2)*m2-hanging_hole_distance)
+                                let(x2=-a/(a+r2)*n2)
+                                    translate([x1,-(c2+r2)])
+                                        square([x2-x1,2*(c2+r2)]);
                     }
             
                     for(y=[c+r,-c-r])
-                    translate([m,y])
-                    circle(r=r,$fn=2*$fn);
+                        translate([m,y])
+                            circle(r=r,$fn=2*$fn);
 
                     if (hanging_hole_size>0)
-                    for(y=[c2+r2,-c2-r2])
-                    translate([m2-hanging_hole_distance,y])
-                    circle(r=r2,$fn=2*$fn);
+                        for(y=[c2+r2,-c2-r2])
+                            translate([m2-hanging_hole_distance,y])
+                                circle(r=r2,$fn=2*$fn);
                 
                     if (hanging_hole_size>0)
-                    translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
-                    circle(r=(sqrt(d*8)-4)+h/2);
+                        translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
+                            circle(r=(sqrt(d*8)-4)+h/2);
                 }
 
                 if (!preview)
@@ -231,39 +231,39 @@ module build_text(extra_thickness=.1)
 }
 
 
-module volume(volume,offset,max=90)
-assign(factor=get_volume_factor(volume))
-assign(d1=radii[spoon_shape][0]*factor+2*offset,d2=radii[spoon_shape][1]*factor+2*offset,h1=radii[spoon_shape][2]*factor)
-assign(r3=d1/2)
-union()
-{
-    intersection()
-    {
-        if (max<90 && !preview)
-        assign(h2=h1+d2/2)
-        assign(r3=h2*tan(max))
-        translate([0,0,-.1])
-        cylinder(r1=r3,r2=0,h=h2+.1,$fn=fn);
+module volume(volume,offset,max=90) {
+    factor=get_volume_factor(volume);
+    d1=radii[spoon_shape][0]*factor+2*offset;
+    d2=radii[spoon_shape][1]*factor+2*offset;
+    h1=radii[spoon_shape][2]*factor;
+    r3=d1/2;
 
-        hull()
-        {
-            cylinder(r1=d1/2,r2=0,h=h1,$fn=fn);
-            
-            difference()
-            {
-                translate([0,0,h1])
-                sphere(r=d2/2,$fn=fn);
+    union() {
+        intersection() {
+            if (max<90 && !preview) {
+                h2=h1+d2/2;
+                r3=h2*tan(max);
+                translate([0,0,-.1])
+                    cylinder(r1=r3,r2=0,h=h2+.1,$fn=fn);
+            }
 
-                translate([0,0,-d2/2+.1])
-                cube(d2,center=true);
+            hull() {
+                cylinder(r1=d1/2,r2=0,h=h1,$fn=fn);
+                
+                difference() {
+                    translate([0,0,h1])
+                        sphere(r=d2/2,$fn=fn);
+
+                    translate([0,0,-d2/2+.1])
+                        cube(d2,center=true);
+                }
             }
         }
+
+        if (max<90 && !reference_volume)
+            translate([0,0,-10])
+                cylinder(r=d1/2,h=10.1,$fn=fn);
     }
-
-    if (max<90 && !reference_volume)
-    translate([0,0,-10])
-    cylinder(r=d1/2,h=10.1,$fn=fn);
 }
-
 
 
