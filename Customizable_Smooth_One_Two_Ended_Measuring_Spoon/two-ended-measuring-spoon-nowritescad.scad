@@ -4,7 +4,10 @@
 // Version 1.0 (c) February 2015
 // please refer the complete license here: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcoe
 
-fn=$preview?30:128;
+use <write/Write.scad>
+
+// fn=$preview?30:128;
+fn=$preview?32:64;
 
 /* [Spoon] */
 spoon_shape = 0; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
@@ -90,7 +93,6 @@ factor2=get_volume_factor(get_volume_2());
 
 echo("factor: ",factor1,factor2);
 
-
 radii = [
     [40,40,0.000000001],
     [40,28,20],
@@ -99,7 +101,6 @@ radii = [
     [40,40,30],
     [28,40,20],
 ];
-
 
 ra1=(radii[spoon_shape][0]*factor1+2*wall_thickness-handle_thickness/2)/2;
 ra2=volume_2>0?(radii[spoon_shape][0]*factor2+2*wall_thickness-handle_thickness/2)/2:get_hanging_hole_size();
@@ -110,89 +111,91 @@ echo("ra: ",ra1,ra2);
 echo("Preview", preview, "fn", fn);
 echo("get_hanging_hole_size()",get_hanging_hole_size());
 
-module interconnect()
-assign(h=handle_thickness)
-assign(d=get_hanging_hole_size())
-assign(b=(ra2+surrounding_width)-1,a=(ra1+surrounding_width)-1,c=get_handle_width()-surrounding_width*2,c2=d-surrounding_width/2,l=handle_lenght,$fn=fn)
-// http://www.wolframalpha.com/input/?i=%28a%2Br%29^2%3Dm^2%2B%28c%2Br%29^2%2C%28b%2Br%29^2%3Dn^2%2B%28c%2Br%29^2%2Cl%3Dn%2Bm
-assign(m=(-sqrt(-(a*b-a*c-b*c+c*c)*(a*a-2*a*b+b*b-l*l))+a*l-c*l)/(a-b))
-assign(n=l-m)
-assign(r=(-a*a+c*c+m*m)/2/(a-c))
-assign(m2=(-sqrt(-(d*a-d*c2-a*c2+c2*c2)*(d*d-2*d*a+a*a-hanging_hole_distance*hanging_hole_distance))+d*hanging_hole_distance-c2*hanging_hole_distance)/(d-a))
-assign(n2=hanging_hole_distance-m2)
-assign(r2=(-d*d+c2*c2+m2*m2)/2/(d-c2))
-minkowski()
-{
-   translate([0,0,preview?0:h*.7/2.4])
-    linear_extrude(preview?h:h/2.4,convexity=10)
-    difference()
-    {
-        echo("extra_hole",hanging_hole_distance,n,m,r);
-    
-        union()
-        {
-            circle(r=a);
-        
-            translate([l,0])
-            circle(r=b);
-    
-            if(volume_2>0)
-            translate([-hanging_hole_distance,0])
-            circle(r=d);
-                        
-            assign(x1=a/(a+r)*m)
-            assign(x2=l-b/(b+r)*n)
-            translate([x1,-(c+r)])
-            square([x2-x1,2*(c+r)]);
+module interconnect() {
+    h=handle_thickness;
+    d=get_hanging_hole_size();
+    b=(ra2+surrounding_width)-1;
+    a=(ra1+surrounding_width)-1;
+    c=get_handle_width()-surrounding_width*2;
+    c2=d-surrounding_width/2;
+    l=handle_lenght;
+    $fn=fn;
+    // http://www.wolframalpha.com/input/?i=%28a%2Br%29^2%3Dm^2%2B%28c%2Br%29^2%2C%28b%2Br%29^2%3Dn^2%2B%28c%2Br%29^2%2Cl%3Dn%2Bm
+    m=(-sqrt(-(a*b-a*c-b*c+c*c)*(a*a-2*a*b+b*b-l*l))+a*l-c*l)/(a-b);
+    n=l-m;
+    r=(-a*a+c*c+m*m)/2/(a-c);
+    m2=(-sqrt(-(d*a-d*c2-a*c2+c2*c2)*(d*d-2*d*a+a*a-hanging_hole_distance*hanging_hole_distance))+d*hanging_hole_distance-c2*hanging_hole_distance)/(d-a);
+    n2=hanging_hole_distance-m2;
+    r2=(-d*d+c2*c2+m2*m2)/2/(d-c2);
+    minkowski() {
+        translate([0,0,preview?0:h*.7/2.4])
+            linear_extrude(preview?h:h/2.4,convexity=10)
+                difference() {
+                    echo("extra_hole",hanging_hole_distance,n,m,r);
+            
+                    union() {
+                        circle(r=a);
+                    
+                        translate([l,0])
+                        circle(r=b);
+                
+                        if(volume_2>0)
+                        translate([-hanging_hole_distance,0])
+                        circle(r=d);
+                                    
+                        assign(x1=a/(a+r)*m)
+                        assign(x2=l-b/(b+r)*n)
+                        translate([x1,-(c+r)])
+                        square([x2-x1,2*(c+r)]);
 
-            if(volume_2>0 && hanging_hole_size>0)
-            assign(x1=d/(d+r2)*m2-hanging_hole_distance)
-            assign(x2=-a/(a+r2)*n2)
-            translate([x1,-(c2+r2)])
-            square([x2-x1,2*(c2+r2)]);
-        }
-    
-        for(y=[c+r,-c-r])
-        translate([m,y])
-        circle(r=r,$fn=2*$fn);
+                        if(volume_2>0 && hanging_hole_size>0)
+                        assign(x1=d/(d+r2)*m2-hanging_hole_distance)
+                        assign(x2=-a/(a+r2)*n2)
+                        translate([x1,-(c2+r2)])
+                        square([x2-x1,2*(c2+r2)]);
+                    }
+            
+                    for(y=[c+r,-c-r])
+                    translate([m,y])
+                    circle(r=r,$fn=2*$fn);
 
-        if(hanging_hole_size>0)
-        for(y=[c2+r2,-c2-r2])
-        translate([m2-hanging_hole_distance,y])
-        circle(r=r2,$fn=2*$fn);
-    
-        if(hanging_hole_size>0)
-        translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
-        circle(r=(sqrt(d*8)-4)+h/2);
+                    if(hanging_hole_size>0)
+                    for(y=[c2+r2,-c2-r2])
+                    translate([m2-hanging_hole_distance,y])
+                    circle(r=r2,$fn=2*$fn);
+                
+                    if(hanging_hole_size>0)
+                    translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
+                    circle(r=(sqrt(d*8)-4)+h/2);
+                }
+
+                if(!preview)
+                for(m=[0,1])
+                mirror([0,0,m])
+                cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
     }
-
-    if(!preview)
-    for(m=[0,1])
-    mirror([0,0,m])
-    cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
 }
 
 rotate([preview?180:0,0,0])
-difference()
-{
-    if(reference_volume)
-    {
-        if(volume_1 > 0)
-        volume(get_volume_1(),0,60);
+    difference() {
+        if (reference_volume) {
+            if (volume_1 > 0)
+                volume(get_volume_1(),0,60);
 
-        if(volume_2 > 0)
-        translate([ra1+ra2+5,0,0])
-        volume(get_volume_2(),0,60);
+            if(volume_2 > 0)
+                translate([ra1+ra2+5,0,0])
+                    volume(get_volume_2(),0,60);
+        } else {
+            if (part == "dual_extrusion_text")
+                build_text(0);
+            else
+                spoon();
+        }
+
+        if(cross_cut)
+            translate([-500,-1000,-10])
+                cube(1000);
     }
-    else if(part == "dual_extrusion_text")
-    build_text(0);
-    else
-    spoon();
-
-    if(cross_cut)
-    translate([-500,-1000,-10])
-    cube(1000);
-}
 
 module spoon()
 difference()
