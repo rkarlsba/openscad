@@ -139,7 +139,7 @@ module interconnect() {
                         translate([l,0])
                         circle(r=b);
                 
-                        if(volume_2>0)
+                        if (volume_2>0)
                         translate([-hanging_hole_distance,0])
                         circle(r=d);
                                     
@@ -148,7 +148,7 @@ module interconnect() {
                         translate([x1,-(c+r)])
                         square([x2-x1,2*(c+r)]);
 
-                        if(volume_2>0 && hanging_hole_size>0)
+                        if (volume_2>0 && hanging_hole_size>0)
                         assign(x1=d/(d+r2)*m2-hanging_hole_distance)
                         assign(x2=-a/(a+r2)*n2)
                         translate([x1,-(c2+r2)])
@@ -159,17 +159,17 @@ module interconnect() {
                     translate([m,y])
                     circle(r=r,$fn=2*$fn);
 
-                    if(hanging_hole_size>0)
+                    if (hanging_hole_size>0)
                     for(y=[c2+r2,-c2-r2])
                     translate([m2-hanging_hole_distance,y])
                     circle(r=r2,$fn=2*$fn);
                 
-                    if(hanging_hole_size>0)
+                    if (hanging_hole_size>0)
                     translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
                     circle(r=(sqrt(d*8)-4)+h/2);
                 }
 
-                if(!preview)
+                if (!preview)
                 for(m=[0,1])
                 mirror([0,0,m])
                 cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
@@ -182,7 +182,7 @@ rotate([preview?180:0,0,0])
             if (volume_1 > 0)
                 volume(get_volume_1(),0,60);
 
-            if(volume_2 > 0)
+            if (volume_2 > 0)
                 translate([ra1+ra2+5,0,0])
                     volume(get_volume_2(),0,60);
         } else {
@@ -192,7 +192,7 @@ rotate([preview?180:0,0,0])
                 spoon();
         }
 
-        if(cross_cut)
+        if (cross_cut)
             translate([-500,-1000,-10])
                 cube(1000);
     }
@@ -205,7 +205,7 @@ difference()
         interconnect();
         volume(get_volume_1(),wall_thickness);
 
-        if(volume_2>0)
+        if (volume_2>0)
         translate([handle_lenght,0,0])
         volume(get_volume_2(),wall_thickness);
     }   
@@ -215,7 +215,7 @@ difference()
         translate([0,0,preview?-0.02:0])
         volume(get_volume_1(),0,60);
 
-        if(volume_2>0)
+        if (volume_2>0)
         translate([handle_lenght,0,preview?-0.02:0])
         volume(get_volume_2(),0,60);
 
@@ -239,7 +239,7 @@ union()
 {
     intersection()
     {
-        if(max<90 && !preview)
+        if (max<90 && !preview)
         assign(h2=h1+d2/2)
         assign(r3=h2*tan(max))
         translate([0,0,-.1])
@@ -260,7 +260,7 @@ union()
         }
     }
 
-    if(max<90 && !reference_volume)
+    if (max<90 && !reference_volume)
     translate([0,0,-10])
     cylinder(r=d1/2,h=10.1,$fn=fn);
 }
