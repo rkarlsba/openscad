@@ -9,13 +9,13 @@
 // and on
 
 // Main Variables (all measurements in mm)
-lang    = 31.5;             // Box length
-brd1    = 55.0;             // Width box at top
-brd2    = 55.0;             // Width box at bottom
+lang    = 45.0;             // Box length
+brd1    = 60.0;             // Width box at top
+brd2    = 60.0;             // Width box at bottom
 hoek    = 2.0;              // Diameter corners
 diep    = 4.5;              // Height edge
 wall1   = 1.5;              // General wall thickness
-hoog1   = 43.0;             // Height box (minimum 20mm because of hinge)
+hoog1   = 65.0;             // Height box (minimum 20mm because of hinge)
 hoog2   = 3.0;              // Height lid
 hinge1  = 4.0;              // Diameter hinge
 hinge2  = 15.0;             // Width of hinge
@@ -231,22 +231,13 @@ module W2() {
         translate([0.5*lang,0.5*brd1,0.6]) { 
             rotate([0,180,rotated]){ 
                 if (image2 == "Y") {
-                    scale([1, 1, 0.1])
+                    scale([0.15, 0.15, 0.1])
                         surface(file = textimaged, center = true);
                 } else {
                     linear_extrude(height=1) {
                         text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
                     }
                 }
-            /*
-                linear_extrude(height=3) {
-                    if (image2 == "Y") {
-                        surface(file = textimaged);
-                    } else {
-                        text(tekstd,font=fontb,size=letterd,valign="center",halign="center");
-                    }
-                }
-                */
             }
         }
     }
