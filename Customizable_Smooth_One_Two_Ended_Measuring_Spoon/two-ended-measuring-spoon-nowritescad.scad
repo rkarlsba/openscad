@@ -1,3 +1,4 @@
+// vim:ts=4:sw=4:sts=4:et:ai
 // 'Customizable Smooth One/Two Ended Measuring Spoon' by wstein 
 // is licensed under the Attribution - Non-Commercial - Share Alike license. 
 // Version 1.0 (c) February 2015
@@ -91,12 +92,12 @@ echo("factor: ",factor1,factor2);
 
 
 radii = [
-	[40,40,0.000000001],
-	[40,28,20],
-	[40,40,20],
-	[40,40,15],
-	[40,40,30],
-	[28,40,20],
+    [40,40,0.000000001],
+    [40,28,20],
+    [40,40,20],
+    [40,40,15],
+    [40,40,30],
+    [28,40,20],
 ];
 
 
@@ -123,107 +124,107 @@ assign(r2=(-d*d+c2*c2+m2*m2)/2/(d-c2))
 minkowski()
 {
    translate([0,0,preview?0:h*.7/2.4])
-	linear_extrude(preview?h:h/2.4,convexity=10)
-	difference()
-	{
-		echo("extra_hole",hanging_hole_distance,n,m,r);
-	
-		union()
-		{
-			circle(r=a);
-		
-			translate([l,0])
-			circle(r=b);
-	
-			if(volume_2>0)
-			translate([-hanging_hole_distance,0])
-			circle(r=d);
+    linear_extrude(preview?h:h/2.4,convexity=10)
+    difference()
+    {
+        echo("extra_hole",hanging_hole_distance,n,m,r);
+    
+        union()
+        {
+            circle(r=a);
+        
+            translate([l,0])
+            circle(r=b);
+    
+            if(volume_2>0)
+            translate([-hanging_hole_distance,0])
+            circle(r=d);
                         
-			assign(x1=a/(a+r)*m)
-			assign(x2=l-b/(b+r)*n)
-			translate([x1,-(c+r)])
-			square([x2-x1,2*(c+r)]);
+            assign(x1=a/(a+r)*m)
+            assign(x2=l-b/(b+r)*n)
+            translate([x1,-(c+r)])
+            square([x2-x1,2*(c+r)]);
 
-			if(volume_2>0 && hanging_hole_size>0)
-			assign(x1=d/(d+r2)*m2-hanging_hole_distance)
-			assign(x2=-a/(a+r2)*n2)
-			translate([x1,-(c2+r2)])
-			square([x2-x1,2*(c2+r2)]);
-		}
-	
-		for(y=[c+r,-c-r])
-		translate([m,y])
-		circle(r=r,$fn=2*$fn);
+            if(volume_2>0 && hanging_hole_size>0)
+            assign(x1=d/(d+r2)*m2-hanging_hole_distance)
+            assign(x2=-a/(a+r2)*n2)
+            translate([x1,-(c2+r2)])
+            square([x2-x1,2*(c2+r2)]);
+        }
+    
+        for(y=[c+r,-c-r])
+        translate([m,y])
+        circle(r=r,$fn=2*$fn);
 
-		if(hanging_hole_size>0)
-		for(y=[c2+r2,-c2-r2])
-		translate([m2-hanging_hole_distance,y])
-		circle(r=r2,$fn=2*$fn);
-	
-		if(hanging_hole_size>0)
-		translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
-		circle(r=(sqrt(d*8)-4)+h/2);
-	}
+        if(hanging_hole_size>0)
+        for(y=[c2+r2,-c2-r2])
+        translate([m2-hanging_hole_distance,y])
+        circle(r=r2,$fn=2*$fn);
+    
+        if(hanging_hole_size>0)
+        translate([volume_2>0?-hanging_hole_distance:handle_lenght,0])
+        circle(r=(sqrt(d*8)-4)+h/2);
+    }
 
-	if(!preview)
-	for(m=[0,1])
-	mirror([0,0,m])
-	cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
+    if(!preview)
+    for(m=[0,1])
+    mirror([0,0,m])
+    cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
 }
 
 rotate([preview?180:0,0,0])
 difference()
 {
-	if(reference_volume)
-	{
-		if(volume_1 > 0)
-		volume(get_volume_1(),0,60);
+    if(reference_volume)
+    {
+        if(volume_1 > 0)
+        volume(get_volume_1(),0,60);
 
-		if(volume_2 > 0)
-		translate([ra1+ra2+5,0,0])
-		volume(get_volume_2(),0,60);
-	}
-	else if(part == "dual_extrusion_text")
-  	build_text(0);
-	else
-	spoon();
+        if(volume_2 > 0)
+        translate([ra1+ra2+5,0,0])
+        volume(get_volume_2(),0,60);
+    }
+    else if(part == "dual_extrusion_text")
+    build_text(0);
+    else
+    spoon();
 
-	if(cross_cut)
-	translate([-500,-1000,-10])
-	cube(1000);
+    if(cross_cut)
+    translate([-500,-1000,-10])
+    cube(1000);
 }
 
 module spoon()
 difference()
 {
-	union()
-	{
-		interconnect();
-		volume(get_volume_1(),wall_thickness);
+    union()
+    {
+        interconnect();
+        volume(get_volume_1(),wall_thickness);
 
-		if(volume_2>0)
-		translate([handle_lenght,0,0])
-		volume(get_volume_2(),wall_thickness);
-	}	
-	
-	union()
-	{
-		translate([0,0,preview?-0.02:0])
-		volume(get_volume_1(),0,60);
+        if(volume_2>0)
+        translate([handle_lenght,0,0])
+        volume(get_volume_2(),wall_thickness);
+    }   
+    
+    union()
+    {
+        translate([0,0,preview?-0.02:0])
+        volume(get_volume_1(),0,60);
 
-		if(volume_2>0)
-		translate([handle_lenght,0,preview?-0.02:0])
-		volume(get_volume_2(),0,60);
+        if(volume_2>0)
+        translate([handle_lenght,0,preview?-0.02:0])
+        volume(get_volume_2(),0,60);
 
-		build_text(.1);
-	}	
+        build_text(.1);
+    }   
 }
 
 module build_text(extra_thickness=.1)
 {
-	translate([(volume_2>0?(handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:0)+(ra1+surrounding_width),volume_2>0?0:label_height/2,(label_thickness-extra_thickness)/(volume_2>0?2:1)])
-	rotate([180,0,0])
-	write(label, h=label_height, t=label_thickness+extra_thickness, font=label_font, center=volume_2>0);
+    translate([(volume_2>0?(handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:0)+(ra1+surrounding_width),volume_2>0?0:label_height/2,(label_thickness-extra_thickness)/(volume_2>0?2:1)])
+    rotate([180,0,0])
+    write(label, h=label_height, t=label_thickness+extra_thickness, font=label_font, center=volume_2>0);
 }
 
 
@@ -233,32 +234,32 @@ assign(d1=radii[spoon_shape][0]*factor+2*offset,d2=radii[spoon_shape][1]*factor+
 assign(r3=d1/2)
 union()
 {
-	intersection()
-	{
-		if(max<90 && !preview)
-		assign(h2=h1+d2/2)
-		assign(r3=h2*tan(max))
-		translate([0,0,-.1])
-		cylinder(r1=r3,r2=0,h=h2+.1,$fn=fn);
+    intersection()
+    {
+        if(max<90 && !preview)
+        assign(h2=h1+d2/2)
+        assign(r3=h2*tan(max))
+        translate([0,0,-.1])
+        cylinder(r1=r3,r2=0,h=h2+.1,$fn=fn);
 
-		hull()
-		{
-			cylinder(r1=d1/2,r2=0,h=h1,$fn=fn);
-			
-			difference()
-			{
-				translate([0,0,h1])
-				sphere(r=d2/2,$fn=fn);
+        hull()
+        {
+            cylinder(r1=d1/2,r2=0,h=h1,$fn=fn);
+            
+            difference()
+            {
+                translate([0,0,h1])
+                sphere(r=d2/2,$fn=fn);
 
-				translate([0,0,-d2/2+.1])
-				cube(d2,center=true);
-			}
-		}
-	}
+                translate([0,0,-d2/2+.1])
+                cube(d2,center=true);
+            }
+        }
+    }
 
-	if(max<90 && !reference_volume)
-	translate([0,0,-10])
-	cylinder(r=d1/2,h=10.1,$fn=fn);
+    if(max<90 && !reference_volume)
+    translate([0,0,-10])
+    cylinder(r=d1/2,h=10.1,$fn=fn);
 }
 
 
