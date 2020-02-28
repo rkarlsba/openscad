@@ -202,81 +202,82 @@ module B2() {
     }
     // Hinges
     translate([lang-hinge1,hinge3+1*margin,0])
-    Hinge2();
+        Hinge2();
     translate([lang-hinge1,brd1-hinge2-hinge3+1*margin,0])
-    Hinge2();
+        Hinge2();
     // Brim for lid if chosen
     if (oor1=="Y") {
-    translate([hoek2,0.5*brd1,0])
-    resize([8,0.3*(brd1+brd2)/2,wall1])
-    cylinder(h=wall1,d=brd1);
+        translate([hoek2,0.5*brd1,0])
+            resize([8,0.3*(brd1+brd2)/2,wall1])
+                cylinder(h=wall1,d=brd1);
     }
 }
 module W2() {
- // Hollow out lid
- translate([edge+margin+rim2,edge+margin+rim2,wall1])
- cube([lang-edge-margin-rim2-hinge1,brd1-2*edge-2*margin-2*rim2,hoog2+5]);
- // Hinge pin hole
- translate([lang-0.5*hinge1,brd1,hoog2+1.0*hinge1])
- rotate([90,0,0])
- cylinder(h=brd1,d=hole1);
- // Hole to enable securing box
- if (oor2=="Y") {
-  translate([-0.5*hole2,0.5*brd2+(brd1-brd2)/2,-0.1])
-  cylinder(h=2*wall1,d=hole2); 
- }
- // Text on lid if chosen
- if (tekst2=="Y") {
-  translate([0.5*lang,0.5*brd1,0.6])
-  rotate([0,180,rotated])
-  linear_extrude(height=3) {
-   text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
-  }
- }
+    // Hollow out lid
+    translate([edge+margin+rim2,edge+margin+rim2,wall1])
+        cube([lang-edge-margin-rim2-hinge1,brd1-2*edge-2*margin-2*rim2,hoog2+5]);
+    // Hinge pin hole
+    translate([lang-0.5*hinge1,brd1,hoog2+1.0*hinge1])
+        rotate([90,0,0])
+            cylinder(h=brd1,d=hole1);
+    // Hole to enable securing box
+    if (oor2=="Y") {
+        translate([-0.5*hole2,0.5*brd2+(brd1-brd2)/2,-0.1])
+            cylinder(h=2*wall1,d=hole2); 
+    }
+    // Text on lid if chosen
+    if (tekst2=="Y") {
+        translate([0.5*lang,0.5*brd1,0.6]) { 
+            rotate([0,180,rotated]){ 
+                linear_extrude(height=3) {
+                    text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
+                }
+            }
+        }
+    }
 }
 // Module for round rear of box to enable to lid to rotate
 module RearCurve() {
-  // Curved piece
-  if (rounded=="N") {
-   translate([lang-0.5*vert,brd1,hoog1-0.5*vert])
-   rotate([90,0,0])
-   cylinder(h=brd1,d=vert);
-   } 
-  else
-   { // Cylinder with rounded ends for rounded top
-    // Front
-    translate([lang-0.5*vert,hoek2,hoog1-0.5*vert])
-    rotate([90,0,0])
-    rotate_extrude(convexity = 1)
-    translate([0.5*(vert-hoek),0,0])
-    circle(r=hoek2);
-    // Rear
-    translate([lang-0.5*vert,brd1-hoek2,hoog1-0.5*vert])
-    rotate([90,0,0])
-    rotate_extrude(convexity = 1)
-    translate([0.5*(vert-hoek),0,0])
-    circle(r=hoek2);
-   }
+    // Curved piece
+    if (rounded=="N") {
+        translate([lang-0.5*vert,brd1,hoog1-0.5*vert])
+            rotate([90,0,0])
+                cylinder(h=brd1,d=vert);
+    } else { // Cylinder with rounded ends for rounded top
+        // front
+        translate([lang-0.5*vert,hoek2,hoog1-0.5*vert])
+            rotate([90,0,0])
+                rotate_extrude(convexity = 1)
+                    translate([0.5*(vert-hoek),0,0])
+                        circle(r=hoek2);
+        // rear
+        translate([lang-0.5*vert,brd1-hoek2,hoog1-0.5*vert])
+            rotate([90,0,0])
+                rotate_extrude(convexity = 1)
+                    translate([0.5*(vert-hoek),0,0])
+                        circle(r=hoek2);
+    }
 }
-// Module for hinge opening
-module Hinge1() {
- hull() {
-  cube([1,hinge2,2.0*hinge1]);
-  translate([10,0,-1])
-  cube([1,hinge2,2.0*hinge1]);
- }
+// module for hinge opening
+module hinge1() {
+    hull() {
+        cube([1,hinge2,2.0*hinge1]);
+        translate([10,0,-1])
+            cube([1,hinge2,2.0*hinge1]);
+    }
 }
-// Module for hinge
-module Hinge2() {
- hull() {
-  translate([0,0,hoek])
-  cube([hinge1,hinge2-2*margin,hinge1-hoek]);
-  translate([0.5*hinge1,hinge2-2*margin,hoog2+1.0*hinge1])
-  rotate([90,0,0])
-  cylinder(h=hinge2-2*margin,d=hinge1);
- }
+// module for hinge
+module hinge2() {
+    hull() {
+        translate([0,0,hoek])
+            cube([hinge1,hinge2-2*margin,hinge1-hoek]);
+        translate([0.5*hinge1,hinge2-2*margin,hoog2+1.0*hinge1])
+            rotate([90,0,0])
+                cylinder(h=hinge2-2*margin,d=hinge1);
+    }
 }
-// Module for spheres in corners for rounded look
-module Corner1(diam) {
- sphere(d=diam);
+// module for spheres in corners for rounded look
+module corner1(diam) {
+    sphere(d=diam);
 }
+
