@@ -19,19 +19,16 @@ unit_volume_1=1; // [1.0: ml, 16.387064: cubic inch (international inch), 28.413
 volume_2=5;
 unit_volume_2=1; // [1.0:ml, 16.387064:cubic inch (international inch), 28.4130625:imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
 
-function get_volume_1()= volume_1 * unit_volume_1 * adjust_volume_1;
-function get_volume_2()= volume_2 * unit_volume_2 * adjust_volume_2;
+function get_volume_1() = volume_1 * unit_volume_1 * adjust_volume_1;
+function get_volume_2() = volume_2 * unit_volume_2 * adjust_volume_2;
 
 /* [Label] */
-
-//Hint: with orbitron font replace zero with letter O!
-label="ss        ts";
+label           = "ss            ts";
 label_thickness = 0.6;
-label_height = 6.5;
-label_font="BlackRose.dxf"; //[orbitron.dxf,Letters.dxf,knewave.dxf,BlackRose.dxf,braille.dxf]
+label_height    = 8.5;
+label_font      = "Liberation Sans";
 
 /* [Metrics] */
-
 wall_thickness=1.5;
 handle_thickness=3.5;
 surrounding_width=2.5;
@@ -197,37 +194,41 @@ rotate([preview?180:0,0,0])
                 cube(1000);
     }
 
-module spoon()
-difference()
-{
-    union()
+module spoon() {
+    difference()
     {
-        interconnect();
-        volume(get_volume_1(),wall_thickness);
+        union()
+        {
+            interconnect();
+            volume(get_volume_1(),wall_thickness);
 
-        if (volume_2>0)
-        translate([handle_lenght,0,0])
-        volume(get_volume_2(),wall_thickness);
-    }   
-    
-    union()
-    {
-        translate([0,0,preview?-0.02:0])
-        volume(get_volume_1(),0,60);
+            if (volume_2>0)
+                translate([handle_lenght,0,0])
+                    volume(get_volume_2(),wall_thickness);
+        }   
+        
+        union()
+        {
+            translate([0,0,preview?-0.02:0])
+                volume(get_volume_1(),0,60);
 
-        if (volume_2>0)
-        translate([handle_lenght,0,preview?-0.02:0])
-        volume(get_volume_2(),0,60);
+            if (volume_2>0)
+                translate([handle_lenght,0,preview?-0.02:0])
+                    volume(get_volume_2(),0,60);
 
-        build_text(.1);
-    }   
+            build_text(.1);
+        }   
+    }
 }
 
 module build_text(extra_thickness=.1)
 {
     translate([(volume_2>0?(handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:0)+(ra1+surrounding_width),volume_2>0?0:label_height/2,(label_thickness-extra_thickness)/(volume_2>0?2:1)])
-    rotate([180,0,0])
-    write(label, h=label_height, t=label_thickness+extra_thickness, font=label_font, center=volume_2>0);
+//    translate([volume_1,0,0])
+        rotate([180,0,0])
+//          write(label, h=label_height, t=label_thickness+extra_thickness, font=label_font, center=volume_2>0);
+            linear_extrude(height=label_thickness)
+                text(text=label, font=label_font, size=label_height, halign="center",valign="center");
 }
 
 
