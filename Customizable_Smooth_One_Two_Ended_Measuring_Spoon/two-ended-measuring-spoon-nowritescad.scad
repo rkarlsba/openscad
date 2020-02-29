@@ -1,16 +1,19 @@
 // vim:ts=4:sw=4:sts=4:et:ai
+//
 // 'Customizable Smooth One/Two Ended Measuring Spoon' by wstein 
 // is licensed under the Attribution - Non-Commercial - Share Alike license. 
 // Version 1.0 (c) February 2015
 // please refer the complete license here: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcoe
 
-use <write/Write.scad>
+// Version 1.1 (c) February 2020 by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
+// Script rewritten to use text() instead of the Write library and all assign() calls
+// rewritten to normal assignment except in two cases where let() is used. Also, code
+// cleanup in general for better readability.
 
-// fn=$preview?30:128;
-fn=$preview?32:64;
+fn=$preview?32:80;
 
 /* [Spoon] */
-spoon_shape = 0; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
+spoon_shape = 1; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
 
 volume_1=15;
 unit_volume_1=1; // [1.0: ml, 16.387064: cubic inch (international inch), 28.4130625: imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
@@ -82,7 +85,7 @@ reference_volume = 0; // [0:false,1:true]
 
 
 reference=[14.5977,23.9123,39.6676,33.4,52.2442,34.007];
-function get_volume_factor(volume)= pow(volume/reference[spoon_shape],1/3);
+function get_volume_factor(volume) = pow(volume/reference[spoon_shape],1/3);
 
 hanging_hole_sizes=[0,5,6.3,8,10,15];
 factor1=get_volume_factor(get_volume_1());
@@ -109,14 +112,14 @@ echo("Preview", preview, "fn", fn);
 echo("get_hanging_hole_size()",get_hanging_hole_size());
 
 module interconnect() {
-    h=handle_thickness;
-    d=get_hanging_hole_size();
-    b=(ra2+surrounding_width)-1;
-    a=(ra1+surrounding_width)-1;
-    c=get_handle_width()-surrounding_width*2;
-    c2=d-surrounding_width/2;
-    l=handle_lenght;
-    $fn=fn;
+    h = handle_thickness;
+    d = get_hanging_hole_size();
+    b = (ra2+surrounding_width)-1;
+    a = (ra1+surrounding_width)-1;
+    c = get_handle_width()-surrounding_width*2;
+    c2 = d-surrounding_width/2;
+    l = handle_lenght;
+    $fn = fn;
     // http://www.wolframalpha.com/input/?i=%28a%2Br%29^2%3Dm^2%2B%28c%2Br%29^2%2C%28b%2Br%29^2%3Dn^2%2B%28c%2Br%29^2%2Cl%3Dn%2Bm
     m=(-sqrt(-(a*b-a*c-b*c+c*c)*(a*a-2*a*b+b*b-l*l))+a*l-c*l)/(a-b);
     n=l-m;
@@ -195,10 +198,8 @@ rotate([preview?180:0,0,0])
     }
 
 module spoon() {
-    difference()
-    {
-        union()
-        {
+    difference() {
+        union() {
             interconnect();
             volume(get_volume_1(),wall_thickness);
 
@@ -207,8 +208,7 @@ module spoon() {
                     volume(get_volume_2(),wall_thickness);
         }   
         
-        union()
-        {
+        union() {
             translate([0,0,preview?-0.02:0])
                 volume(get_volume_1(),0,60);
 
@@ -221,12 +221,9 @@ module spoon() {
     }
 }
 
-module build_text(extra_thickness=.1)
-{
+module build_text(extra_thickness=.1) {
     translate([(volume_2>0?(handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:0)+(ra1+surrounding_width),volume_2>0?0:label_height/2,(label_thickness-extra_thickness)/(volume_2>0?2:1)])
-//    translate([volume_1,0,0])
         rotate([180,0,0])
-//          write(label, h=label_height, t=label_thickness+extra_thickness, font=label_font, center=volume_2>0);
             linear_extrude(height=label_thickness)
                 text(text=label, font=label_font, size=label_height, halign="center",valign="center");
 }
@@ -266,5 +263,3 @@ module volume(volume,offset,max=90) {
                 cylinder(r=d1/2,h=10.1,$fn=fn);
     }
 }
-
-
