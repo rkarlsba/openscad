@@ -121,12 +121,13 @@ module interconnect() {
     l = handle_lenght;
     $fn = fn;
     // http://www.wolframalpha.com/input/?i=%28a%2Br%29^2%3Dm^2%2B%28c%2Br%29^2%2C%28b%2Br%29^2%3Dn^2%2B%28c%2Br%29^2%2Cl%3Dn%2Bm
-    m=(-sqrt(-(a*b-a*c-b*c+c*c)*(a*a-2*a*b+b*b-l*l))+a*l-c*l)/(a-b);
-    n=l-m;
-    r=(-a*a+c*c+m*m)/2/(a-c);
-    m2=(-sqrt(-(d*a-d*c2-a*c2+c2*c2)*(d*d-2*d*a+a*a-hanging_hole_distance*hanging_hole_distance))+d*hanging_hole_distance-c2*hanging_hole_distance)/(d-a);
-    n2=hanging_hole_distance-m2;
-    r2=(-d*d+c2*c2+m2*m2)/2/(d-c2);
+    m = (-sqrt(-(a*b-a*c-b*c+c*c)*(a*a-2*a*b+b*b-l*l))+a*l-c*l)/(a-b);
+    n = l-m;
+    r = (-a*a+c*c+m*m)/2/(a-c);
+    m2 = (-sqrt(-(d*a-d*c2-a*c2+c2*c2)*(d*d-2*d*a+a*a-hanging_hole_distance*hanging_hole_distance))+d*hanging_hole_distance-c2*hanging_hole_distance)/(d-a);
+    n2 = hanging_hole_distance-m2;
+    r2 = (-d*d+c2*c2+m2*m2)/2/(d-c2);
+
     minkowski() {
         translate([0,0,preview?0:h*.7/2.4])
             linear_extrude(preview?h:h/2.4,convexity=10)
@@ -170,13 +171,13 @@ module interconnect() {
                 }
 
                 if (!preview)
-                for(m=[0,1])
-                mirror([0,0,m])
-                cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
+                    for(m=[0,1])
+                        mirror([0,0,m])
+                            cylinder(r1=h/3,r2=0,h=h*0.7/2.4,$fn=6);
     }
 }
 
-rotate([preview?180:0,0,0])
+rotate([preview?180:0,0,0]) {
     difference() {
         if (reference_volume) {
             if (volume_1 > 0)
@@ -196,6 +197,7 @@ rotate([preview?180:0,0,0])
             translate([-500,-1000,-10])
                 cube(1000);
     }
+}
 
 module spoon() {
     difference() {
@@ -263,3 +265,4 @@ module volume(volume,offset,max=90) {
                 cylinder(r=d1/2,h=10.1,$fn=fn);
     }
 }
+
