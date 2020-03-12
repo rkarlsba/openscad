@@ -1,6 +1,6 @@
 $fn=$preview?16:256;
 
-radius=100;
+radius=90;
 
 module circletext(mytext,textsize=20,myfont="Arial",radius=100,thickness=1,degrees=360,top=true) {
 
@@ -27,10 +27,10 @@ module liten_stubbe() {
     mr=radius/100;
     translate([0,radius,0]) hull() {
         translate([mr,0]) scale([1,0.3,1]) circle(r=mr*10);
-        translate([mr,mr*30]) scale([1,0.3,1]) circle(r=mr*10);
+        translate([mr,mr*15]) scale([1,0.3,1]) circle(r=mr*10);
     }
     translate([0,radius,0]) {
-        translate([mr,mr*30]) scale([1,0.2,1]) circle(r=mr*19);
+        translate([mr,mr*15]) scale([1,0.2,1]) circle(r=mr*19);
     }
 
 }

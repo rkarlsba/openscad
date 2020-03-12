@@ -13,21 +13,21 @@
 fn=$preview?32:80;
 
 /* [Spoon] */
-spoon_shape = 1; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
+spoon_shape = 0; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
 
-volume_1=15;
+volume_1=25;
 unit_volume_1=1; // [1.0: ml, 16.387064: cubic inch (international inch), 28.4130625: imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
 
 // set to zero to get a single ended spoon
-volume_2=5;
+volume_2=0;
 unit_volume_2=1; // [1.0:ml, 16.387064:cubic inch (international inch), 28.4130625:imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
 
 function get_volume_1() = volume_1 * unit_volume_1 * adjust_volume_1;
 function get_volume_2() = volume_2 * unit_volume_2 * adjust_volume_2;
 
 /* [Label] */
-label           = "ss            ts";
-label_thickness = 0.6;
+label           = "Kaffe";
+label_thickness = 1;
 label_height    = 8.5;
 label_font      = "Liberation Sans";
 
@@ -224,12 +224,14 @@ module spoon() {
 }
 
 module build_text(extra_thickness=.1) {
-    translate([(volume_2>0?(handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:0)+(ra1+surrounding_width),volume_2>0?0:label_height/2,(label_thickness-extra_thickness)/(volume_2>0?2:1)])
+    translate([(volume_2>0?
+        (handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:surrounding_width*6)+(ra1+surrounding_width),
+        0,(label_thickness-extra_thickness)/(volume_2>0?2:1)]
+    )
         rotate([180,0,0])
             linear_extrude(height=label_thickness)
                 text(text=label, font=label_font, size=label_height, halign="center",valign="center");
 }
-
 
 module volume(volume,offset,max=90) {
     factor=get_volume_factor(volume);
