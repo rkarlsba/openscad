@@ -56,11 +56,22 @@ module box(
   perf_top = (perf_top || perf_all);
 
   // Kerf compensation modifier
-  module compkerf() { offset(delta = kc) children(); }
+  module compkerf() {
+    offset(delta = kc)
+      children();
+  }
 
   // 2D panels with finger cuts
-  module left() { cut_left() panel2d(d, h, perf_walls); }
-  module right() { cut_right() panel2d(d, h, perf_walls); }
+  module left() {
+    cut_left()
+      panel2d(d, h, perf_walls);
+  }
+
+  module right() {
+    cut_right()
+      panel2d(d, h, perf_walls);
+  }
+
   module top(w=w,d=d) { 
     if (dd) {
       if (robust_ears) {
@@ -69,42 +80,58 @@ module box(
       if (ears_radius > 0) {
         difference() {
           panel2d(w/2-thickness/4, d);
-          translate([w/4*3/2,d/2]) circle(d=door_knob);
-          translate([t, d-t+e]) panel2d(2*t, t);
-          translate([t, -e]) panel2d(2*t, t);
+          translate([w/4*3/2,d/2])
+            circle(d=door_knob);
+          translate([t, d-t+e])
+            panel2d(2*t, t);
+          translate([t, -e])
+            panel2d(2*t, t);
         }
         translate([w,0,0])
           mirror([1,0,0])
             difference() {
               panel2d(w/2-thickness/4, d);
-              translate([w/4*3/2,d/2]) circle(d=door_knob);
-              translate([t, d-t+e]) panel2d(2*t, t);
-              translate([t, -e]) panel2d(2*t, t);
+              translate([w/4*3/2,d/2])
+                circle(d=door_knob);
+              translate([t, d-t+e])
+                panel2d(2*t, t);
+              translate([t, -e])
+                panel2d(2*t, t);
             }
       } else {
         echo("Ears radius <= 0 and double doors? You must be kidding...");
-        cut_top() panel2d(w/2, d);
+        cut_top()
+          panel2d(w/2, d);
       }
     } else {
       if (ears_radius > 0) {
         difference() {
           panel2d(w+(robust_ears ? t : 0), d);
-          translate([(w+(robust_ears ? t : 0))/4*3,d/2]) circle(d=door_knob);
-          translate([t+(robust_ears ? t : 0), d-t+e]) panel2d(2*t, t);
-          translate([t+(robust_ears ? t : 0), -e]) panel2d(2*t, t);
+          translate([(w+(robust_ears ? t : 0))/4*3,d/2])
+            circle(d=door_knob);
+          translate([t+(robust_ears ? t : 0), d-t+e])
+            panel2d(2*t, t);
+          translate([t+(robust_ears ? t : 0), -e])
+            panel2d(2*t, t);
         }
       } else {
-        cut_top() panel2d(w, d);
+        cut_top()
+          panel2d(w, d);
       }
     }
   }
-  module bottom() { cut_bottom() panel2d(w, d); }
+
+  module bottom() {
+    cut_bottom()
+      panel2d(w, d);
+  }
+
   module ears_outer(is_front) {
     translate([is_front ? 0 : w, h]) 
       circle(ears_radius);
     if (dd) {
       translate([(!is_front) ? 0 : w, h]) 
-      circle(ears_radius, [0, 0]);
+        circle(ears_radius, [0, 0]);
     }
   }
   module ears_inner(is_front) {
@@ -112,52 +139,63 @@ module box(
       difference() {
         circle(ears_radius-ears_width);
         translate([-+(robust_ears ? t : 0),0])
-        square([t+((robust_ears && !double_doors) ? t : 0), t]);
+          square([t+((robust_ears && !double_doors) ? t : 0), t]);
       }
     if (dd) {
       translate([(!is_front) ? 0 : w, h])
         difference() {
           circle(ears_radius-ears_width, [0, 0]);
-//        square([t, t]);
           square([t+((robust_ears && !double_doors) ? t : 0), t]);
         }
     }
   }
   module back() {
-    cut_back() difference() {
-      union() {
-        panel2d(w, h);
+    cut_back() {
+      difference() {
+        union() {
+          panel2d(w, h);
+          if (ears_radius > 0)
+            ears_outer(false);
+        }
+        if (len(holes) > 0)
+          for (i = [ 0 : len(holes)-1 ])
+            hole([w-holes[i][0], holes[i][1]]);
         if (ears_radius > 0)
-          ears_outer(false);
+          ears_inner(false);
       }
-      if (len(holes) > 0)
-        for (i = [ 0 : len(holes)-1 ])
-          hole([w-holes[i][0], holes[i][1]]);
-      if (ears_radius > 0)
-        ears_inner(false);
     }
   }
   module hole(center) {
-    translate(center) circle(d = hole_dia);
+    translate(center)
+      circle(d = hole_dia);
   }
   module front() {
-    cut_front() difference() {
-      union()
-      {
-        panel2d(w, h); 
+    cut_front() {
+      difference() {
+        union() {
+          panel2d(w, h); 
+          if (ears_radius > 0)
+            ears_outer(true);
+        }
+        if (len(holes) > 0)
+          for (i = [ 0 : len(holes)-1 ])
+            hole(holes[i]);
         if (ears_radius > 0)
-          ears_outer(true);
+          ears_inner(true);
       }
-      if (len(holes) > 0)
-        for (i = [ 0 : len(holes)-1 ])
-          hole(holes[i]);
-      if (ears_radius > 0)
-        ears_inner(true);
     }
   }
 
-  module w_divider() { cut_w_divider() translate([0, t, 0]) panel2d(w, h-t); }
-  module h_divider() { cut_h_divider() translate([0, t, 0]) panel2d(d, h-t); }
+  module w_divider() {
+    cut_w_divider()
+      translate([0, t, 0])
+        panel2d(w, h-t);
+  }
+  module h_divider() {
+    cut_h_divider()
+      translate([0, t, 0])
+        panel2d(d, h-t);
+  }
 
   // Roof
   module slated_roof_sides() {
@@ -169,14 +207,8 @@ module box(
         [d,0],
         [rh,r]
     ];
-    /*
-    triangle_faces = [
-        [0,1,2]
-    ];
-    polyhedron(points=triangle_points, faces=triangle_faces);*/
     difference() {
       polygon(triangle_points);
-      // translate([w*.12,0,0]) cuts(w/2);
     }
     echo(triangle_points);
   }
@@ -185,45 +217,45 @@ module box(
   module front3d() {
     translate([0,t-explode,0])
       rotate(90, [1,0,0])
-      panelize(w,h, "Front", front_color)
-      front();
+        panelize(w,h, "Front", front_color)
+          front();
   }
 
   module back3d() {
     translate([w,d-t+explode,0])
       rotate(-90, [1,0,0])
-      rotate(180,[0,0,1])
-      panelize(w, h, "Back", back_color)
-      back();
+        rotate(180,[0,0,1])
+          panelize(w, h, "Back", back_color)
+            back();
   }
 
   module bottom3d() {
     translate([w,0,t-explode])
       rotate(180,[0,1,0])
-      panelize(w, d, "Bottom", bottom_color)
-      bottom();
+        panelize(w, d, "Bottom", bottom_color)
+          bottom();
   }
 
   module top3d() {
     translate([0, 0, h-t+explode+(ears_radius > 0 ? t : 0)])
       panelize(w, d, "Top", top_color)
-      top();
+        top();
   }
 
   module left3d() {
     translate([t-explode,d,0])
       rotate(-90,[0,1,0])
-      rotate(-90,[0,0,1])
-      panelize(d, h, "Left", left_color)
-      left();
+        rotate(-90,[0,0,1])
+          panelize(d, h, "Left", left_color)
+            left();
   }
 
   module right3d() {
     translate([w-t+explode,0,0])
       rotate(90,[0,1,0])
-      rotate(90,[0,0,1])
-      panelize(d, h, "Right", right_color)
-      right();
+        rotate(90,[0,0,1])
+          panelize(d, h, "Right", right_color)
+            right();
   }
 
   module w_divider3d() {
@@ -232,8 +264,8 @@ module box(
       for (i = [ 1 : 1 : ndivs ])
         translate([0, d/(ndivs+1)*i+t/2,0])
           rotate(90, [1,0,0])
-          panelize(w,h, "Divider", w_divider_color)
-          w_divider();
+            panelize(w,h, "Divider", w_divider_color)
+              w_divider();
     }
   }
 
@@ -244,9 +276,9 @@ module box(
         for (i = [1 : 1 : ndivs])
           translate([w/(ndivs+1)*i-t/2,0,0])
             rotate(90, [1,0,0])
-            rotate(90, [0,1,0])
-            panelize(d,h, "Divider", h_divider_color)
-            h_divider();
+              rotate(90, [0,1,0])
+                panelize(d,h, "Divider", h_divider_color)
+                  h_divider();
       }
   }
 
@@ -272,30 +304,60 @@ module box(
   // Panelized 2D rendering for cutting
   module box2d() {
     ddspacing = dd ? ears_radius*2 : 0;
-    compkerf() front();
+    compkerf()
+      front();
     x1 = w + kc * 2 + e + spacing + ddspacing;
-    translate([x1,0]) compkerf() back();
+    translate([x1,0])
+      compkerf()
+        back();
     x2 = x1 + w + 2 * kc + e + ears_radius + spacing;
-    translate([x2,0]) compkerf() left();
+    translate([x2,0])
+      compkerf()
+        left();
     x3 = x2 + d + 2 * kc + e + spacing;
-    translate([x3,0]) compkerf() right();
+    translate([x3,0])
+      compkerf()
+        right();
     y1 = h + kc * 2 + e + ears_radius + spacing;
     x4 = 0;
-    translate([x4,y1]) compkerf() bottom();
+    translate([x4,y1])
+      compkerf()
+        bottom();
     if (keep_top) {
       x5 = w + 2 * kc + e + spacing;
-      translate([x5,y1]) compkerf() top();
+      translate([x5,y1])
+        compkerf()
+          top();
     }
     x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + ((robust_ears && !double_doors) ? t : 0);
-    translate([x6,y1]) compkerf() w_dividers();
-    translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)]) compkerf() h_dividers();
+    translate([x6,y1])
+      compkerf()
+        w_dividers();
+    translate([x6+kerf,y1 + (dividers[0] > 0 ? y1 : 0)])
+      compkerf()
+        h_dividers();
     if (roof) {
       echo(x6);
-      translate([x4 + w + spacing + (keep_top ? w+e : 0),y1]) { compkerf() slated_roof_sides(); }
-      translate([x4 + w*1.1 + spacing + (keep_top ? w+e : 0),y1*1.8]) { compkerf() mirror([0,1,0]) slated_roof_sides(); }
+      translate([x4 + w + spacing + (keep_top ? w+e : 0),y1]) {
+        compkerf()
+          slated_roof_sides();
+      }
+      translate([x4 + w*1.1 + spacing + (keep_top ? w+e : 0),y1*1.8]) {
+        compkerf()
+          mirror([0,1,0])
+            slated_roof_sides();
+      }
       rd=sqrt(d*d/2);
-      translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) { compkerf() cut_roof_left() panel2d(rd, d);}
-      translate([x4 + w*2.4 + spacing + (keep_top ? w+e : 0),y1]) { compkerf() cut_roof_right() panel2d(rd, d);}
+      translate([x4 + w*1.85 + spacing + (keep_top ? w+e : 0),y1]) {
+        compkerf()
+          cut_roof_left()
+            panel2d(rd, d);
+      }
+      translate([x4 + w*2.4 + spacing + (keep_top ? w+e : 0),y1]) {
+        compkerf()
+          cut_roof_right()
+            panel2d(rd, d);
+      }
       echo("jadda", x4, y1, x4 + w + spacing);
     } else {
       echo("no roof");
@@ -304,9 +366,10 @@ module box(
 
   // Assembled box in 3D
   module box3d() {
-    front3d(w, h, d);
-    back3d(w, h, d);
-    translate([0,0,inset]) bottom3d();
+    front3d();
+    back3d();
+    translate([0,0,inset])
+      bottom3d();
     if (keep_top)
       top3d();
     left3d();
