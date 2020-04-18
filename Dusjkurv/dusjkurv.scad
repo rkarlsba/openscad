@@ -30,20 +30,58 @@ module henger(lengde,bredde,tykkelse) {
         }
     }
 }
-/*
-avrundahulboks(bredde,dybde,hoyde,radius,veggtykkelse,0);
-intersection() {
-    avrundaboks(bredde,dybde,hoyde,radius);
-    translate([veggtykkelse,veggtykkelse,0]) {
-        linear_extrude(gulvtykkelse) {
-            honeycomb(bredde-veggtykkelse*2, dybde-veggtykkelse*2, 12, 2);
+
+difference() {
+    union() {
+        difference() {
+            avrundahulboks(bredde,dybde,hoyde,radius,veggtykkelse,0);
+            echo(str("avrundahulboks(bredde=", bredde, ", dybde=", dybde, ", hoyde=", hoyde, ", radius=", radius, ", veggtykkelse=", veggtykkelse, ",0);"));
+            /* oppe */
+            echo(str("translate([", 40, ", ", dybde-veggtykkelse-.1, ", ", hoyde-hoyde/8*3, "])"));
+            translate([40,dybde-veggtykkelse-.1,hoyde-hoyde/8*3])
+                cube([4,veggtykkelse+.1,hoyde/4]);
+            translate([bredde-40-veggtykkelse,dybde-veggtykkelse-.1,hoyde-hoyde/8*3])
+                cube([4,veggtykkelse+.1,hoyde/4]);
+            translate([(bredde+veggtykkelse)/2,dybde-veggtykkelse-.1,hoyde-hoyde/8*3])
+                cube([4,veggtykkelse+.1,hoyde/4]);
+            /* nede */
+            translate([40,dybde-veggtykkelse-.1,hoyde*.2])
+                cube([4,veggtykkelse+.1,hoyde/4]);
+            translate([bredde-40-veggtykkelse,dybde-veggtykkelse-.1,hoyde*.2])
+                cube([4,veggtykkelse+.1,hoyde/4]);
+            translate([(bredde+veggtykkelse)/2,dybde-veggtykkelse-.1,hoyde*.2])
+                cube([4,veggtykkelse+.1,hoyde/4]);
+        }
+        intersection() {
+            avrundaboks(bredde,dybde,hoyde,radius);
+            translate([veggtykkelse,veggtykkelse,0]) {
+                linear_extrude(gulvtykkelse) {
+                    honeycomb(bredde-veggtykkelse*2, dybde-veggtykkelse*2, 12, 2);
+                }
+            }
+        }
+    }
+    translate([11,1,20]) {
+        rotate([90,0,0]) {
+            linear_extrude(1) {
+                translate([0,3,0])
+                    text("Sjampo", size=14, font="Courier:style=Regular");
+                translate([47,-16,0])
+                    text("Balsam", size=11, font="Impact:style=Regular");
+                translate([185,3,0])
+                    text("såpe", size=10, font="Herculanum:style=Regular");
+                translate([109,-6,0])
+                    text("iPhone", size=15, font=".Helvetica Neue DeskInterface:style=Bold");
+                translate([216,-16,0])
+                    rotate([0,0,40])
+                        text("Dildo", size=5, font="Luminari:style=Regular");
+            }
         }
     }
 }
-
-translate([bredde/8,0,0])
+/*
+translate([30,0,0])
     henger(hengelengde,hengebredde,veggtykkelse);
-translate([bredde-bredde/8-hengebredde,0,0])
+translate([bredde-30-hengebredde,0,0])
     henger(hengelengde,hengebredde,veggtykkelse);
 */
-henger(40,hengebredde,veggtykkelse);
