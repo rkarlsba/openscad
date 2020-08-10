@@ -26,11 +26,18 @@ module hnefatafl(size,borderwidth) {
  *   dcross: A diagonal cross
  */
 module frame(size,borderwidth,infill="none") {
+    /*
+     * Draw the frame
+     */
     difference() {
         square(size);
         translate([borderwidth/2,borderwidth/2])
             square(size[0]-borderwidth,size[1]-borderwidth);
     }
+    /*
+     * Draw infill if needed. If infill is set to an empty string, just fix that
+     */
+    infill=(infill=="") ? "none" : infill;
     if (infill != "none") {
         if (infill == "cross") {
             echo("cross on");
@@ -39,7 +46,7 @@ module frame(size,borderwidth,infill="none") {
         } else if (infill == "solid") {
             echo("solid fill");
         } else {
-            echo("WARNING: Unknown infill: " + fill);
+            echo("WARNING: Unknown infill: ", infill);
         }
     }
 }
@@ -60,20 +67,20 @@ module board(boxsize,count,type="none") {
                 if (type == "none") {
                     frame(boxsize, framewidth);
                 } else if (type == "chess") {
-                    // FIXME: alternate fill
-                    frame(boxsize, framewidth, fill);
+                    // FIXME: alternate infill
+                    frame(boxsize, framewidth, infill);
                 } else if (type == "hnefatafl") {
-                    fill = (x==5 && y==5) ? "cross" : "";
-                    frame(boxsize, framewidth, fill);
+                    infill = (x==5 && y==5) ? "cross" : "";
+                    frame(boxsize, framewidth, infill);
                 } else {
-                    echo("WARNING: Unknown type: " + type);
+                    echo("WARNING: Unknown type: ", type);
                 }
             }
         }
     }
 }
 
-board(boxsize,frames);
+board(boxsize,frames,type="hnefatafl");
 // translate([boxsize,boxsize*1]) frame([boxsize,boxsize], framewidth);
 
 /*
