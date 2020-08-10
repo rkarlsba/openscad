@@ -11,7 +11,7 @@
 $fn=16;
 boxsize=[35,35];
 framewidth=1;
-frames=11;
+frames=13;
 borderwidth=7;
 
 module hnefatafl(size,borderwidth) {
@@ -38,6 +38,8 @@ module frame(size,borderwidth,infill="none") {
      * Draw infill if needed.
      */
     if (infill == "cross") {
+        echo("cross on");
+    } else if (infill == "dcross") {
         difference() {
             square(size);
             // I have really made a mess of my maths here, but hell, it looks ok :þ
@@ -47,8 +49,6 @@ module frame(size,borderwidth,infill="none") {
             translate([size[0]+borderwidth/2,borderwidth])
                 rotate(135) square([(size[0])*sqrt(2),borderwidth*2]);
         }
-        echo("cross on");
-    } else if (infill == "dcross") {
         echo("dcross on");
     } else if (infill == "solid") {
         echo("solid fill");
@@ -76,7 +76,7 @@ module board(boxsize,count,type="none") {
                     // FIXME: alternate infill
                     frame(boxsize, framewidth, infill);
                 } else if (type == "hnefatafl") {
-                    infill = (x==5 && y==5 || x==0&&y==0 || x==0 && y==count-1 || x==count-1 && y==0 || x==count-1&&y==count-1) ? "cross" : "none";
+                    infill = (x==floor(count/2) && y==floor(count/2) || x==0&&y==0 || x==0 && y==count-1 || x==count-1 && y==0 || x==count-1&&y==count-1) ? "dcross" : "none";
                     frame(boxsize, framewidth, infill);
                 } else {
                     echo("WARNING: Unknown type: ", type);
@@ -84,6 +84,14 @@ module board(boxsize,count,type="none") {
             }
         }
     }
+}
+
+/*
+ * The outer board calls board(), so see syntax above. It just adds a border around it. The
+ * border patterns implemented are
+ *   none:  This is work in progress :)
+ */
+module outer_board(boxsize,count,type="none",pattern="none") {
 }
 
 board(boxsize,frames,type="hnefatafl");
