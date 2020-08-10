@@ -94,14 +94,29 @@ module board(boxsize,count,type="none") {
                         x == count-1 && y == 0 ||                 // left top
                         x == count-1 && y == count-1) {           // right top
                         frame(boxsize, framewidth, "dcross");
-                    } else if (y == 0 && x >= floor(count/2)-2 && x <= floor(count/2)+2 ||
-                               y == 1 && x == floor(count/2) ||
-                               x == 0 && y >= floor(count/2)-2 && y <= floor(count/2)+2 ||
-                               x == 1 && y == floor(count/2) ||
-                               y == count-1 && x >= floor(count/2)-2 && x <= floor(count/2)+2 ||
-                               y == count-2 && x == floor(count/2) ||
-                               x == count-1 && y >= floor(count/2)-2 && y <= floor(count/2)+2 ||
-                               x == count-2 && y == floor(count/2)) {
+                    // This is a mess and can probably be fixed with a while loop of sorts, but hell,
+                    // I'm lazy and it works!
+                    } else if (
+                        //attackers
+                        y == 0 && x >= floor(count/2)-2 && x <= floor(count/2)+2 || // bottom
+                        y == 1 && x == floor(count/2) ||                            // bottom centre
+                        x == 0 && y >= floor(count/2)-2 && y <= floor(count/2)+2 || // left
+                        x == 1 && y == floor(count/2) ||                            // let centre
+                        y == count-1 && x >= floor(count/2)-2 && x <= floor(count/2)+2 || // top
+                        y == count-2 && x == floor(count/2) ||                            // top centre
+                        x == count-1 && y >= floor(count/2)-2 && y <= floor(count/2)+2 || // right
+                        x == count-2 && y == floor(count/2) ||                            // right centre
+                    // and now, defenders
+                        x == floor(count/2) && y == floor(count/2) - 2 ||
+                        x == floor(count/2) && y == floor(count/2) - 1 ||
+                        x == floor(count/2) && y == floor(count/2) + 1 ||
+                        x == floor(count/2) && y == floor(count/2) + 2 ||
+                        x == floor(count/2)-1 && y >= floor(count/2) - 1 && y <= floor(count/2) + 1 ||
+                        x == floor(count/2)+1 && y >= floor(count/2) - 1 && y <= floor(count/2) + 1 ||
+                        x == floor(count/2)+2 && y == floor(count/2) ||
+                        x == floor(count/2)-2 && y == floor(count/2)
+
+                    ) {
                         frame(boxsize, framewidth, "circle");
                     } else {
                         frame(boxsize, framewidth);
