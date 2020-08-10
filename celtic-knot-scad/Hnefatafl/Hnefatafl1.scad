@@ -2,22 +2,20 @@
  * vim:ts=4:sw=4:sts=4:et:fdm=marker
  *
  * openscad chessishboard - written to make a hnefatafl [hne:vatavl] (aka viking chess) board, but
- * as things goes, one keeps adding new stuff. This is work in progress, so please help out if something
+ * as things goes, one I adding new stuff. This is work in progress, so please help out if something
  * doesn't work as well as it should.
  *
  * Licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0.
  *
  * Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
+ *
  */
 
-$fn=16;
+$fn=64;
 boxsize=[35,35];
 framewidth=1;
 frames=13;
 borderwidth=7;
-
-module hnefatafl(size,borderwidth) {
-}
 
 /* 
  * Create a single frame and use some infill if wanted.
@@ -60,7 +58,7 @@ module frame(size,borderwidth,infill="none") {
         translate([cdim,cdim]) {
             difference() {
                 circle(size[0]/3);
-                circle(size[0]/4);
+                circle(size[0]/3-1);
             }
         }
     } else if (infill != "none") {
@@ -115,7 +113,6 @@ module board(boxsize,count,type="none") {
                         x == floor(count/2)+1 && y >= floor(count/2) - 1 && y <= floor(count/2) + 1 ||
                         x == floor(count/2)+2 && y == floor(count/2) ||
                         x == floor(count/2)-2 && y == floor(count/2)
-
                     ) {
                         frame(boxsize, framewidth, "circle");
                     } else {
@@ -130,22 +127,16 @@ module board(boxsize,count,type="none") {
 }
 
 /*
- * The outer board calls board(), so see syntax above. It just adds a border around it. The
+ * hnefatafl() calls board(), so see syntax above. It just adds a border around it. The
  * border patterns implemented are
- *   none:  This is work in progress :)
+ *   none: This is work in progress :)
  */
-module outer_board(boxsize,count,type="none",pattern="none") {
-}
-
-board(boxsize,frames,type="hnefatafl");
-// translate([boxsize,boxsize*1]) frame([boxsize,boxsize], framewidth);
-
-/*
-for (x=[0:frames-1]) {
-    for (y=[0:frames-1]) {
-        translate([boxsize[0]*x,boxsize[1]*y]) {
-            frame(boxsize, framewidth);
-        }
+module hnefatafl(boxsize,frames,border="none",borderwidth=0) {
+    if (border == "none") {
+        board(boxsize,frames,type="hnefatafl");
+    } else if (border == "celtic1") {
     }
 }
-*/
+
+
+hnefatafl(boxsize,frames);
