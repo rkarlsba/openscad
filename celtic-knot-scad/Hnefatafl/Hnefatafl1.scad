@@ -51,11 +51,11 @@ module frame(size,borderwidth,infill="none") {
 /*
  * boxsize is the size of each frame
  * count is the number of frames per side 
- *   FIXME: Should be x and y to allow for asymmetric games like xiangqi/cờ tướng. 
+ *   FIXME: Should be x and y to allow for asymmetric games like cờ tướng/xiangqi. 
  * type is the board type. The following are defined (so far)
- *   none:      defailt - just the lines
- *   chess:     8x8, alternating black/white
- *   hnefatafl: 11x11, castles in each corner and the middle
+ *   none:      default - just the lines
+ *   chess:     Typically 8x8, alternating black/white
+ *   hnefatafl: Typically 11x11, castles in each corner and the centre of the board
  */
 module board(boxsize,count,type="none") {
     for (x=[0:frames-1]) {
