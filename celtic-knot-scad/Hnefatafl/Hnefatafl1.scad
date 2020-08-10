@@ -94,7 +94,14 @@ module board(boxsize,count,type="none") {
                         x == count-1 && y == 0 ||                 // left top
                         x == count-1 && y == count-1) {           // right top
                         frame(boxsize, framewidth, "dcross");
-                    } else if (y == 0 && x >= floor(count/2)-2 && x <= floor(count/2)+2){
+                    } else if (y == 0 && x >= floor(count/2)-2 && x <= floor(count/2)+2 ||
+                               y == 1 && x == floor(count/2) ||
+                               x == 0 && y >= floor(count/2)-2 && y <= floor(count/2)+2 ||
+                               x == 1 && y == floor(count/2) ||
+                               y == count-1 && x >= floor(count/2)-2 && x <= floor(count/2)+2 ||
+                               y == count-2 && x == floor(count/2) ||
+                               x == count-1 && y >= floor(count/2)-2 && y <= floor(count/2)+2 ||
+                               x == count-2 && y == floor(count/2)) {
                         frame(boxsize, framewidth, "circle");
                     } else {
                         frame(boxsize, framewidth);
