@@ -35,26 +35,23 @@ module frame(size,borderwidth,infill="none") {
             square(size[0]-borderwidth,size[1]-borderwidth);
     }
     /*
-     * Draw infill if needed. If infill is set to an empty string, just fix that
+     * Draw infill if needed.
      */
-    infill=(infill=="") ? "none" : infill;
-    if (infill != "none") {
-        if (infill == "cross") {
-            echo("cross on");
-        } else if (infill == "dcross") {
-            echo("dcross on");
-        } else if (infill == "solid") {
-            echo("solid fill");
-        } else {
-            echo("WARNING: Unknown infill: ", infill);
-        }
+    if (infill == "cross") {
+        echo("cross on");
+    } else if (infill == "dcross") {
+        echo("dcross on");
+    } else if (infill == "solid") {
+        echo("solid fill");
+    } else if (infill != "none") {
+        echo("WARNING: Unknown infill: ", infill);
     }
 }
 
 /*
  * boxsize is the size of each frame
  * count is the number of frames per side 
- *   FIXME: Should be x and y to allow for games like cờ tướng. 
+ *   FIXME: Should be x and y to allow for asymmetric games like xiangqi/cờ tướng. 
  * type is the board type. The following are defined (so far)
  *   none:      defailt - just the lines
  *   chess:     8x8, alternating black/white
@@ -70,7 +67,7 @@ module board(boxsize,count,type="none") {
                     // FIXME: alternate infill
                     frame(boxsize, framewidth, infill);
                 } else if (type == "hnefatafl") {
-                    infill = (x==5 && y==5) ? "cross" : "";
+                    infill = (x==5 && y==5) ? "cross" : "none";
                     frame(boxsize, framewidth, infill);
                 } else {
                     echo("WARNING: Unknown type: ", type);
