@@ -1,4 +1,6 @@
 /*
+ * vim:ts=4:sw=4:sts=4:et:fdm=marker
+ *
  * openscad chessishboard - written to make a hnefatafl [hne:vatavl] (aka viking chess) board, but
  * as things goes, one keeps adding new stuff. This is work in progress, so please help out if something
  * doesn't work as well as it should.
@@ -24,6 +26,7 @@ module hnefatafl(size,borderwidth) {
  *   solid:  fill the whole frame
  *   cross:  A vertical/horizontal cross
  *   dcross: A diagonal cross
+ *   circle: A circle
  */
 module frame(size,borderwidth,infill="none") {
     /*
@@ -52,6 +55,14 @@ module frame(size,borderwidth,infill="none") {
         echo("dcross on");
     } else if (infill == "solid") {
         echo("solid fill");
+    } else if (infill == "circle") {
+        cdim = size[0]/2;
+        translate([cdim,cdim]) {
+            difference() {
+                circle(size[0]/3);
+                circle(size[0]/4);
+            }
+        }
     } else if (infill != "none") {
         echo("WARNING: Unknown infill: ", infill);
     }
@@ -76,8 +87,18 @@ module board(boxsize,count,type="none") {
                     // FIXME: alternate infill
                     frame(boxsize, framewidth, infill);
                 } else if (type == "hnefatafl") {
-                    infill = (x==floor(count/2) && y==floor(count/2) || x==0&&y==0 || x==0 && y==count-1 || x==count-1 && y==0 || x==count-1&&y==count-1) ? "dcross" : "none";
-                    frame(boxsize, framewidth, infill);
+//                    infill = (x==floor(count/2) && y==floor(count/2) || x==0&&y==0 || x==0 && y==count-1 || x==count-1 && y==0 || x==count-1&&y==count-1) ? "dcross" : "none";
+                    if (x==floor(count/2) && y==floor(count/2) || // centre
+                        x == 0 && y == 0 ||                       // left bottom
+                        x == 0 && y == count-1 ||                 // right bottom
+                        x == count-1 && y == 0 ||                 // left top
+                        x == count-1 && y == count-1) {           // right top
+                        frame(boxsize, framewidth, "dcross");
+                    } else if (y == 0 && x >= floor(count/2)-2 && x <= floor(count/2)+2){
+                        frame(boxsize, framewidth, "circle");
+                    } else {
+                        frame(boxsize, framewidth);
+                    }
                 } else {
                     echo("WARNING: Unknown type: ", type);
                 }
