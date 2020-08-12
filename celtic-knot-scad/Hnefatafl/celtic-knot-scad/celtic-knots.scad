@@ -8,7 +8,7 @@
  * Based loosely on http://nrich.maths.org/5365
  */
 
-knot_test = 1;
+//knot_test = 1;
 sp = 22.5;
 if (knot_test == 1) {
 
