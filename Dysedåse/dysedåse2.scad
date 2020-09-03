@@ -85,6 +85,16 @@ lblSize = 3;
 // Height of the labels [mm]
 lblHeight = 1.0;
 
+// Add it up
+baseLength = interiorLength + sidewallWidth*2;
+baseWidth = interiorWidth + sidewallWidth*2;
+baseRadius = interiorFillet + sidewallWidth;
+
+caseLength = baseLength + rimInset*2;
+caseWidth = baseWidth + rimInset*2;
+caseRadius = baseRadius + rimInset;
+
+
 lblText = [
     "0.2mm",
     "0.3mm",
@@ -108,9 +118,10 @@ lblLocations = [
 ];
 
 // Main Variables (all measurements in mm)
-lang    = 30.0;             // Box length
-brd1    = 50.0;             // Width box at top
-brd2    = 50.0;             // Width box at bottom
+//lang    = 30.0;             // Box length
+lang    = caseLength;
+brd1    = caseWidth;       // Width box at top
+brd2    = brd1;             // Width box at bottom
 hoek    = 2.0;              // Diameter corners
 diep    = 4.5;              // Height edge
 wall1   = 1.5;              // General wall thickness
@@ -121,6 +132,11 @@ hinge2  = 15.0;             // Width of hinge
 hinge3  = 8.0;              // Distance to hinge from edge
 hole1   = 2.1;              // Diameter hole hinge pin
 hole2   = 2.0;              // Diameter hole in edges (to secure)
+
+echo("caseLength is ", caseLength, 
+     ", caseWidth is ", caseWidth, 
+     ", hinge width is ", hinge2,
+     " and distance from hinge to edge is ", hinge3);
 
 // Variables for text
 fontb="Old Stamper:style=Regular"; // Font for text front of box
@@ -151,15 +167,6 @@ margin  = 0.15;             // Margin hinge/hinge opening
 vert    = hinge1-hoek;      // Height vertical hinge opening
 // $fn     = 60;               // Variabele for cirkels - set below
 
-// Internalt stuff?
-baseLength = interiorLength + sidewallWidth*2;
-baseWidth = interiorWidth + sidewallWidth*2;
-baseRadius = interiorFillet + sidewallWidth;
-
-caseLength = baseLength + rimInset*2;
-caseWidth = baseWidth + rimInset*2;
-caseRadius = baseRadius + rimInset;
-
 $fn = $preview ? 16 : 64; // Kanskje justere til 128 for superoppløsning
 
 eps = 0.1;
@@ -179,8 +186,10 @@ translate([1.2*lang,0,0]) { // Disable to put lid on box
     }
 }
 
-translate([0,-baseLength-nozzleBaseDia,0]) {
-    nozzlecase();
+translate([-nozzleBaseDia,0,0]) {
+    rotate([0,0,90]) {
+        nozzlecase();
+    }
 }
 
 module nozzlecase() {
@@ -425,7 +434,7 @@ module nozzle()
             {
                 translate([n * (nozzleBaseDia_ina + widthDistance), m * (nozzleBaseDia_ina + lengthDistance),0])
                 {
-                    echo("translate([", n * (nozzleBaseDia_ina + widthDistance), ", ", m * (nozzleBaseDia_ina + lengthDistance), ", 0]");
+                    //echo("translate([", n * (nozzleBaseDia_ina + widthDistance), ", ", m * (nozzleBaseDia_ina + lengthDistance), ", 0]");
 
                     cylinder(d = nozzleBaseDia_ina, h = nozzleBaseHeight+.01);
                 }
