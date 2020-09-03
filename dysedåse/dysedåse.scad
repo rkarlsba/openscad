@@ -82,14 +82,14 @@ lblHeight = 1.0;
 
 // Labeltext - At the moment it is only possible to write words with 5 characters, all longer  words going into the lines. The amount of elements should be equals the length_number.
 lblText = [
-           "0.2mm",
-           "0.3mm",
-           "0.4mm",
-           "0.5mm",
-           "0.6mm",
-           "0.8mm",
-           "1.0mm",
-        ];
+    "0.2mm",
+    "0.3mm",
+    "0.4mm",
+    "0.5mm",
+    "0.6mm",
+    "0.8mm",
+    "1.0mm",
+];
 
 // Select which locations have which texts
 // text idx, start row, end row, start col, end col
