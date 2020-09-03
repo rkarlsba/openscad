@@ -49,12 +49,6 @@ sidewallWidth = 1.2;
 // Amount the lid protrudes into the case (larger value allows the case to close more securely) [mm]
 lidInsetHeight = 1.2;
 
-// Thickness of the hinge (it should be no more than a few layers thick keep it flexible) [mm]
-hingeThickness = 0.4;
-
-// hinge length multiplier (as a function of case height - longer hinges may be needed for less flexible plastics)
-hingeLengthScale = 1.1;
-
 // Width of the case in mm (interior dimension)
 interiorWidth = width_number * nozzleBaseDia_ina + (width_number+1) * widthDistance + sidewallWidth;
 
@@ -94,6 +88,9 @@ caseLength = baseLength + rimInset*2;
 caseWidth = baseWidth + rimInset*2;
 caseRadius = baseRadius + rimInset;
 
+// debug mode enable echo statements to show variables during development.
+// 1 to enable, 0 to disable.
+debug=1;
 
 lblText = [
     "0.2mm",
@@ -118,33 +115,40 @@ lblLocations = [
 ];
 
 // Main Variables (all measurements in mm)
-//lang    = 30.0;             // Box length
-lang    = caseLength;
-brd1    = caseWidth;       // Width box at top
+lang    = caseLength;       // Box length
+brd1    = caseWidth;        // Width box at top
 brd2    = brd1;             // Width box at bottom
 hoek    = 2.0;              // Diameter corners
 diep    = 4.5;              // Height edge
 wall1   = 1.5;              // General wall thickness
-hoog1   = 55.0;             // Height box (minimum 20mm because of hinge)
+hoog1   = interiorHeight+10;// Height box (minimum 20mm because of hinge)
 hoog2   = 3.0;              // Height lid
 hinge1  = 4.0;              // Diameter hinge
-hinge2  = 15.0;             // Width of hinge
-hinge3  = 8.0;              // Distance to hinge from edge
+hinge2  = caseWidth/4;      // Width of hinge
+hinge3  = hinge2/2;         // Distance to hinge from edge
 hole1   = 2.1;              // Diameter hole hinge pin
 hole2   = 2.0;              // Diameter hole in edges (to secure)
 
-echo("caseLength is ", caseLength, 
-     ", caseWidth is ", caseWidth, 
-     ", hinge width is ", hinge2,
-     " and distance from hinge to edge is ", hinge3);
+if (debug) {
+    echo("Debug statements are enabled");
+    echo("caseLength is ", caseLength);
+    echo("caseWidth is ", caseWidth); 
+    echo("Hinge width is ", hinge2);
+    echo("Distance from hinge to edge is ", hinge3);
+    echo("interiorHeight is ", interiorHeight);
+    echo("nozzleBaseDia_ina is ", nozzleBaseDia_ina);
+    echo("Box height is ", hoog1);
+    echo("Lid height is ", hoog2);
+}
 
 // Variables for text
-fontb="Old Stamper:style=Regular"; // Font for text front of box
+//fontb="Old Stamper:style=Regular"; // Font for text front of box
+fontb="Copperplate:style=Regular";
 tekstb  = "Dysedåse";        // Text to print front of box
 letterb = 9;                // Height of text front of box
 fontd = fontb;              // Font voor text on lid
 tekstd  = tekstb;           // Negative text to print on lid
-letterd = 8;                // Height of text on lid
+letterd = 13;                // Height of text on lid
 rotated = 270;              // Rotate text on lid (180 for side-lid/270 for rear-lid)
 textimageb = "";            // Instead of tekstd
 textimaged = textimageb;    // Instead of tekstb
@@ -186,7 +190,8 @@ translate([1.2*lang,0,0]) { // Disable to put lid on box
     }
 }
 
-translate([-nozzleBaseDia,0,0]) {
+// og dysene, da
+translate([baseLength-nozzleBaseDia/4,0,0]) {
     rotate([0,0,90]) {
         nozzlecase();
     }
@@ -194,8 +199,9 @@ translate([-nozzleBaseDia,0,0]) {
 
 module nozzlecase() {
     difference() {
-        cube([baseWidth,baseLength,nozzleBaseHeight]);
-        translate([baseWidth/2,baseLength/2,0]) {
+        translate([nozzleBaseDia/4,0,0])
+            cube([baseWidth-nozzleBaseDia/2,baseLength-nozzleBaseDia/2,nozzleBaseHeight]);
+        translate([baseWidth/2,baseLength/2+nozzleBaseDia/4,0]) {
             nozzle();
             if (lblToggle == 1) {
                 maketext();
