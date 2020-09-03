@@ -171,33 +171,43 @@ margin  = 0.15;             // Margin hinge/hinge opening
 vert    = hinge1-hoek;      // Height vertical hinge opening
 // $fn     = 60;               // Variabele for cirkels - set below
 
+// Make box or lid or both?
+make_box = 1;
+make_lid = 0;
+
 $fn = $preview ? 16 : 64; // Kanskje justere til 128 for superoppløsning
 
 eps = 0.1;
 
 // Box body
-difference() {
-    B1();
-    W1();
+if (make_box) {
+    union() {
+        difference() {
+            B1();
+            W1();
+        }
+        // og dysene, da
+        translate([baseLength-nozzleBaseDia/4,0,0]) {
+            rotate([0,0,90]) {
+                nozzleinsert();
+            }
+        }
+    }
 }
 // Lid
 // Enable Translate below to put lid on box
 // translate([0*lang+0,1.0*brd1,hoog1+hoog2]) rotate([180,0,0])
-translate([1.2*lang,0,0]) { // Disable to put lid on box
-    difference() {
-        B2();
-        W2();
+if (make_lid) {
+    translate([1.2*lang,0,0]) { // Disable to put lid on box
+        difference() {
+            B2();
+            W2();
+        }
     }
 }
 
-// og dysene, da
-translate([baseLength-nozzleBaseDia/4,0,0]) {
-    rotate([0,0,90]) {
-        nozzlecase();
-    }
-}
 
-module nozzlecase() {
+module nozzleinsert() {
     difference() {
         translate([nozzleBaseDia/4,0,0])
             cube([baseWidth-nozzleBaseDia/2,baseLength-nozzleBaseDia/2,nozzleBaseHeight]);
