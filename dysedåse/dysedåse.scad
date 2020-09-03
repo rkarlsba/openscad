@@ -110,7 +110,7 @@ lidInsetOffset = 0.1;
 
 /*[hidden]*/
 
-$fn = $preview ? 17 : 120; // resolution
+$fn = $preview ? 16 : 120; // resolution
 
 eps = 0.1;
 
