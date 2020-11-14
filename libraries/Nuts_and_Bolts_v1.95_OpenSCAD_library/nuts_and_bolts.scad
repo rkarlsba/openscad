@@ -19,7 +19,7 @@ use <threads.scad>;
 
 function hex_dia(dia) = dia * ( 2 / sqrt (3) );
 
-render = 1; // Set render at 1 to preview types, set to 0 otherwise.
+render = 0; // Set render at 1 to preview types, set to 0 otherwise.
 
 if ( render == 1 ) {
     allen_bolt (10, 3, 3.5, 5.5, 3, 0.2, 32, 2.5, "metric", 0.425);
