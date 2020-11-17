@@ -11,7 +11,7 @@ difference() {
     //cylinder(h = cup_h, r = cup_r);
     translate([0,0,cup_thickness]) {
         cylinder(h = inner_h, r = inner_r);
-        sphere(d=inner_h-2)
+        sphere(d=inner_h-2);
     }
   
   //}

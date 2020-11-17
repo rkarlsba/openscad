@@ -1,5 +1,4 @@
-$fn=64;
-//$fn=16;
+$fn=$preview ? 16 : 64;
 
 diameter=220;
 width=12;

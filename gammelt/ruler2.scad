@@ -1,8 +1,6 @@
 //customizable ruler by Stu121
 
-use<write/Write.scad>
-
-
+use <write/Write.scad>
 
 RulerLength=10;// [1:50]
 RulerText="Roy sin linjal!";
@@ -37,4 +35,5 @@ for (i=[0:1:RulerLength*10]){   //embosed ruler lines
 translate([i+3,-4.9,0.4]) rotate([8.5,0,0]) cube([.25,5,.7]);
 }
 
-translate([TextX,TextY,TextHeight])  write(RulerText,h=FontSize,t=2); 
+translate([TextX,TextY,TextHeight])
+    write(RulerText,h=FontSize,t=2); 
