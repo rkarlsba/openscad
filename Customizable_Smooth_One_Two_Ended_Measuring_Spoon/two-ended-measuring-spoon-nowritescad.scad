@@ -10,12 +10,12 @@
 // rewritten to normal assignment except in two cases where let() is used. Also, code
 // cleanup in general for better readability.
 
-fn=$preview?32:80;
+fn=$preview?32:128;
 
 /* [Spoon] */
 spoon_shape = 0; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
 
-volume_1=25;
+volume_1=16;
 unit_volume_1=1; // [1.0: ml, 16.387064: cubic inch (international inch), 28.4130625: imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
 
 // set to zero to get a single ended spoon
@@ -33,15 +33,15 @@ label_font      = "Liberation Sans";
 
 /* [Metrics] */
 wall_thickness=1.5;
-handle_thickness=3.5;
+handle_thickness=2.5;
 surrounding_width=2.5;
 
 // zero in no hanging hole
-hanging_hole_size = 3; // [0:5]
+hanging_hole_size = 2; // [0:5]
 function get_hanging_hole_size()=hanging_hole_sizes[hanging_hole_size]+(volume_2==0?(hanging_hole_size==0?handle_width:4):0);
 
 // the distance of the two bowls center - 
-handle_lenght=100;
+handle_lenght=70;
 handle_width=12; //[8:20]
 function get_handle_width()=min(handle_width,ra1*2+surrounding_width*2,ra2*2+surrounding_width*2);
 // the distance of the bowl center to the hanging hole center - only relevant for 2 ended spoon
