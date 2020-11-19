@@ -20,7 +20,7 @@ module equ_triangle(side_length, corner_radius) {
         }
     }
 }
-side_length=70;
-corner_radius=1;
+side_length=150;
+corner_radius=2.5;
 
 equ_triangle(side_length,corner_radius);
