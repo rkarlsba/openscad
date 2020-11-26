@@ -15,13 +15,14 @@ xlogo=true;
 ylogo=false;
 font="Copperplate Normal";
 fontsize=7;
-test=false;
+
+test=true;
 
 separatepins=true;
 
 pinsonly=false;
-pincount=1;
-idiot=true;
+pincount=6;
+idiot=false;
 
 if (idiot) { echo("IDIOT!!!!!!"); }
 
@@ -55,13 +56,30 @@ module arm(length, height=h, up=0, cut_corners = 1, text=undef) {
     }
 }
 
+module drawpins(count=1) {
+    echo("PIN: cylinder(d=", pin_d-clearance, ", h=", (pin_h-2)*2, ")");
+    for ( pin = [0 : count-1] ) {
+        translate([pin_d*pin*2,0,0]) {
+            if (idiot) {
+                cylinder(d=pin_d-clearance/2, h=(pin_h-2));
+                translate([0,0,pin_h-2])
+                    cylinder(d=pin_d-clearance*3, h=(pin_h-2));
+            } else {
+                cylinder(d=pin_d-clearance, h=(pin_h-2)*2);
+            }
+        }
+    }
+}
+
 if (test) {
-    translate([(test ? 0 : l-hl),0,test ? 0 : h])
-        arm(hl, h2);
-    translate([(test ? 0 : l-hl)+w+h,w/2,(test ? 0 : h)+h2])
-        cylinder(d=pin_d-clearance, h=pin_h-1);
-    translate([(test ? 0 : l-hl)+w+h*2,w/2,(test ? 0 : h)+h2])
-        cylinder(d=pin_d-clearance, h=pin_h-1);
+    if (!separatepins) {
+        translate([(test ? 0 : l-hl),0,test ? 0 : h])
+            arm(hl, h2);
+        translate([(test ? 0 : l-hl)+w+h,w/2,(test ? 0 : h)+h2])
+            cylinder(d=pin_d-clearance, h=pin_h-1);
+        translate([(test ? 0 : l-hl)+w+h*2,w/2,(test ? 0 : h)+h2])
+            cylinder(d=pin_d-clearance, h=pin_h-1);
+    }
     
     translate([0,test ? -2 : 0,0]) {
         rotate([0,0,test ? 270 : 0]) {
@@ -75,18 +93,12 @@ if (test) {
             }
         }
     }
-} else if (pinsonly) {
-    for ( pin = [0 : pincount-1] ) {
-        translate([pin_d*pin*2,0,0]) {
-            if (idiot) {
-                cylinder(d=pin_d-clearance/2, h=(pin_h-2));
-                translate([0,0,pin_h-2])
-                    cylinder(d=pin_d-clearance*3, h=(pin_h-2));
-            } else {
-                cylinder(d=pin_d-clearance, h=(pin_h-2)*2);
-            }
-        }
+    if (separatepins) {
+        translate([10,5,0])
+            drawpins(count=2);
     }
+} else if (pinsonly) {
+    drawpins(count=pincount);
 } else {
     // Corner
     difference() {
@@ -103,6 +115,7 @@ if (test) {
     }
 
     if (separatepins) {
+        echo("HOLE: cylinder(d=", pin_d+clearance, ", h=", pin_h+1);
         difference() {
             translate([l-hl,0,h])
                 arm(hl, h2);
@@ -111,6 +124,9 @@ if (test) {
             translate([l-hl+w+h*2,w/2,h+h2-pin_h+1])
                 cylinder(d=pin_d+clearance, h=pin_h+1);
         }
+        
+        translate([20,20,0])
+            drawpins(count=pincount);
     } else {
         translate([l-hl,0,h])
             arm(hl, h2);
@@ -127,6 +143,7 @@ if (test) {
                 translate([-125,2,3])
                     logo();
     }
+
     difference() {
         translate([0,l-hl,h])
             arm(hl, h2, up=1);
