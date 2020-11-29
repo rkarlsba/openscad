@@ -40,7 +40,7 @@ function f(x) = (x/6) * (x/6);
 rotate_extrude() {
     translate([30, 0]) square([30, 2]);
  
-    translate([60, 1]) for (x = [0 : 72]) {
+    translate([50, 1]) for (x = [0 : 82]) {
         hull() {
             translate([x, f(x)]) circle(1);
             translate([x + 1, f(x + 1)]) circle(1);
