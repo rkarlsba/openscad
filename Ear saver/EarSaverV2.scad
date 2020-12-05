@@ -20,6 +20,9 @@ Length = 156-Ministeps*24; // [50:300]
 // Width of the band in mm
 Width =  10; // [1:13]
 
+// Thickness of body
+Thickness = 1;
+
 // Number of hooks per arm
 Hook_Count =  4-Ministeps; // [1:10]
 
@@ -38,6 +41,23 @@ Ratio = .79; // [0.6:0.01:0.87]
 
 // Should the oval have a whole in its middle
 Fill = false;
+
+// Handle logo
+Logo_image = false;
+Logo_text = "Suket";
+
+// <Bools>
+
+// Do we have a logo?
+draw_logo = (Logo_image != false || Logo_text != false);
+
+// Logo needs Fill
+do_fill = (Fill || draw_logo);
+
+if (Logo_image != false && Logo_text != false) {
+    echo("Dette funker nok heller dårlig…");
+}
+// </Bools>
 
 /* [Arm Rotation] */
 // The amount each arm is rotated by in degrees
@@ -88,10 +108,11 @@ module ear_saver() {
     difference()
     {
       // Outer oval
-      resize([Oval_Length, Oval_Height, 1]) cylinder(d=Oval_Length, h=1);
+      resize([Oval_Length, Oval_Height, Thickness])
+        cylinder(d=Oval_Length, h=Thickness);
       
       // Remove the inner oval
-      if(Fill == false)
+      if (do_fill == false)
       {
         translate([0, 0, -0.01]) 
           resize([Oval_Length * Ratio, Oval_Height * 0.625,]) 
@@ -133,6 +154,19 @@ module ear_saver() {
       translate([-LegLength - Oval_Length / 2.0 * Ratio, -Width/2, 0]) 
         cube([LegLength, Width, 1]);  
     }
+    
+          
+      if (draw_logo) {
+          if (Logo_text != false) {
+              translate([-17, -5, Thickness]) {
+                  linear_extrude(Thickness)
+                    text(Logo_text, font="Urban sketch");
+              }
+          }
+          if (Logo_image != false) {
+          }
+      }
+
 }
 
 ear_saver();
