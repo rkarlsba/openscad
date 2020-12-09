@@ -19,17 +19,6 @@ module rist() {
     }
 }
 
-module tagg() {
-    difference() {
-        cube([5,6,15]);
-        translate([0,0,7.9]) {
-            rotate([0,-45,0]) {
-                cube([5,6,5]);
-            }
-        }
-    }
-}
-
 difference() {
     cylinder(d=border_diameter,h=thickness);
     cylinder(d=outer_diameter,h=thickness);
