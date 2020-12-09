@@ -6,12 +6,13 @@ outer_diameter=100;
 border_diameter=outer_diameter+10;
 inner_diameter=65;
 thickness=1;
+honeycomb_dia = 10;
 
 module rist() {
     intersection() {
         translate([-outer_diameter/2,-outer_diameter/2,0]) {
             linear_extrude(1) {
-                honeycomb(outer_diameter, outer_diameter, 10, 1);
+                honeycomb(outer_diameter, outer_diameter, honeycomb_dia, 1);
             }
         }
         cylinder(d=outer_diameter,h=thickness);
