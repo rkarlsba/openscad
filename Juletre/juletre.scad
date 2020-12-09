@@ -71,53 +71,53 @@ if (hanger==2) {
 // end hanger 
 
 // start module tree
-module tree (number=6,radius=30,height=100,wall=0.5,twist=-90,dir=direction,trunk=0) {
+module tree (number=6, radius=30, height=100, wall=0.5, twist=-90, dir=direction, trunk=0) {
     points=
         [
             [wall*0.5,0],
-            [wall*0.5,radius-1],[wall*0.4,radius-0.6],[wall*0.2,radius],[0,radius],[wall*-0.2,radius],[wall*-0.4,radius-0.6],[wall*-0.5,radius-1],[wall*-0.5,0]];
+            [wall*0.5, radius-1], 
+            [wall*0.4, radius-0.6], 
+            [wall*0.2, radius], 
+            [0, radius], 
+            [wall*-0.2, radius], 
+            [wall*-0.4, radius-0.6], 
+            [wall*-0.5, radius-1], 
+            [wall*-0.5, 0]
+        ];
     
 intersection () {
     // Tree fins, 1st part for intersection
-    for (i=[1:number]) {
-        rotate ([0,0,i*360/number])
-        linear_extrude($fn=100,height = height,  convexity = 10, twist = twist*direction)
+    for (i = [1:number]) {
+        rotate ([0, 0, i*360/number])
+        linear_extrude($fn=100, height = height,  convexity = 10, twist = twist*direction)
         polygon( points);
     }
-    // End tree fins
 
-    //Tree branches & curve, 2nd part for intersection
+    // Tree branches & curve, 2nd part for intersection
     union() {
-      for (i=[1:(branches)]) {
-        translate([0,0,height-i*(height/branches)]) 
-        cylinder (r1=2+(overhang*(i/branches))+(branchrad*((i*i)/(branches*branches))),r2=2+(branchrad*(((i-1)*(i-1))/(branches*branches))),h=height/branches);
-                        }
-// end tree branches & curve
-              }
-// end intersection
-         } 
-// end module tree
+        for (i = [1:(branches)]) {
+            translate([0, 0, height-i*(height/branches)]) 
+            cylinder (r1=2+(overhang*(i/branches))+(branchrad*((i*i)/(branches*branches))), r2=2+(branchrad*(((i-1)*(i-1))/(branches*branches))), h=height/branches);
+        }
+    }
+} 
 
-// start Baseplate
-    if (baseplate==1) {
+    // Baseplate
+    if (baseplate == 1) {
         for (i=[1:number]) {
-            rotate ([0,0,i*360/number])
-            linear_extrude($fn=100,height = 0.5,  convexity = 10)
-            scale ([5,1,1])
+            rotate ([0, 0, i*360/number])
+            linear_extrude($fn=100, height = 0.5,  convexity = 10)
+            scale ([5, 1, 1])
             polygon(points);
         }
     }
 
-    if (baseplate==2) {
-        cylinder (r=radius,height=0.5,$fn=100);
+    if (baseplate == 2) {
+        cylinder (r=radius, height=0.5, $fn=100);
     }
-// end base plate
+
 // Trunk
-if (trunk > 0) {
-    cylinder(h=height, r1=(radius/100*trunk), r2=0);
+    if (trunk > 0) {
+        cylinder(h=height, r1=(radius/100*trunk), r2=0);
+    }
 }
-
-
-
-}
-// end 

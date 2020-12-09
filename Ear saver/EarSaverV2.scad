@@ -12,7 +12,7 @@
 // Version: 2.0
 //-------------------------------------------------------------------------------------
 
-Ministeps=1;
+Ministeps=3;
 
 // Over all length in mm
 Length = 156-Ministeps*24; // [50:300]
@@ -44,7 +44,11 @@ Fill = false;
 
 // Handle logo
 Logo_image = false;
-Logo_text = "Suket";
+
+Logo_font_face = "Apple Chancery";
+Logo_font_size = 8.5;
+//Logo_text = "God jul";
+Logo_text = "Covid-19";
 
 // <Bools>
 
@@ -157,13 +161,12 @@ module ear_saver() {
     
           
       if (draw_logo) {
-          if (Logo_text != false) {
-              translate([-17, -5, Thickness]) {
-                  linear_extrude(Thickness)
-                    text(Logo_text, font="Urban sketch");
-              }
-          }
           if (Logo_image != false) {
+          } else if (Logo_text != false) {
+              translate([-21, -3, Thickness]) {
+                  linear_extrude(Thickness)
+                    text(Logo_text, font=Logo_font_face, size=Logo_font_size);
+              }
           }
       }
 
