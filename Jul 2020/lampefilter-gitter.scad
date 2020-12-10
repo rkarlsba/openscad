@@ -1,35 +1,33 @@
 $fn = $preview ? 16 : 128;
 
-include <honeycomb/honeycomb.scad>
+include <lampefilter.scad>
 
-outer_diameter=100;
+outer_diameter=99;
 border_diameter=outer_diameter+10;
-inner_diameter=65;
 thickness=1;
-honeycomb_dia = 10;
+honeycomb_dia = 3;
+honeycomb_wall = 0.5;
 
+lampefilter("gitter");
+/*
 module rist() {
     intersection() {
         translate([-outer_diameter/2,-outer_diameter/2,0]) {
             linear_extrude(1) {
-                honeycomb(outer_diameter, outer_diameter, honeycomb_dia, 1);
+                honeycomb(outer_diameter, outer_diameter, honeycomb_dia, honeycomb_wall);
             }
         }
         cylinder(d=outer_diameter,h=thickness);
     }
 }
 
+rist();
+
 difference() {
     cylinder(d=border_diameter,h=thickness);
     cylinder(d=outer_diameter,h=thickness);
 }
 
-difference() {
-    rist();
-    cylinder(d=inner_diameter,h=thickness);
-}
-
-cylinder(d=inner_diameter,h=thickness/2);
 
 // Austre
 translate([outer_diameter/2,-3,thickness]) {
@@ -58,3 +56,4 @@ translate([-3,outer_diameter/2-1,thickness]) {
                 cylinder(r=6,h=6);
     }
 }
+*/

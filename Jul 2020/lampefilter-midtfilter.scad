@@ -1,13 +1,15 @@
 $fn = $preview ? 16 : 128;
 
-include <honeycomb/honeycomb.scad>
+include <lampefilter.scad>
 
-outer_diameter=100;
+outer_diameter=99;
 border_diameter=outer_diameter+10;
 inner_diameter=65;
 thickness=1;
 honeycomb_dia = 10;
 
+lampefilter("midtfilter");
+/*
 module rist() {
     intersection() {
         translate([-outer_diameter/2,-outer_diameter/2,0]) {
@@ -58,3 +60,4 @@ translate([-3,outer_diameter/2-1,thickness]) {
                 cylinder(r=6,h=6);
     }
 }
+*/

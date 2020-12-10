@@ -10,7 +10,7 @@ if (test) {
         cube([width,2,1]);
 }
 linear_extrude(1) {
-    translate([-22,-6]) {
+    translate([-21,-6.5]) {
         text("God jul", font=fontface, size=fontsize);
     }
 }
