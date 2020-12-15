@@ -10,11 +10,11 @@ include <honeycomb/honeycomb.scad>
  * honeycomb_dia = 10;
  */
 
-module rist() {
+module rist(grovhet=honeycomb_dia) {
     intersection() {
         translate([-outer_diameter/2,-outer_diameter/2,0]) {
             linear_extrude(1) {
-                honeycomb(outer_diameter, outer_diameter, honeycomb_dia, 1);
+                honeycomb(outer_diameter, outer_diameter, grovhet, thickness);
             }
         }
         cylinder(d=outer_diameter,h=thickness);
@@ -70,9 +70,22 @@ module lampefilter(type) {
         }
 
         cylinder(d=inner_diameter,h=thickness/2);
+    } else if (type == "midtgitter") {
+        difference() {
+            rist(honeycomb_dia);
+            cylinder(d=inner_diameter,h=thickness);
+        }
+
+        intersection() {
+            rist(honeycomb_dia/2);
+            cylinder(d=inner_diameter,h=thickness/2);
+        }
     } else if (type == "gitter") {
         rist();
     } else {
         echo("Ukjent type ", type);
     }
+    austre();
+    vestre();
+    nordre();
 }

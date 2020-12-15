@@ -9,19 +9,19 @@ h2=inch/2;
 pin_d=w/2;
 pin_h=10;
 clearance=0.2;
-logotext="Ullevål kaffeslabberas";
+logotext="Varme tanker, god kaffe";
 logospacing=1.2;
 xlogo=true;
-ylogo=false;
+ylogo=true;
 font="Copperplate Normal";
-fontsize=7;
+fontsize=6.6;
 
-test=true;
+test=false;
 
 separatepins=true;
 
 pinsonly=false;
-pincount=6;
+pincount=0;
 idiot=false;
 
 if (idiot) { echo("IDIOT!!!!!!"); }
@@ -58,14 +58,16 @@ module arm(length, height=h, up=0, cut_corners = 1, text=undef) {
 
 module drawpins(count=1) {
     echo("PIN: cylinder(d=", pin_d-clearance, ", h=", (pin_h-2)*2, ")");
-    for ( pin = [0 : count-1] ) {
-        translate([pin_d*pin*2,0,0]) {
-            if (idiot) {
-                cylinder(d=pin_d-clearance/2, h=(pin_h-2));
-                translate([0,0,pin_h-2])
-                    cylinder(d=pin_d-clearance*3, h=(pin_h-2));
-            } else {
-                cylinder(d=pin_d-clearance, h=(pin_h-2)*2);
+    if (count > 0) {
+        for ( pin = [0 : count-1] ) {
+            translate([pin_d*pin*2,0,0]) {
+                if (idiot) {
+                    cylinder(d=pin_d-clearance/2, h=(pin_h-2));
+                    translate([0,0,pin_h-2])
+                        cylinder(d=pin_d-clearance*3, h=(pin_h-2));
+                } else {
+                    cylinder(d=pin_d-clearance, h=(pin_h-2)*2);
+                }
             }
         }
     }
