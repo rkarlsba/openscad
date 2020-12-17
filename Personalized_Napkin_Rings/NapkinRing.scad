@@ -3,7 +3,7 @@ prefixcheat = $preview ? 0.1 : 0;
 $fn = $preview ? 16 : 64;
 
 // Name or Text
-Text = "Helga";
+Text = "Michael";
 
 // Adjust spacing between letters
 Degrees = 18; //  [13,14,15,16,17]
@@ -26,7 +26,7 @@ Torus_r = RingThickness/2;
 
 // Rounded edges
 Rounded = 1;
-Rounded_r = 1;
+Rounded_r = 1.2;
 
 //CUSTOMIZER VARIABLES END
 
