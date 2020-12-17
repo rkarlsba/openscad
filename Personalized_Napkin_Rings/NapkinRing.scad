@@ -3,7 +3,7 @@ prefixcheat = $preview ? 0.1 : 0;
 $fn = $preview ? 16 : 64;
 
 // Name or Text
-Text = "Helga";
+Text = "Sigurd";
 
 // Adjust spacing between letters
 Degrees = 18; //  [13,14,15,16,17]
@@ -11,17 +11,17 @@ Degrees = 18; //  [13,14,15,16,17]
 //Font = "Trattatello";
 //Font = "Trattatello:style=Bold";
 //Font = "Apple Chancery:style=筆寫斜體";
-Font = "Herculanum:style=Regular";
-
+//Font = "Herculanum:style=Regular";
+Font = "Fake Receipt";
 RingThickness = 5;
 RingDepth = 8;
 TextDepth = RingThickness;
-TextLift = 0.5;
+TextLift = 1;
 RingRadius = 20;
 
 // Set Torus = true if you want the ring to be a torus, without the
 // sharp edges.
-Torus = 1;
+Torus = 0;
 Torus_r = RingThickness/2;
 
 // Rounded edges
