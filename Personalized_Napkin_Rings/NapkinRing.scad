@@ -3,7 +3,7 @@ prefixcheat = $preview ? 0.1 : 0;
 $fn = $preview ? 16 : 64;
 
 // Name or Text
-Text = "Sigurd";
+Text = "Helga";
 
 // Adjust spacing between letters
 Degrees = 18; //  [13,14,15,16,17]
@@ -12,9 +12,9 @@ Degrees = 18; //  [13,14,15,16,17]
 //Font = "Trattatello:style=Bold";
 //Font = "Apple Chancery:style=筆寫斜體";
 //Font = "Herculanum:style=Regular";
-Font = "Fake Receipt";
+Font = "Prime Minister of Canada:style=Regular";
 RingThickness = 5;
-RingDepth = 8;
+RingDepth = 10;
 TextDepth = RingThickness;
 TextLift = 1;
 RingRadius = 20;
@@ -40,17 +40,20 @@ module roundedsquare(size, radius) {
 }
 
 module L_0(char = "A", Degrees = 15, i = 0) {
-    rotate([0,0,-Degrees*i])
-    translate([0,24,0])
-    linear_extrude(height = RingThickness+TextLift)
-//    text(size = 12, text = char, font = "Chewy:style=bold", halign = "center", valign= "bottom", $fn = 32);
-    text(size = 12, text = char, font = Font, halign = "center", $fn = 32);
+    rotate([0,0,-Degrees*i]) {
+        translate([0,24,0])  {
+            linear_extrude(height = RingDepth+TextLift) {
+                text(size = 12, text = char, font = Font, halign = "center", $fn = 32);
+            }
+        }
+    }
 }
 
 union() {
     if (Torus) {
         if (RingThickness != RingDepth) {
             echo("NOTE: RingDepth is ignored with Torus as of now");
+            RingDepth=RingThickness;
         }
         translate([0,0,Torus_r]) {
             rotate_extrude(angle=360, convexity = 2) {
@@ -61,7 +64,7 @@ union() {
     } else if (Rounded) {
         rotate_extrude(angle = 360, convexity = 2)
             translate([RingRadius,0,0])
-                roundedsquare([RingThickness,RingThickness], Rounded_r);
+                roundedsquare([RingThickness,RingDepth], Rounded_r);
     } else {
         difference() {
             cylinder(h = RingThickness, r = 25, $fn = 64);
