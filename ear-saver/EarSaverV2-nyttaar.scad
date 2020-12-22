@@ -12,7 +12,7 @@
 // Version: 2.0
 //-------------------------------------------------------------------------------------
 
-Ministeps=3;
+Ministeps=1;
 
 // Over all length in mm
 Length = 156-Ministeps*24; // [50:300]
@@ -34,7 +34,7 @@ Hook_Spacing = 12; // [8:20]
 Oval_Length =  54; // [10:150]
 
 // Height of the central oval in mm. Best if greater than Width * 2
-Oval_Height =  25; // [1:100]
+Oval_Height =  27; // [1:100]
 
 // The ratio between the outer part of the oval and the inner hole.
 Ratio = .79; // [0.6:0.01:0.87]
@@ -46,9 +46,12 @@ Fill = false;
 Logo_image = false;
 
 Logo_font_face = "Apple Chancery";
-Logo_font_size = 13.5;
+Logo_font_size = 8;
 //Logo_text = "God jul";
-Logo_text = "2021";
+Logo_text = "Godt";
+
+// Sett logo_text2 = false hvis du ikke skal ha to linjer
+Logo_text2 = "nytt år";
 
 // <Bools>
 
@@ -163,9 +166,20 @@ module ear_saver() {
       if (draw_logo) {
           if (Logo_image != false) {
           } else if (Logo_text != false) {
-              translate([-19.5, -4, Thickness]) {
-                  linear_extrude(Thickness)
-                    text(Logo_text, font=Logo_font_face, size=Logo_font_size);
+              if (Logo_text2 != false) {
+                  translate([-17, 1.5, Thickness]) {
+                      linear_extrude(Thickness) {
+                          text(Logo_text, font=Logo_font_face, size=Logo_font_size);
+                          translate([5, -8, 0])
+                            text(Logo_text2, font=Logo_font_face, size=Logo_font_size);
+                      }
+                  }   
+              } else {
+                  translate([-19.5, -4, Thickness]) {
+                      linear_extrude(Thickness) {
+                          text(Logo_text, font=Logo_font_face, size=Logo_font_size);
+                      }
+                  }
               }
           }
       }
