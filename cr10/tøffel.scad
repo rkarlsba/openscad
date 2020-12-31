@@ -12,7 +12,7 @@ radius = 5;
 slipper_x = foot_x+slipper*2;
 slipper_y = foot_y+slipper*2;
 
-foot = "/Users/roy/Nextcloud/Dokumenter/Bitraf/3D-greier/CR10S-Standalone/Den\ tyske/files/Fuss_4mm.stl";
+foot = "Fuss_4mm.stl";
 
 flatfix = 5;
 difference() {
@@ -21,9 +21,9 @@ difference() {
         roundedcube(size=[slipper_x,slipper_y,flatfix+slipper], radius=radius);
     translate([0,0,-flatfix])
         cube(size=[slipper_x,slipper_y,flatfix]);
-    translate([slipper,slipper,slipper/2]) {
+    translate([slipper-foot_slack/2,slipper-foot_slack/2,slipper/2]) {
         linear_extrude(slipper/2) {
-           // roundedsquare(size=[foot_x+foot_slack,foot_y+foot_slack],radius=radius);
+            roundedsquare(size=[foot_x+foot_slack,foot_y+foot_slack],radius=radius);
         }
     }
 //        cube(size=[slipper_x,slipper_y,flatfix]);
