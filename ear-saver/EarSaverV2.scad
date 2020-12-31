@@ -12,6 +12,8 @@
 // Version: 2.0
 //-------------------------------------------------------------------------------------
 
+use <ymse.scad>
+
 Ministeps=3;
 
 // Over all length in mm
@@ -46,11 +48,13 @@ Fill = false;
 Logo_image = false;
 
 Logo_font_face = "Apple Chancery";
-Logo_font_size = 8.5;
+Logo_font_size = 7.5;
 //Logo_text = "God jul";
-Logo_text = "Covid-19";
-
+Logo_text = "CovidKlem";
 // <Bools>
+
+// Flank text with hearts?
+Hearts = true;
 
 // Do we have a logo?
 draw_logo = (Logo_image != false || Logo_text != false);
@@ -160,16 +164,27 @@ module ear_saver() {
     }
     
           
-      if (draw_logo) {
-          if (Logo_image != false) {
-          } else if (Logo_text != false) {
-              translate([-21, -3, Thickness]) {
-                  linear_extrude(Thickness)
+    if (draw_logo) {
+        if (Logo_image != false) {
+        } else if (Logo_text != false) {
+            xadj = -22.5;
+            translate([xadj, -3, Thickness]) {
+                if (Hearts) {
+                    translate([-Logo_font_size/2,0,0])
+                        linear_extrude(Thickness)
+                            flat_heart(Logo_font_size);
+                }
+                linear_extrude(Thickness)
                     text(Logo_text, font=Logo_font_face, size=Logo_font_size);
-              }
-          }
-      }
-
+                if (Hearts) {
+                    rightheartfixup=1.5; // just help it out :)
+                    translate([-xadj*2+Logo_font_size/2+rightheartfixup,0,0])
+                        linear_extrude(Thickness)
+                            flat_heart(Logo_font_size);
+                }
+            }
+        }
+    }
 }
 
 ear_saver();

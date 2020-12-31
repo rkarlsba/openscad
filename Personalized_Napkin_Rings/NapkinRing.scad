@@ -8,10 +8,6 @@ Text = "Michael";
 // Adjust spacing between letters
 Degrees = 18; //  [13,14,15,16,17]
 
-//Font = "Trattatello";
-//Font = "Trattatello:style=Bold";
-//Font = "Apple Chancery:style=筆寫斜體";
-//Font = "Herculanum:style=Regular";
 Font = "Prime Minister of Canada:style=Regular";
 RingThickness = 5;
 RingDepth = 10;
