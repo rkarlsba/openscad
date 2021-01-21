@@ -24,12 +24,15 @@ hole1   = 2.1;              // Diameter hole hinge pin
 hole2   = 2.0;              // Diameter hole in edges (to secure)
 
 // Variables for text
-fontb="Old Stamper:style=Regular"; // Font for text front of box
-tekstb  = "Läkerol";        // Text to print front of box
+//fontb="Old Stamper:style=Regular"; // Font for text front of box
+//fontb="Luminari:style=Regular";
+fontb="Caligraf Medium PERSONAL USE:style=Regular";
+font_logo="Caligraf Light PERSONAL USE:style=Regular";
+tekstb  = "Emilie";        // Text to print front of box
 letterb = 9;                // Height of text front of box
 fontd = fontb;              // Font voor text on lid
 tekstd  = tekstb;           // Negative text to print on lid
-letterd = 8;                // Height of text on lid
+letterd = 10;                // Height of text on lid
 rotated = 270;              // Rotate text on lid (180 for side-lid/270 for rear-lid)
 textimageb = "läkerol_logo_liten.png"; // Instead of tekstd
 textimaged = textimageb;    // Instead of tekstb
@@ -39,9 +42,9 @@ rounded = "N";              // Yes/No for rounded top of box
 oor1    = "N";              // Yes/No for edge on lid
 oor2    = "N";              // Yes/No for hole in edge
 tekst1  = "N";              // Yes/No for text/image front of box
-tekst2  = "Y";              // Yes/No for text/image top of lid
+tekst2  = "N";              // Yes/No for text/image top of lid
 image1  = "N";              // Yes/No for image in front of box, overriding the text
-image2  = "Y";              // Yes/No for image on top of lid, overriding the text
+image2  = "N";              // Yes/No for image on top of lid, overriding the text
 
 // Drawing variables
 hoek2   = hoek/2;           // Radius of corners
@@ -51,24 +54,71 @@ rim2    = 0.9*rim1;         // Width raised edge for lid
 margin  = 0.15;             // Margin hinge/hinge opening
 vert    = hinge1-hoek;      // Height vertical hinge opening
 $fn     = 60;               // Variabele for cirkels
+brd     = (brd1 > brd2) ? brd1 : brd2;
+
+// tofarge
+tofarge = false;
+
+
+// Main program
+lid();
+body();
+if (tofarge) logo();
 
 // Box body
-difference() {
-    B1();
-    W1();
+module body() {
+    difference() {
+        B1();
+        W1();
+    }
 }
+
 // Lid
 // Enable Translate below to put lid on box
 // translate([0*lang+0,1.0*brd1,hoog1+hoog2]) rotate([180,0,0])
-translate([1.2*lang,0,0]) { // Disable to put lid on box
-    difference() {
-        B2();
-        W2();
+module lid() {
+    translate([1.2*lang,0,0]) { // Disable to put lid on box
+        difference() {
+            B2();
+            W2();
+        }/*
+        if (tofarge) {
+            if (image2 == "Y") {
+                logo();
+            }
+        }*/
     }
 }
+
 //
 // Modules
 //
+
+// Logo
+module logo() {
+    translate([0,0,3]) {
+        if (image1 == "Y") {
+            intersection() {
+                translate([lang*1.4,brd/2,0]) {
+                    rotate([180,0,90])
+                        scale([0.15, 0.15, 0.1])
+                            surface(file = textimaged, center = true);
+                }
+                translate([lang,0,-3])
+                    cube([lang,brd,1]);
+            }
+        } else {
+            translate([lang*2.5,brd/2,-2]) {
+                rotate([180,0,90]) {
+                    linear_extrude(height=.5) {
+                        text(tekstb,font=font_logo,size=letterb,valign="center",halign="center");
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Module for main body box
 module B1() {
     // Box has with rounded edged and corners
@@ -234,8 +284,9 @@ module W2() {
                     scale([0.15, 0.15, 0.1])
                         surface(file = textimaged, center = true);
                 } else {
-                    linear_extrude(height=1) {
-                        text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
+                    translate([0,0,0])
+                        linear_extrude(1) {
+                            text(tekstd,font=fontd,size=letterd,valign="center",halign="center");
                     }
                 }
             }

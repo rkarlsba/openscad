@@ -11,16 +11,18 @@ module roundedsquare(size, radius) {
 }
 
 module roundedcube(size, radius) {
-    hull() {
-        translate([radius, radius, radius]) sphere(r=radius);
-        translate([size[0]-radius, radius, radius]) sphere(r=radius);
-        translate([radius, size[1]-radius, radius]) sphere(r=radius);
-        translate([size[0]-radius, size[1]-radius, radius]) sphere(r=radius);
-    
-        translate([radius, radius, size[2]-radius]) sphere(r=radius);
-        translate([size[0]-radius, radius, size[2]-radius]) sphere(r=radius);
-        translate([radius, size[1]-radius, size[2]-radius]) sphere(r=radius);
-        translate([size[0]-radius, size[1]-radius, size[2]-radius]) sphere(r=radius);
+    translate([radius,radius,radius]) {
+        hull() {
+            translate([radius, radius, radius]) sphere(r=radius);
+            translate([size[0]-radius, radius, radius]) sphere(r=radius);
+            translate([radius, size[1]-radius, radius]) sphere(r=radius);
+            translate([size[0]-radius, size[1]-radius, radius]) sphere(r=radius);
+        
+            translate([radius, radius, size[2]-radius]) sphere(r=radius);
+            translate([size[0]-radius, radius, size[2]-radius]) sphere(r=radius);
+            translate([radius, size[1]-radius, size[2]-radius]) sphere(r=radius);
+            translate([size[0]-radius, size[1]-radius, size[2]-radius]) sphere(r=radius);
+        }
     }
 }
 

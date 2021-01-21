@@ -14,7 +14,7 @@
 
 use <ymse.scad>
 
-Ministeps=3;
+Ministeps=0;
 
 // Over all length in mm
 Length = 156-Ministeps*24; // [50:300]
@@ -23,7 +23,7 @@ Length = 156-Ministeps*24; // [50:300]
 Width =  10; // [1:13]
 
 // Thickness of body
-Thickness = 1;
+Thickness = .7;
 
 // Number of hooks per arm
 Hook_Count =  4-Ministeps; // [1:10]
@@ -48,13 +48,14 @@ Fill = false;
 Logo_image = false;
 
 Logo_font_face = "Apple Chancery";
-Logo_font_size = 7.5;
+Logo_font_size = 10;
 //Logo_text = "God jul";
-Logo_text = "CovidKlem";
+//Logo_text = "Arild";
+Logo_text = false;
 // <Bools>
 
 // Flank text with hearts?
-Hearts = true;
+Hearts = false;
 
 // Do we have a logo?
 draw_logo = (Logo_image != false || Logo_text != false);
@@ -102,7 +103,7 @@ module hook(aXOffset = 35.3, aYOffset = 0)
   {
     translate([0,     9.8, 0]) cylinder(d = 5.5, h = 2);
     translate([0,    -9.8, 0]) cylinder(d = 5.5, h = 2);
-    translate([-0.2, -9.8, 0]) cube([3, 20, 1]);
+    translate([-0.2, -9.8, 0]) cube([3, 20, Thickness]);
   }
 }
 
@@ -142,7 +143,7 @@ module ear_saver() {
 
       // Draw the body of the arm
       translate([ Oval_Length / 2.0 * Ratio, -Width/2, 0]) 
-         cube([LegLength, Width, 1]);
+         cube([LegLength, Width, Thickness]);
     }  
 
     //-------------------------------------------------------------------------------------
@@ -160,15 +161,16 @@ module ear_saver() {
       
       // Draw the body of the arm
       translate([-LegLength - Oval_Length / 2.0 * Ratio, -Width/2, 0]) 
-        cube([LegLength, Width, 1]);  
+        cube([LegLength, Width, Thickness]);  
     }
     
           
     if (draw_logo) {
         if (Logo_image != false) {
         } else if (Logo_text != false) {
-            xadj = -22.5;
-            translate([xadj, -3, Thickness]) {
+            xadj = -16;
+            yadj = -5.5;
+            translate([xadj, yadj, Thickness]) {
                 if (Hearts) {
                     translate([-Logo_font_size/2,0,0])
                         linear_extrude(Thickness)

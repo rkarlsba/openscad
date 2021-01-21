@@ -62,11 +62,11 @@ module turtle_spiral(t_before, side_leng, d_step, min_leng, angle, width) {
 
 }
 
-side_leng = 50;
-d_step = 1;
+side_leng = 100;
+d_step = 2;
 min_leng = 1;
 angle = 90;
-width = 1;
+width = 0.5;
 
 module testspiral() {
     translate([side_leng,0,0]) {
