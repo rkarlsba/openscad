@@ -1,4 +1,4 @@
-// pisa
+// Statsbygg
 
 x=50;
 y=30;
@@ -40,6 +40,7 @@ module statsbygg(size, bleed=.5, var=1, stepsize=1, rseedx, rseedy) {
     }
 }
 
+// Ikke i bruk
 module ramme(size, walls=3, bleed=.5) {
     translate([bleed,bleed]) {
         difference() {
