@@ -41,18 +41,21 @@ function PrintFixed(x, prec=15) = x < 0 ?
   _PrintFixedPos(x, prec);
 
 
-c=1000002;
-d=0.000002;
-pi=-3.14159265358979323846264338327950288419716;
-echo(c); //1e+06
-echo(d); //2e-06
-echo(PrintFixed(c));
-echo(PrintFixed(c, 6));
-echo(PrintFixed(d));
-echo(PrintFixed(d, 3));
-echo(pi);
-echo(PrintFixed(pi));
-echo(PrintFixed(pi, 20));
-echo(PrintFixed(1e20));
-echo(PrintFixed(12345678901234567890, 7));
-echo(PrintFixed(12345678901234567890, 30));
+function PrintFixedTest() {
+    c=1000002;
+    d=0.000002;
+    pi=-3.14159265358979323846264338327950288419716;
+    echo(c); //1e+06
+    echo(d); //2e-06
+    echo(PrintFixed(c));
+    echo(PrintFixed(c, 6));
+    echo(PrintFixed(d));
+    echo(PrintFixed(d, 3));
+    echo(pi);
+    echo(PrintFixed(pi));
+    echo(PrintFixed(pi, 20));
+    echo(PrintFixed(1e20));
+    echo(PrintFixed(12345678901234567890, 7));
+    echo(PrintFixed(12345678901234567890, 30));
+}
+

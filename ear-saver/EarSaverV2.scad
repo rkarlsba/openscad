@@ -14,7 +14,7 @@
 
 use <ymse.scad>
 
-Ministeps=0;
+Ministeps=2;
 
 // Over all length in mm
 Length = 156-Ministeps*24; // [50:300]
@@ -42,23 +42,24 @@ Oval_Height =  25; // [1:100]
 Ratio = .79; // [0.6:0.01:0.87]
 
 // Should the oval have a whole in its middle
-Fill = false;
+Fill = true;
 
 // Handle logo
 Logo_image = false;
 
 Logo_font_face = "Apple Chancery";
+Logo_font_face = "Caligraf Medium PERSONAL USE:style=Regular";
 Logo_font_size = 10;
 //Logo_text = "God jul";
-//Logo_text = "Arild";
+//Logo_text = "Ifrah";
 Logo_text = false;
 // <Bools>
 
 // Flank text with hearts?
-Hearts = false;
+Hearts = true;
 
 // Do we have a logo?
-draw_logo = (Logo_image != false || Logo_text != false);
+draw_logo = (Logo_image != false || Logo_text != false || Hearts != false);
 
 // Logo needs Fill
 do_fill = (Fill || draw_logo);
@@ -101,8 +102,8 @@ module hook(aXOffset = 35.3, aYOffset = 0)
 {
   translate([aXOffset, aYOffset, 0])
   {
-    translate([0,     9.8, 0]) cylinder(d = 5.5, h = 2);
-    translate([0,    -9.8, 0]) cylinder(d = 5.5, h = 2);
+    translate([0,     9.8, 0]) cylinder(d = 5.5, h = Thickness*2);
+    translate([0,    -9.8, 0]) cylinder(d = 5.5, h = Thickness*2);
     translate([-0.2, -9.8, 0]) cube([3, 20, Thickness]);
   }
 }
@@ -166,10 +167,10 @@ module ear_saver() {
     
           
     if (draw_logo) {
+        xadj = -13;
+        yadj = -5;
         if (Logo_image != false) {
         } else if (Logo_text != false) {
-            xadj = -16;
-            yadj = -5.5;
             translate([xadj, yadj, Thickness]) {
                 if (Hearts) {
                     translate([-Logo_font_size/2,0,0])
@@ -185,6 +186,15 @@ module ear_saver() {
                             flat_heart(Logo_font_size);
                 }
             }
+        } else if (Hearts) {
+            for (x = [-15:15:15]) {
+            translate([x,-5,Thickness])
+                linear_extrude(Thickness)
+                    flat_heart(Logo_font_size);
+            }
+/*            translate([-xadj*2+Logo_font_size/2+rightheartfixup,0,Thickness])
+                linear_extrude(Thickness)
+                    flat_heart(Logo_font_size);*/
         }
     }
 }

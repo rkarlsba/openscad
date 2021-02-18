@@ -43,7 +43,7 @@ oor1    = "N";              // Yes/No for edge on lid
 oor2    = "N";              // Yes/No for hole in edge
 tekst1  = "N";              // Yes/No for text/image front of box
 tekst2  = "N";              // Yes/No for text/image top of lid
-image1  = "N";              // Yes/No for image in front of box, overriding the text
+image1  = "Y";              // Yes/No for image in front of box, overriding the text
 image2  = "N";              // Yes/No for image on top of lid, overriding the text
 
 // Drawing variables

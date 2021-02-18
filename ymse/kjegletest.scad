@@ -1,6 +1,9 @@
 fn=128;
 
+height=50;
+bottom_r=15;
+
 difference() {
-    cylinder(h=30,r1=10,r2=0,$fn=fn);
-    cylinder(h=29,r1=9,r2=0,$fn=fn);
+    cylinder(h=height,r1=bottom_r,r2=0,$fn=fn);
+    cylinder(h=height*.9,r1=bottom_r*.9,r2=0,$fn=fn);
 }
