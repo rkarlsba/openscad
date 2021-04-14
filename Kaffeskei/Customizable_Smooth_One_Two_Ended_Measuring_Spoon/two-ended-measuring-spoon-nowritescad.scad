@@ -26,7 +26,7 @@ function get_volume_1() = volume_1 * unit_volume_1 * adjust_volume_1;
 function get_volume_2() = volume_2 * unit_volume_2 * adjust_volume_2;
 
 /* [Label] */
-label           = "Kaffe";
+label           = "Kosekaffe";
 label_thickness = 1;
 label_height    = 8.5;
 label_font      = "Liberation Sans";
@@ -41,7 +41,7 @@ hanging_hole_size = 2; // [0:5]
 function get_hanging_hole_size()=hanging_hole_sizes[hanging_hole_size]+(volume_2==0?(hanging_hole_size==0?handle_width:4):0);
 
 // the distance of the two bowls center - 
-handle_lenght=70;
+handle_lenght=100;
 handle_width=12; //[8:20]
 function get_handle_width()=min(handle_width,ra1*2+surrounding_width*2,ra2*2+surrounding_width*2);
 // the distance of the bowl center to the hanging hole center - only relevant for 2 ended spoon
@@ -218,15 +218,15 @@ module spoon() {
                 translate([handle_lenght,0,preview?-0.02:0])
                     volume(get_volume_2(),0,60);
 
-            build_text(.1);
+            build_text(.1, [18,0,0]);
         }   
     }
 }
 
-module build_text(extra_thickness=.1) {
+module build_text(extra_thickness=.1, translate_extra=[0,0,0]) {
     translate([(volume_2>0?
         (handle_lenght-(ra2+surrounding_width)-(ra1+surrounding_width))/2:surrounding_width*6)+(ra1+surrounding_width),
-        0,(label_thickness-extra_thickness)/(volume_2>0?2:1)]
+        0,(label_thickness-extra_thickness)/(volume_2>0?2:1)]+translate_extra
     )
         rotate([180,0,0])
             linear_extrude(height=label_thickness)

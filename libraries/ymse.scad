@@ -13,15 +13,12 @@ module roundedsquare(size, radius) {
 module roundedcube(size, radius) {
     translate([radius,radius,radius]) {
         hull() {
-            translate([radius, radius, radius]) sphere(r=radius);
-            translate([size[0]-radius, radius, radius]) sphere(r=radius);
-            translate([radius, size[1]-radius, radius]) sphere(r=radius);
-            translate([size[0]-radius, size[1]-radius, radius]) sphere(r=radius);
-        
-            translate([radius, radius, size[2]-radius]) sphere(r=radius);
-            translate([size[0]-radius, radius, size[2]-radius]) sphere(r=radius);
-            translate([radius, size[1]-radius, size[2]-radius]) sphere(r=radius);
-            translate([size[0]-radius, size[1]-radius, size[2]-radius]) sphere(r=radius);
+            for (z = [0, size[2]-radius*2]) {
+                translate([0, 0, z]) sphere(r=radius);
+                translate([size[0]-radius*2, 0, z]) sphere(r=radius);
+                translate([0, size[1]-radius*2, z]) sphere(r=radius);
+                translate([size[0]-radius*2, size[1]-radius*2, z]) sphere(r=radius);
+            }
         }
     }
 }
@@ -49,9 +46,11 @@ module ramme(size, border=1) {
 // Warn users including this with 'include' without knowing better
 echo("Don't 'include' this if you just want to use its modules etc. Better 'use' it.");
 
-roundedcube([40,40,10], 2, $fn=16);
+//roundedcube([40,40,10], 2, $fn=16);
 /*
 // lalalatest
 linear_extrude(height = 13)
     flat_heart(27);
 */
+
+//flat_heart(10);
