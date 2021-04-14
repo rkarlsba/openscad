@@ -7,11 +7,10 @@
  *   https://creativecommons.org/licenses/by-nc-sa/4.0/deed.no
  */
 
-// Moduler
+// Generelle moduler
 module roundedcube(size, radius) {
     translate([radius,radius,radius]) {
-        hull() 
-        {
+        hull() {
             for (z = [0, size[2]-radius*2]) {
                 translate([0, 0, z]) sphere(r=radius);
                 translate([size[0]-radius*2, 0, z]) sphere(r=radius);
@@ -22,25 +21,73 @@ module roundedcube(size, radius) {
     }
 }
 
+module skruehull(diameter, lengde, innsenkning = 0) {
+    cylinder(d = diameter, h = lengde);
+    if (innsenkning != 0) {
+        translate([0, 0, lengde-innsenkning]) {
+            cylinder(h=innsenkning, d1=diameter, d2=diameter+innsenkning);
+        }
+    }
+}
 // Variabler
 
 // Antall fasetter på en sirkel
-$fn = 32;
+$fn = $preview ? 16 : 64;
 
 // Monteringsplata, ytre mål.
 platebredde = 150;
 platedybde = 40;
-platehoyde = 10;
+platehoyde = 8;
 
 // Indre ramme for montering av terminalblokk. Dette er indre mål, 
 // så ytre mål blir indre + rammetykkelse * 2
 rammehoyde = platehoyde;
 rammebredde = 100;
-rammedybde = 30;
+rammedybde = 20;
 rammetykkelse = 3;
 
-// Ymse
-avrunding = 1;
+hullbredde = 3;
+innsenkning = 2;
 
-// Programkode
-roundedcube([rammebredde,rammedybde,rammehoyde], avrunding);
+// Ymse
+avrunding = 1.5;
+
+// Monteringsplata
+roundedcube([platebredde,platedybde,platehoyde], avrunding);
+echo("Bunnplate", [platebredde,platedybde,platehoyde], avrunding);
+
+// regne ut x og y for plassering av  ramma for å få den sentrert på toppen
+pos_x = (platebredde - rammebredde)/2 - rammetykkelse;
+pos_y = (platedybde - rammedybde)/2 - rammetykkelse;
+echo("Posisjoner", pos_x,pos_y,platehoyde);
+
+// regne ut størrelsen på ytterrammma
+str_x = rammebredde + rammetykkelse * 2;
+str_y = rammedybde + rammetykkelse * 2;
+echo("Størrelse", str_x, str_y);
+
+// Lokale moduler - bruker variablene over som globale
+module platemedramme() {
+    translate([pos_x,pos_y,platehoyde]) {
+        difference() {
+            // Utvid denne 'avrunding' nedover sånn at den ikke blir avrunda under.
+            translate([0, 0, -avrunding]) {
+                roundedcube([str_x, str_y, rammehoyde+avrunding], avrunding);
+            }
+            translate([rammetykkelse,rammetykkelse,0]) {
+                cube([rammebredde, rammedybde, rammehoyde]);
+            }
+        }
+    }
+}
+
+//difference() 
+{
+    platemedramme();
+    // Fire hull
+    translate([(innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, 5]) {
+        skruehull(diameter=hullbredde, lengde=platehoyde, innsenkning = innsenkning);
+    }
+    echo("Skruehull", (innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, 2);
+    echo("Translate (skruehull)", [(innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, 0]);
+}
