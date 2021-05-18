@@ -3,7 +3,7 @@
  *
  * Skrevet av Roy Sigurd Karlsbakk <roy@karlsbakk.net>
  *
- * Lisensiert under Creative Commons BY-NC-SA
+ * Lisensiert under Creative Commons BY-NC-SA v4
  *   https://creativecommons.org/licenses/by-nc-sa/4.0/deed.no
  */
 
@@ -52,9 +52,6 @@ innsenkning = 2;
 // Ymse
 avrunding = 1.5;
 
-// Monteringsplata
-roundedcube([platebredde,platedybde,platehoyde], avrunding);
-echo("Bunnplate", [platebredde,platedybde,platehoyde], avrunding);
 
 // regne ut x og y for plassering av  ramma for å få den sentrert på toppen
 pos_x = (platebredde - rammebredde)/2 - rammetykkelse;
@@ -67,7 +64,7 @@ str_y = rammedybde + rammetykkelse * 2;
 echo("Størrelse", str_x, str_y);
 
 // Lokale moduler - bruker variablene over som globale
-module platemedramme() {
+module ramme() {
     translate([pos_x,pos_y,platehoyde]) {
         difference() {
             // Utvid denne 'avrunding' nedover sånn at den ikke blir avrunda under.
@@ -81,13 +78,39 @@ module platemedramme() {
     }
 }
 
-//difference() 
-{
-    platemedramme();
-    // Fire hull
-    translate([(innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, 5]) {
-        skruehull(diameter=hullbredde, lengde=platehoyde, innsenkning = innsenkning);
+module bunnplate() {
+    difference() {
+        // Monteringsplata
+        translate([0, 0, -avrunding]) {
+            difference() {
+                roundedcube([platebredde,platedybde,platehoyde+avrunding], avrunding);
+                cube([platebredde,platedybde,avrunding]);
+                translate([(innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, avrunding]) {
+                    skruehull(diameter=hullbredde, lengde=platehoyde, innsenkning = innsenkning);
+                }
+                translate([platebredde-(innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, avrunding]) {
+                    skruehull(diameter=hullbredde, lengde=platehoyde, innsenkning = innsenkning);
+                }
+                translate([(innsenkning/2+avrunding)*2, platedybde-(innsenkning/2+avrunding)*2, avrunding]) {
+                    skruehull(diameter=hullbredde, lengde=platehoyde, innsenkning = innsenkning);
+                }
+                translate([platebredde-(innsenkning/2+avrunding)*2, platedybde-(innsenkning/2+avrunding)*2, avrunding]) {
+                    skruehull(diameter=hullbredde, lengde=platehoyde, innsenkning = innsenkning);
+                }
+            }
+        }
+        echo("Bunnplate", [platebredde,platedybde,platehoyde], avrunding);
     }
     echo("Skruehull", (innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, 2);
     echo("Translate (skruehull)", [(innsenkning/2+avrunding)*2, (innsenkning/2+avrunding)*2, 0]);
 }
+
+module platemedramme() {
+    union() {
+        ramme();
+        bunnplate();
+    }
+}
+
+
+platemedramme();

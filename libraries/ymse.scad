@@ -43,6 +43,15 @@ module ramme(size, border=1) {
     }
 }
 
+module skruehull(diameter, lengde, innsenkning = 0) {
+    cylinder(d = diameter, h = lengde);
+    if (innsenkning != 0) {
+        translate([0, 0, lengde-innsenkning]) {
+            cylinder(h=innsenkning, d1=diameter, d2=diameter+innsenkning);
+        }
+    }
+}
+
 // Warn users including this with 'include' without knowing better
 echo("Don't 'include' this if you just want to use its modules etc. Better 'use' it.");
 
