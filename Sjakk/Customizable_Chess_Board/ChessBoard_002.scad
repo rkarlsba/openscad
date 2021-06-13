@@ -21,7 +21,7 @@ tolerance=0.3;//[0:0.05:0.7]
 // definition (only affect corners)
 $fn=60;
 // [Corner color 01,Corner color 02,Edge color 01,Edge color 02,Center color 01,Center color 02,Test part]
-render="Edge color 1";
+render="Corner color 2";
 
 ////////
 module slot() {

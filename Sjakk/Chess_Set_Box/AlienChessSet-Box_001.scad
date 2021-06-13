@@ -3,17 +3,22 @@
  *
  * Code cleanup for readability and changed to parametric by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
  */
+use <ymse.scad>
 
 $fn=60; //definition
 
-module box_ext() { //external shape of the box
-    hull() {
-        for (i=[-52,89.5],j=[-1,1]) {
-            translate([i,j*72.75,0]) {
+module box_ext(x = 141.5,y = 72.75*2, z=40, r=5) { //external shape of the box
+    roundedcube([x,y,z], r);
+/*    hull() {
+//        for (i=[-52,89.5],j=[-1,1]) {
+
+        for (i=[0,x],j=[0,1]) {
+            translate([i,j*y,0]) {
                 cylinder(r=4.75,h=40);
             }
         }
     }
+*/
 }
 module comp1() { //compartiment 1
     minkowski() {
@@ -58,8 +63,8 @@ module box() {
     }
 }
 
-*box_ext();
-comp1();
+box_ext();
+*comp1();
 *box();
 *lid();
 
