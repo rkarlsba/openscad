@@ -89,7 +89,7 @@ difference() {
     translate([0,0,40]) rotate([0,180,0])
     text_on_cylinder(t=tekst,locn_vec=[0,0,0],r=bredde/2,
         r1=undef,r2=undef,h=40,size=10,rotate=0,font=font,
-        updown=-10,direction="ltr",extrusion_height=1,eastwest=0,face="side");
+        direction="ltr",extrusion_height=1,eastwest=0);
 }
 
 // Kryss

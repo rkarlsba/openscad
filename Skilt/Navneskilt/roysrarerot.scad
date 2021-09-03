@@ -1,7 +1,7 @@
 // Pakkelapp
 
 use <ymse.scad>
-
+use <NoiseLib.scad>
 
 $fn = $preview ? 8 : 64;
 
@@ -17,6 +17,14 @@ fonttype="Apple Chancery:style=筆寫斜體";
 //fonttype="Liberation Sans";
 fontspacing=1;
 bugaddition = $preview ? 0.1 : 0;
+
+module dot(xy, radius) {
+    translate([xy[0], xy[1], label_thickness]) {
+        linear_extrude(text_thickness) {
+            circle(r=radius);
+        }
+    }
+}
 
 difference() {
     hull() {
@@ -36,50 +44,59 @@ difference() {
     }
 }
 
-translate([8,75,label_thickness]) {
+translate([8,77,label_thickness]) {
     linear_extrude(text_thickness) {
         text("Velkommen til", size=fontsize-1, font=fonttype);
     }
 }
-translate([17,50,label_thickness]) {
+
+/* Roys rare rot */
+translate([12,50,label_thickness]) {
     linear_extrude(text_thickness) {
         text("Roys", size=fontsize*1.4, font=fonttype);
     }
 }
-translate([66,33,label_thickness]) {
+translate([60,33,label_thickness]) {
     rotate([0,0,4]) {
         linear_extrude(text_thickness) {
             text("rare", size=fontsize*1.4, font=fonttype);
         }
     }
 }
-translate([102,18,label_thickness]) {
+translate([97,18,label_thickness]) {
     rotate([0,0,-12]) {
         linear_extrude(text_thickness) {
             text("rot", size=fontsize*1.4, font=fonttype);
         }
     }
 }
-translate([20,40,label_thickness])
-    linear_extrude(text_thickness) 
+
+/* Trapp */
+translate([15,40,label_thickness]) {
+    linear_extrude(text_thickness) {
         polygon([
             [0,0],[20,-1],
-            [21,-10],[35,-11],
-            [36,-22],[51,-22],
-            [52.5,-30],[80,-32],
-            [80,-33],[51.5,-31],
-            [50.5,-23],[35,-23],
-            [34.5,-12],[19.7,-11],
+            [21,-10],[40,-11],
+            [39,-22],[58,-22],
+            [58.5,-30],[90,-32],
+            [94,-33],[57,-31],
+            [56.5,-23],[38,-23],
+            [38.5,-12],[19.7,-11],
             [18,-2],[-1,-1]
         ]);
-//[0,1],[15,1],[15,0]]);
-//translate([8,35,label_thickness]) cube([15,line,text_thickness]);
-//translate([25,25,label_thickness]) cube([15,line,text_thickness]);
-//translate([28,15,label_thickness]) cube([15,line,text_thickness]);
+    }
+}
 
-
-
-
-
-
-
+/* Skrot/mur */
+randseed_xy=429;
+randseed_size=4232;
+sizes=rands(0.3, 0.6, 10000, randseed_size);
+translate([14,10,0]) {
+    for (y = [0:1.5:28]) {
+        for (x = rands(0, 80, 6.20, randseed_xy+y)) {
+            if (x <21 || (x < 40 && y < 18) || (x < 58 && y < 8) ) {
+                dot([x, y], sizes[x*y]);
+            }
+        }
+    }
+}

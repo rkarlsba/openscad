@@ -1,10 +1,13 @@
 /*
  * Spare part for staple remover
  */
+/*
 small();   // for narrower end
 translate([40,0,0]) {
     big();   // for wider end
 }
+*/
+small();
 
 // Her trenger du nok ikke to separate polyhedron-er. Det hadde vært lettere med én vinge og mirror().
 module wings () {
