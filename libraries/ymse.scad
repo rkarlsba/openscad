@@ -2,22 +2,30 @@
 pi =  3.1415927;
 
 module roundedsquare(size, radius) {
-    hull() {
-        translate([radius, radius]) circle(r=radius);
-        translate([size[0]-radius, radius]) circle(r=radius);
-        translate([radius, size[1]-radius]) circle(r=radius);
-        translate([size[0]-radius, size[1]-radius]) circle(r=radius);
+    if (radius == 0) {
+        square(size);
+    } else {
+        hull() {
+            translate([radius, radius]) circle(r=radius);
+            translate([size[0]-radius, radius]) circle(r=radius);
+            translate([radius, size[1]-radius]) circle(r=radius);
+            translate([size[0]-radius, size[1]-radius]) circle(r=radius);
+        }
     }
 }
 
 module roundedcube(size, radius) {
-    translate([radius,radius,radius]) {
-        hull() {
-            for (z = [0, size[2]-radius*2]) {
-                translate([0, 0, z]) sphere(r=radius);
-                translate([size[0]-radius*2, 0, z]) sphere(r=radius);
-                translate([0, size[1]-radius*2, z]) sphere(r=radius);
-                translate([size[0]-radius*2, size[1]-radius*2, z]) sphere(r=radius);
+    if (radius == 0) {
+        cube(size);
+    } else {
+        translate([radius,radius,radius]) {
+            hull() {
+                for (z = [0, size[2]-radius*2]) {
+                    translate([0, 0, z]) sphere(r=radius);
+                    translate([size[0]-radius*2, 0, z]) sphere(r=radius);
+                    translate([0, size[1]-radius*2, z]) sphere(r=radius);
+                    translate([size[0]-radius*2, size[1]-radius*2, z]) sphere(r=radius);
+                }
             }
         }
     }
