@@ -1,0 +1,15 @@
+<!DOCTYPE MeshLabDocument>
+<MeshLabProject>
+ <MeshGroup>
+  <MLMesh label="Netatmo_Welcome_30_Degree_Wall_Holder.stl" visible="1" filename="../../../../../Downloads/Netatmo_Welcome_30_Degree_Wall_Holder.stl" idInFile="-1">
+   <MLMatrix44>
+1 0 0 0 
+0 1 0 0 
+0 0 1 0 
+0 0 0 1 
+</MLMatrix44>
+   <RenderingOption wireColor="64 64 64 255" pointColor="252 233 79 255" boxColor="234 234 234 255" wireWidth="1" solidColor="192 192 192 255" pointSize="3">100001000000000000000100000001010100000010100000000100111011110000001001</RenderingOption>
+  </MLMesh>
+ </MeshGroup>
+ <RasterGroup/>
+</MeshLabProject>
