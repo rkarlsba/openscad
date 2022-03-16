@@ -20,10 +20,17 @@
 
 tykkelse = 2;
 
-disktype = "HDD-2.5";
+disktype = "HDD-2.5-9.5";
 
-boksdim = disktype == "HDD-3.5" ? [105,26,40] : (
-          disktype == "HDD-2.5" ? [72,9,25] : []);
+boksdim = disktype == "HDD-3.5" ? [105,26,40] : 
+          disktype == "HDD-2.5-5" ? [72,7,25] : 
+          disktype == "HDD-2.5" ? [72,9,25] : 
+          disktype == "HDD-2.5-7" ? [72,9,25] : 
+          disktype == "HDD-2.5-9.5" ? [72,11.5,25] : 
+          disktype == "HDD-2.5-12.5" ? [72,14.5,25] : 
+          disktype == "HDD-2.5-15" ? [72,17,25] : 
+          disktype == "HDD-2.5-19" ? [72,21,25] : 
+          [];
 //x=105; y=26; z=40;
 
 // internt;
