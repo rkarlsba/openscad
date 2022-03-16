@@ -166,38 +166,38 @@ module star(assembled=false) {
     W = length + spacing;
     
     rotate(assembled ? [90*(-1 + 1), 0, 0] : 0)
-    translate(assembled ? 0 : [0, 0*D, 0])
-    rotate(assembled ? 0 : [-45, 0, 0])
-    piece0();
+        translate(assembled ? 0 : [0, 0*D, 0])
+            rotate(assembled ? 0 : [-45, 0, 0])
+                piece0();
     
     rotate(assembled ? [90*(1 + 1), 0, 0] : 0)
-    translate(assembled ? 0 : [0, 1*D, 0])
-    rotate(assembled ? 0 : [-45, 0, 0])
-    piece1();
+        translate(assembled ? 0 : [0, 1*D, 0])
+            rotate(assembled ? 0 : [-45, 0, 0])
+                piece1();
 
     rotate(assembled ? [90, 0, 90] : 0)
-    rotate(assembled ? [90*(-1 + 1), 0, 0] : 0)
-    translate(assembled ? 0 : [0, 2*D, 0])
-    rotate(assembled ? 0 : [-45, 0, 0])
-    piece2();
+        rotate(assembled ? [90*(-1 + 1), 0, 0] : 0)
+            translate(assembled ? 0 : [0, 2*D, 0])
+                rotate(assembled ? 0 : [-45, 0, 0])
+                    piece2();
     
     rotate(assembled ? [90, 0, 90] : 0)
-    rotate(assembled ? [90*(1 + 1), 0, 0] : 0)
-    translate(assembled ? 0 : [W, 0*D, 0])
-    rotate(assembled ? 0 : [-45, 0, 0])
-    piece3();
+        rotate(assembled ? [90*(1 + 1), 0, 0] : 0)
+            translate(assembled ? 0 : [W, 0*D, 0])
+                rotate(assembled ? 0 : [-45, 0, 0])
+                    piece3();
 
     rotate(assembled ? [90, 90, 0] : 0)
-    rotate(assembled ? [90*(-1 + 1), 0, 0] : 0)
-    translate(assembled ? 0 : [W, 1*D, 0])
-    rotate(assembled ? 0 : [-45, 0, 0])
-    piece4();
+        rotate(assembled ? [90*(-1 + 1), 0, 0] : 0)
+            translate(assembled ? 0 : [W, 1*D, 0])
+                rotate(assembled ? 0 : [-45, 0, 0])
+                    piece4();
     
     rotate(assembled ? [90, 90, 0] : 0)
-    rotate(assembled ? [90*(1 + 1), 0, 0] : 0)
-    translate(assembled ? 0 : [W, 2*D, 0])
-    rotate(assembled ? 0 : [-45, 0, 0])
-    piece5();
+        rotate(assembled ? [90*(1 + 1), 0, 0] : 0)
+            translate(assembled ? 0 : [W, 2*D, 0])
+                rotate(assembled ? 0 : [-45, 0, 0])
+                    piece5();
 }
 
-star(true);
+star(false);
