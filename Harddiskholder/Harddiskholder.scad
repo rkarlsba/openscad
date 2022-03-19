@@ -1,5 +1,5 @@
 /*
- * harddiskholder.scad
+ * Harddiskholder.scad
  *
  * Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
  * Licensed under AGPL v3. See https://www.gnu.org/licenses/agpl-3.0.html
@@ -23,31 +23,36 @@
  * 2.5" drives, while you might want 2mm for 3.5" drives.abs
  * Call storboks() with the number of drives you need space for. It will only grow
  * in the Y axis.
+ *
+ * PS: Original code was and some varabiels still are in Norwagian, but it should be
+ * understandable. Didn't bother to translate it all.
+ *
  */
 
+// Settings
 wall_thickness = 1.5;
+disktype = "HDD-3.5";
+y_slack = 2;
 
-disktype = "HDD-2.5-9.5";
-
-boksdim = disktype == "HDD-3.5" ? [105,26,40] : 
-          disktype == "HDD-3.5-20" ? [105,22,40] : 
-          disktype == "HDD-3.5-23" ? [105,26,40] : 
-          disktype == "HDD-2.5-5" ? [72,7,25] : 
-          disktype == "HDD-2.5" ? [72,9,25] : 
-          disktype == "HDD-2.5-7" ? [72,9,25] : 
-          disktype == "HDD-2.5-9.5" ? [72,11.5,25] : 
-          disktype == "HDD-2.5-12.5" ? [72,14.5,25] : 
-          disktype == "HDD-2.5-15" ? [72,17,25] : 
-          disktype == "HDD-2.5-19" ? [72,21,25] : 
+// Internal vars
+boksdim = disktype == "HDD-3.5" ? [105,24+y_slack,40] : 
+          disktype == "HDD-3.5-20" ? [105,20+y_slack,40] : 
+          disktype == "HDD-3.5-23" ? [105,23+y_slack,40] : 
+          disktype == "HDD-2.5-5" ? [72,5+y_slack,25] : 
+          disktype == "HDD-2.5" ? [72,7+y_slack,25] : 
+          disktype == "HDD-2.5-7" ? [72,7+y_slack,25] : 
+          disktype == "HDD-2.5-9.5" ? [72,9.5+y_slack,25] : 
+          disktype == "HDD-2.5-12.5" ? [72,12.5+y_slack,25] : 
+          disktype == "HDD-2.5-15" ? [72,15+y_slack,25] : 
+          disktype == "HDD-2.5-19" ? [72,19+y_slack,25] : 
           [];
-
-// internal vars
 ty=wall_thickness;
 
+// Modules
 module boks() {
     difference() {
         cube([boksdim[0]+ty*2,boksdim[1]+ty*2,boksdim[2]]);
-        
+
         translate([ty,ty,ty]) {
             cube(boksdim);
         }
@@ -62,4 +67,12 @@ module storboks(antall) {
     }
 }
 
+// Main code
+
+// Bottom part
 storboks(6);
+
+// Top part (if you need one)
+//scale([1,1,.4]) {
+//    storboks(6);
+//}
