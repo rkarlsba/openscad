@@ -31,6 +31,20 @@ module roundedcube(size, radius) {
     }
 }
 
+// r[adius], h[eight], [rou]n[d]
+// roundedcylinder(r=10,h=30,n=.5,$fn=200);
+module roundedcylinder(r,h,n) {
+    rotate_extrude(convexity=1) {
+        offset(r=n) {
+            offset(delta=-n) {
+                square([r,h]);
+            }
+        }
+        square([n,h]);
+    }
+}
+
+
 module flat_heart(size) {
     intsize = size/pi*2;
     rotate([0,0,45]) {

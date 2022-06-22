@@ -35,15 +35,23 @@ rotate_extrude() {
 
 $fa = 1; $fs = 0.2;
  
-function f(x) = (x/4) * (x/4);
+function f(x) = pow(x/3.85,2);
  
 rotate_extrude() {
-    translate([20, 0]) square([10, 2]);
+    translate([20, 0]) {
+        square([10, 2]);
+    }
  
-    translate([30, 1]) for (x = [0 : 38]) {
-        hull() {
-            translate([x, f(x)]) circle(1);
-            translate([x + 1, f(x + 1)]) circle(1);
+    translate([25, 1]) {
+        for (x = [0 : 48]) {
+            hull() {
+                translate([x, f(x)]) {
+                    circle(1);
+                }
+                translate([x + 1, f(x + 1)]) {
+                    circle(1);
+                }
+            }
         }
     }
 }
