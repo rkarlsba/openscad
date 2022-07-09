@@ -135,7 +135,7 @@ module nut_cutout() {
     */
     
     // Hex nut:
-    hex_nut_t = 2.5;
+    hex_nut_t = 3;
     hex_nut_d = 6;
     // actual nut
     rotate([90,0,0])
@@ -173,7 +173,7 @@ module probe_holder_cut() {
     
     // nut is 19mm x 3.5mm
     translate([0,probe_holder_offset, probe_holder_z+7])
-    cylinder(d=19, h=3.5, $fn=6);
+    cylinder(d=19, h=4, $fn=6);
     
     translate([-probe_holder_w/2, arm_start_x+arm_size_x, probe_holder_z+main_plate_t])
     cube([probe_holder_w,
@@ -318,6 +318,9 @@ module preview_examples() {
         cylinder(d2=9, d1=0.4, h=5);
 
 }
+preview_examples();
+//translate([-2.5,11,-15])
+//cube([5,9,5]);
 
 effector();
 
