@@ -318,7 +318,9 @@ module preview_examples() {
         cylinder(d2=9, d1=0.4, h=5);
 
 }
-preview_examples();
+if ($preview) {
+    preview_examples();
+}
 //translate([-2.5,11,-15])
 //cube([5,9,5]);
 
