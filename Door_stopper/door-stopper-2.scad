@@ -39,16 +39,23 @@ Printing with the RapMan / skeinforge
 // ------------------------- Pick your module
 // Comment/uncomment one
 
-door_stopper ();
-// door_stopper_simple ();
+/*
+translate([-125,-40,0]) {
+    cube([250,80,30]);
+}
+translate([0,0,30]) {
+    door_stopper ();
+}
+*/
+door_stopper_simple ();
 
 // -------------------------- door stopper with text underneath 
 
 module door_stopper ()
 {
-    height = 25  ;
-    length = 120 ;
-    width= 60 ;
+    height = 80  ;
+    length = 250 ;
+    width= 80 ;
     half_width  = width / 2;
     
     borders = 10; // 1 cm on each side
@@ -75,7 +82,7 @@ module door_stopper ()
 	translate ([-length/2.0, 0, 0]) {
     	    polyhedron (	
 	    		points = [[0, -half_width, height], [0, half_width, height], [0, half_width, 0], [0, -half_width, 0], [length, -half_width, 0], [length, half_width, 0]],
-			triangles = [[0,3,2], [0,2,1], [3,0,4], [1,2,5], [0,5,4], [0,1,5],  [5,2,4], [4,2,3], ]);
+			faces = [[0,3,2], [0,2,1], [3,0,4], [1,2,5], [0,5,4], [0,1,5],  [5,2,4], [4,2,3], ]);
 	}
 	// bottom inset
 	translate ([-1 * borders, 0, bottom_z]) {
@@ -113,9 +120,9 @@ module door_stopper ()
 
 module door_stopper_simple ()
 {
-    height = 20  ;
-    length = 125 ;
-    width= 40 ;
+    height = 85  ;
+    length = 250 ;
+    width= 60 ;
     half_width  = width / 2;
     
     borders = 10; // 1 cm on each side
@@ -131,7 +138,7 @@ module door_stopper_simple ()
 	translate ([-length/2.0, 0, 0]) {
     	    polyhedron (	
 	    		points = [[0, -half_width, height], [0, half_width, height], [0, half_width, 0], [0, -half_width, 0], [length, -half_width, 0], [length, half_width, 0]],
-			triangles = [[0,3,2], [0,2,1], [3,0,4], [1,2,5], [0,5,4], [0,1,5],  [5,2,4], [4,2,3], ]);
+			faces = [[0,3,2], [0,2,1], [3,0,4], [1,2,5], [0,5,4], [0,1,5],  [5,2,4], [4,2,3], ]);
 	}
 
 	// top inset
