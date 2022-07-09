@@ -173,7 +173,7 @@ module probe_holder_cut() {
     
     // nut is 19mm x 3.5mm
     translate([0,probe_holder_offset, probe_holder_z+7])
-    cylinder(d=19, h=4, $fn=6);
+    cylinder(d=19, h=40, $fn=6);
     
     translate([-probe_holder_w/2, arm_start_x+arm_size_x, probe_holder_z+main_plate_t])
     cube([probe_holder_w,
@@ -195,6 +195,9 @@ fan_duct_len = 40;
 fan_outer_d = 40;
 fan_wall_t = 1.5;
 fan_inner_d = fan_outer_d-2*fan_wall_t;
+fan_offset_y = 50;
+fan_offset_z = -10;
+fan_rotation = 45;
 
 outlet_inner_d = 10;
 outlet_outer_d = outlet_inner_d + 2*fan_wall_t;
@@ -263,14 +266,18 @@ module effector() {
             probe_holder();
             
             rotate_copy([120,240])
-                translate([0,43,-7.5])
-                rotate([180-40,0,0])
-                fan_duct();
+                translate([0,fan_offset_y,fan_offset_z]) {
+                    rotate([180-fan_rotation,0,0])
+                        fan_duct();
+                    translate([-15,-25.5,12.2])
+                    rotate([-16,0,0])
+                    cube([30,10.4,5]);
+                }
         }
         union() {
             rotate_copy([120,240])
-                translate([0,43,-7.5])
-                rotate([180-40,0,0])
+                translate([0,fan_offset_y,fan_offset_z])
+                rotate([180-fan_rotation,0,0])
                 fan_duct_cut();
 
 
@@ -318,9 +325,8 @@ module preview_examples() {
         cylinder(d2=9, d1=0.4, h=5);
 
 }
-if ($preview) {
+if($preview)
     preview_examples();
-}
 //translate([-2.5,11,-15])
 //cube([5,9,5]);
 
