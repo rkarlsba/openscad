@@ -155,7 +155,7 @@ module rotate_copy(rotations) {
 probe_holder_w = 20;
 probe_holder_offset = 30;
 probe_holder_z = -20;
-probe_d = 12;
+probe_d = 12.5;
 module probe_holder() {
     translate([-probe_holder_w/2,
                probe_holder_offset-probe_holder_w/2,
@@ -198,27 +198,29 @@ fan_inner_d = fan_outer_d-2*fan_wall_t;
 fan_offset_y = 50;
 fan_offset_z = -10;
 fan_rotation = 45;
+fan_screw_hole_d = 4.3;
 
 outlet_inner_d = 10;
 outlet_outer_d = outlet_inner_d + 2*fan_wall_t;
+inner_scale = 0.3;
+outer_scale = ((outlet_inner_d * inner_scale)
+               + 2*fan_wall_t)/outlet_outer_d;
 
 module fan_duct() {
     round_d = 3;
     
-    union() {
-        hull() {
-            cylinder(d=fan_outer_d, h=1);
-            translate([0,0,fan_duct_len-1])
-                scale([1,0.5,1])
-                cylinder(d=outlet_outer_d, h=1);
-        }
-        translate([-20+round_d,
-                   -20+round_d,
-                   0])
-            linear_extrude(fan_mount_plate_t)
-            offset(round_d)
-            square([40-2*round_d,40-2*round_d]);
+    hull() {
+        cylinder(d=fan_outer_d, h=1);
+        translate([0,0,fan_duct_len-1])
+            scale([1,outer_scale,1])
+            cylinder(d=outlet_outer_d, h=1);
     }
+    translate([-20+round_d,
+               -20+round_d,
+               0])
+        linear_extrude(fan_mount_plate_t)
+        offset(round_d)
+        square([40-2*round_d,40-2*round_d]);
 }
 
 module fan_duct_cut() {
@@ -226,22 +228,103 @@ module fan_duct_cut() {
     hull() {
         cylinder(d=fan_inner_d, h=1);
         translate([0,0,fan_duct_len-1])
-            scale([1,0.5,1])
-            cylinder(d=outlet_inner_d+2, h=1);
+            scale([1,inner_scale,1])
+            cylinder(d=outlet_inner_d, h=1);
     }
     
     //cylinder(d=37, h=fan_mount_plate_t);
     
     // screws
     translate([16,16,0])
-        cylinder(d=4, h=fan_mount_plate_t+5);
+        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
     translate([16,-16,0])
-        cylinder(d=4, h=fan_mount_plate_t+5);
+        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
     translate([-16,16,0])
-        cylinder(d=4, h=fan_mount_plate_t+5);
+        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
     translate([-16,-16,0])
-        cylinder(d=4, h=fan_mount_plate_t+5);
+        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
 
+}
+
+// adjusted for safeties
+hotend_fan_duct_e3d_h = 28;
+hotend_fan_duct_e3d_w = 22 + .5;
+hotend_fan_duct_wall_t = 1.5;
+hotend_fan_duct_mount_y = -50;
+hotend_fan_duct_mount_z = -hotend_fan_duct_e3d_h/2;
+
+hotend_fan_mount_zshift = -3;
+hotend_fan_mount_rot = 45;
+
+module hotend_fan_duct() {
+    round_d = 3;
+    
+    block_x = 25;
+    block_y = 20;
+    block_z = 4;
+    translate([-block_x/2,-block_y,-block_z])
+        cube([block_x,block_y,block_z]);
+    rotate([-90,0,0]) {
+        hull() {
+            translate([0,
+                        -hotend_fan_duct_mount_z-hotend_fan_mount_zshift,
+                        hotend_fan_duct_mount_y])
+                rotate([-hotend_fan_mount_rot,0,0])
+                cylinder(d=fan_outer_d, h=fan_mount_plate_t);
+            // Middle of the e3d
+            translate([-hotend_fan_duct_e3d_w/2-hotend_fan_duct_wall_t,
+                       -hotend_fan_duct_wall_t,-1])
+                cube([hotend_fan_duct_e3d_w+2*hotend_fan_duct_wall_t,
+                    hotend_fan_duct_e3d_h+2*hotend_fan_duct_wall_t,1]);
+        }
+        translate([0,
+                -hotend_fan_duct_mount_z-hotend_fan_mount_zshift,
+                hotend_fan_duct_mount_y])
+            rotate([-hotend_fan_mount_rot,0,0])
+            translate([round_d-20,round_d-20,])
+            linear_extrude(fan_mount_plate_t)
+            offset(round_d)
+            square([40-2*round_d,40-2*round_d]);
+    }
+
+}
+module hotend_fan_duct_cut() {
+    rotate([-90,0,0]) {
+        hull() {
+            translate([ 0,
+                        -hotend_fan_duct_mount_z-hotend_fan_mount_zshift,
+                        hotend_fan_duct_mount_y])
+                rotate([-hotend_fan_mount_rot,0,0])
+                translate([0,0,-.1])
+                cylinder(d=fan_inner_d, h=fan_mount_plate_t+.1);
+
+            // Middle of the e3d
+            translate([-hotend_fan_duct_e3d_w/2,0,-1])
+                cube([hotend_fan_duct_e3d_w,
+                    hotend_fan_duct_e3d_h,1]);
+            
+        }
+        // the heatsink itself, but add 10mm downwards
+        rotate([-90,0,0])
+            cylinder(d=hotend_fan_duct_e3d_w, h=hotend_fan_duct_e3d_h+10);
+    
+        // screws
+        translate([0,
+                    -hotend_fan_duct_mount_z-hotend_fan_mount_zshift,
+                    hotend_fan_duct_mount_y])
+            rotate([-hotend_fan_mount_rot,0,0])
+            translate([0,0,-.1]){
+                
+            translate([16,16,0])
+                cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+.2);
+            translate([16,-16,0])
+                cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+.2);
+            translate([-16,16,0])
+                cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+.2);
+            translate([-16,-16,0])
+                cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+.2);
+        }
+    }
 }
 
 module effector() {
@@ -269,12 +352,14 @@ module effector() {
                 translate([0,fan_offset_y,fan_offset_z]) {
                     rotate([180-fan_rotation,0,0])
                         fan_duct();
-                    translate([-15,-25.5,12.2])
+                    translate([-15,-25.8,11.2])
                     rotate([-16,0,0])
-                    cube([30,10.4,5]);
+                    cube([30,10.4,6]);
                 }
+            hotend_fan_duct();
         }
         union() {
+            hotend_fan_duct_cut();
             rotate_copy([120,240])
                 translate([0,fan_offset_y,fan_offset_z])
                 rotate([180-fan_rotation,0,0])
@@ -286,9 +371,13 @@ module effector() {
             rotate_copy([90,210,330])
                 effector_arm_cut();
             
-            rotate_copy([90,210,330])
-                translate([17.165,0,0])
-                cylinder(d=screw_hole_d, h=main_plate_t);
+            rotate_copy([90,210,330]) {
+                translate([17.165,0,0]) {
+                    cylinder(d=screw_hole_d, h=main_plate_t);
+                    translate([0,0,-main_plate_t])
+                    cylinder(d=screw_hole_d*2, h=main_plate_t);
+                }
+            }
 
             // center hole
             cylinder(h=center_t, d=center_hole_d);
@@ -332,3 +421,7 @@ if($preview)
 
 effector();
 
+/*difference() {
+    hotend_fan_duct();
+    hotend_fan_duct_cut();
+}*/
