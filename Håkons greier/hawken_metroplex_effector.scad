@@ -1,5 +1,5 @@
 //$fn=47;
-$fn=32;
+$fn=$preview ? 32 : 64;
 
 round_d=1;
 
