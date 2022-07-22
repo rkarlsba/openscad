@@ -9,18 +9,46 @@ rillelengde=7;
 rillebredde=.5;
 rillehoyde=.5;
 
-linear_extrude(z) {
-    difference() {
-        translate([-x/2,-y/2]) {
-            square([x,y]);
+bruk_riller=1;
+bruk_negative_riller=0;
+
+module adapter() {
+    linear_extrude(z) {
+        difference() {
+            translate([-x/2,-y/2]) {
+                square([x,y]);
+            }
+            circle(d=d);
         }
-        circle(d=d);
     }
 }
-for (i=[0:1:riller-1]) {
-    rotate([0,0,i*(360/riller)]) {
-        translate([d/2,-rillebredde/2,z]) {
-            cube([rillelengde,rillebredde,rillehoyde]);
+
+module riller() {
+    for (i=[0:1:riller-1]) {
+        rotate([0,0,i*(360/riller)]) {
+            translate([d/2,-rillebredde/2,z]) {
+                cube([rillelengde,rillebredde,rillehoyde]);
+            }
         }
+    }
+}
+
+module negative_riller() {
+    for (i=[0:1:riller-1]) {
+        rotate([0,0,i*(360/riller)]) {
+            translate([d/2,-rillebredde/2,0]) {
+                cube([rillelengde,rillebredde,rillehoyde]);
+            }
+        }
+    }
+}
+
+if (bruk_riller) {
+    riller();
+}
+difference() {
+    adapter();
+    if (bruk_negative_riller) {
+        negative_riller();
     }
 }
