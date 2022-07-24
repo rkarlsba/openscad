@@ -4,8 +4,8 @@ name_sz=12;
 //name_font="MLP \\- Magic is Friendship:style=Regular";
 name_font="MLP:style=Regular";
 
-nozzle="0,4mm";
-nozzle_sz=6;
+nozzle="0,6mm";
+nozzle_sz=8;
 nozzle_font="MLP \\- Magic is Friendship:style=Regular";
 //nozzle_font="Arial:style=Bold";
 
