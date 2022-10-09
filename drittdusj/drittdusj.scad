@@ -129,34 +129,32 @@ module skrue(skruetype, gjenger) {
     }
 }
 
-tegne_dummy = 0;
-tegne_adapter = 1;
-tegne_skrue = 1;
-stable = 1;
-adapterskift = (tegne_dummy && !stable) ? [50,0,0] : [0,0,0];
-skrueskift = (tegne_skrue >= 0 || tegne_adapter) ? [-50,0,0] : [0,0,0];
-skift=15;
+tegne_dummy = 1;
+tegne_adapter = 0;
+tegne_skrue = 0;
+stable_adapter_dummy = 1;
 
+adapterskift = (tegne_dummy && !stable_adapter_dummy) ? [50,0,0] : [0,0,0];
+skrueskift = (tegne_skrue >= 0 && (tegne_adapter || tegne_dummy)) ? [-50,0,0] : [0,0,0];
 
+if (tegne_dummy) {
+    color("lightgreen") {
+        spylefaen();
+    }
+}
 
-translate([skift,skift,0]) {
-
-    if (tegne_dummy) {
-        color("lightgreen") {
-            spylefaen();
+if (tegne_adapter) {
+    translate(adapterskift) {
+        color("pink") {
+            adapterdrit();
         }
     }
+}
 
-    if (tegne_adapter) {
-        translate(adapterskift) {
-            color("pink") {
-                adapterdrit();
-            }
-        }
-    }
-    if (tegne_skrue) {
-        translate(skrueskift) {
-            skrue(skruetype, 30);
+if (tegne_skrue) {
+    translate(skrueskift) {
+        color("blue") {
+            skrue(skruetype, 12);
         }
     }
 }
