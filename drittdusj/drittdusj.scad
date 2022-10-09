@@ -15,10 +15,12 @@ h1 = 28.5;
 h2 = 14;
 h3 = 6;
 h4 = 28.5;
-
+//
 knott_ytre_d = d2;
 knott_t = 6;
 knott_b = 11;
+
+skruetype = "M10";
 
 module spylefaen() {
     difference() {
@@ -71,17 +73,22 @@ module adapterdrit() {
                             }
                             union() {
                                 translate([0,0,h1+h2+h3]) {
+                                    echo("d4 er", d4);
                                     cylinder(d=d4, h=h4/2);
                                     translate([0,0,h4/2]) {
-                                        lillesfaere=a_outer2-15;
+                                        //lillesfaere=a_outer2-15;
+                                        lillesfaere=d4;
                                         echo("lillesfaere er", lillesfaere);
                                         sphere(d=lillesfaere);
                                     }
-                                    translate([0,0,32]) {
-                                        cylinder(d=5, h=7.5);
+                                    translate([0,0,30]) {
+                                        cylinder(d=12, h=10);
                                     }
                                 }
                             }
+                        }
+                        translate([0,0,32+h1+h2+h3]) {
+                            nut(skruetype, turns=4, Douter=12);
                         }
                     }
 // hit                    
@@ -109,11 +116,28 @@ module adapterdrit() {
     }
 }  
 
-tegne_dummy = 1;
+module skrue(skruetype, gjenger) {
+    linear_extrude(3) {
+        hull() {
+            translate([0,25,0]) circle(d=12.5);
+            translate([0,0,0]) circle(d=20);
+            translate([0,-25,0]) circle(d=12.5);
+        }
+    }
+    translate([0,0,1]) {
+        bolt(skruetype, gjenger);
+    }
+}
+
+tegne_dummy = 0;
 tegne_adapter = 1;
+tegne_skrue = 1;
 stable = 1;
 adapterskift = (tegne_dummy && !stable) ? [50,0,0] : [0,0,0];
+skrueskift = (tegne_skrue >= 0 || tegne_adapter) ? [-50,0,0] : [0,0,0];
 skift=15;
+
+
 
 translate([skift,skift,0]) {
 
@@ -128,6 +152,11 @@ translate([skift,skift,0]) {
             color("pink") {
                 adapterdrit();
             }
+        }
+    }
+    if (tegne_skrue) {
+        translate(skrueskift) {
+            skrue(skruetype, 30);
         }
     }
 }
