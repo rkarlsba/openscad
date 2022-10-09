@@ -1,5 +1,7 @@
 $fn = $preview ? 18 : 96;
 
+use <threadlib/threadlib.scad>
+
 d1 = 35;
 d2_min = 41;
 d2_max = 44;
@@ -53,13 +55,43 @@ module adapterdrit() {
             cylinder(d=a_outer, h=h1-1);
             difference() {
                 union() {
-                    cylinder(d=a_outer2, h=h1+h2+h3+h4-1);
+                    cylinder(d=a_outer2, h=h1+h2+h3+h4/3*2-1);
+// herfra
+                    if (1) {
+                        difference() {
+                            union() {
+                                translate([0,0,h1+h2+h3]) {
+                                    cylinder(d=d4, h=h4/2);
+                                    translate([0,0,h4/2]) {
+                                        storesfaere=a_outer2;
+                                        echo("storesfaere er", storesfaere);
+                                        sphere(d=storesfaere);
+                                    }
+                                }
+                            }
+                            union() {
+                                translate([0,0,h1+h2+h3]) {
+                                    cylinder(d=d4, h=h4/2);
+                                    translate([0,0,h4/2]) {
+                                        lillesfaere=a_outer2-15;
+                                        echo("lillesfaere er", lillesfaere);
+                                        sphere(d=lillesfaere);
+                                    }
+                                    translate([0,0,32]) {
+                                        cylinder(d=5, h=7.5);
+                                    }
+                                }
+                            }
+                        }
+                    }
+// hit                    
+
                 }
                 union() {
-                    cylinder(d=a_inner2+4, h=h1+h2+h3+h4+1);
+                    cylinder(d=a_inner2+4, h=h1+h2+h3+h4/3*2+1);
                     rotate([0,0,90]) {
                         rotate_extrude(angle = 180, convexity = 2) {
-                            square([a_outer2/2,h1+h2-1]);
+                            square([a_outer2/2,h1+h2+h3+h4/3*2-1]);
                         }
                     }
                 }
@@ -75,7 +107,6 @@ module adapterdrit() {
             }
         }
     }
-    echo(a_outer);
 }  
 
 tegne_dummy = 1;
