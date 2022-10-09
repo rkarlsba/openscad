@@ -1,15 +1,52 @@
-// Ymse
-pi =  3.1415927;
+// ymse.scad
+//
+// Ymse: Norwegian word, ['ymsɘ], meaning "diverse" or "various")
+// Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
+
+// Bloody OpenSCAD has no idea about what a global variable might be and
+// noone seems to care, but functions work.
+function pi() =  3.141592653589793;
+
+// Colours - all in RGB, as to be passed to rgb()
+function c_red() = "#ff0000";
+function c_orange() = "#ff8000";
+function c_yellow() = "#ffff00";
+function c_green() = "#00ff00";
+function c_blue() = "#0000ff";
+function c_indigo() = "#4b0082"; // '75, 0, 130';
+function c_purple() = "#ff00ff";
+
+// Various modules
+
+/*
+ * rgb(), like color(), except it takes an array of values 0-255,
+ * resembling the values used in HTML/CSS/etc. For example: 
+ *
+ * rgb([0x80, 0x40, 0xff]) cube([10,10,10]);
+ */
+module rgb(colour) {
+    color(colour/255) {
+        children();
+    }
+}
 
 module roundedsquare(size, radius) {
     if (radius == 0) {
         square(size);
     } else {
         hull() {
-            translate([radius, radius]) circle(r=radius);
-            translate([size[0]-radius, radius]) circle(r=radius);
-            translate([radius, size[1]-radius]) circle(r=radius);
-            translate([size[0]-radius, size[1]-radius]) circle(r=radius);
+            translate([radius, radius]) {
+                circle(r=radius);
+            }
+            translate([size[0]-radius, radius]) {
+                circle(r=radius);
+            }
+            translate([radius, size[1]-radius]) {
+                circle(r=radius);
+            }
+            translate([size[0]-radius, size[1]-radius]) {
+                circle(r=radius);
+            }
         }
     }
 }
@@ -21,10 +58,18 @@ module roundedcube(size, radius) {
         translate([radius,radius,radius]) {
             hull() {
                 for (z = [0, size[2]-radius*2]) {
-                    translate([0, 0, z]) sphere(r=radius);
-                    translate([size[0]-radius*2, 0, z]) sphere(r=radius);
-                    translate([0, size[1]-radius*2, z]) sphere(r=radius);
-                    translate([size[0]-radius*2, size[1]-radius*2, z]) sphere(r=radius);
+                    translate([0, 0, z]) {
+                        sphere(r=radius);
+                    }
+                    translate([size[0]-radius*2, 0, z]) {
+                        sphere(r=radius);
+                    }
+                    translate([0, size[1]-radius*2, z]) {
+                        sphere(r=radius);
+                    }
+                    translate([size[0]-radius*2, size[1]-radius*2, z]) {
+                        sphere(r=radius);
+                    }
                 }
             }
         }
@@ -49,19 +94,22 @@ module flat_heart(size) {
     intsize = size/pi*2;
     rotate([0,0,45]) {
         square(intsize);
-        translate([intsize/2, intsize, 0])
+        translate([intsize/2, intsize, 0]) {
             circle(intsize/2, $fn=32);
+        }
 
-        translate([intsize, intsize/2, 0])
+        translate([intsize, intsize/2, 0]) {
             circle(intsize/2, $fn=32);
+        }
     }
 }
 
 module ramme(size, border=1) {
     difference() {
         square(size);
-        translate([border,border])
+        translate([border,border]) {
             square([size[0]-border*2,size[1]-border*2]);
+        }
     }
 }
 
@@ -75,7 +123,7 @@ module skruehull(diameter, lengde, innsenkning = 0) {
 }
 
 // Warn users including this with 'include' without knowing better
-echo("Don't 'include' this if you just want to use its modules etc. Better 'use' it.");
+assert("Don't 'include' this if you just want to use its modules etc. Better 'use' it.");
 
 //roundedcube([40,40,10], 2, $fn=16);
 /*

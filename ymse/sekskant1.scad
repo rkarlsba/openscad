@@ -1,0 +1,1 @@
+cylinder(h=25, d=5, $fn=6);
