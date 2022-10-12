@@ -56,7 +56,7 @@ module adapterdrit(hode=1) {
         difference() {
             union() {
                 translate([0,0,h1+h2+h3]) {
-                    cylinder(d=d4, h=h4/2);
+                    //cylinder(d=d4, h=h4);
                     translate([0,0,h4/2]) {
                         storesfaere=a_outer2;
                         echo("storesfaere er", storesfaere);
