@@ -1,4 +1,4 @@
-$fn = $preview ? 18 : 64;
+$fn = $preview ? 16 : 96;
 
 use <threadlib/threadlib.scad>
 
@@ -26,10 +26,17 @@ a_outer=a_inner+10;
 a_outer2=a_outer+3;
 
 storesfaere = 51;
-lillesfaere=d4;
+lillesfaere = d4;
 
 skruetype = "M10";
 skruehull = 12;
+
+
+module cf(height = 1, scale = 1) {
+    linear_extrude(height, scale = scale, center = true) {
+        children();
+    }
+}
 
 module spylefaen() {
     difference() {
@@ -79,13 +86,25 @@ module hode() {
             nut(skruetype, turns=4, Douter=skruehull+2);
         }
     }
+    translate([0,0,lift]) {
+        difference() {
+            cylinder(d=storesfaere-kant, h=kant);
+            cylinder(d=lillesfaere, h=kant);
+        }
+    }
+/*
+    translate([0,0,lift/2]) {
+        difference() {
+            cf(lift,.9) circle(d=storesfaere*.95);  
+            cf(lift,1) circle(d=lillesfaere);  
+        }
+    }
+    */
+
+
     difference() {
         cylinder(d=storesfaere, h=lift);
         cylinder(d=lillesfaere, h=lift);
-    }
-    translate([0,0,lift]) {
-        cylinder(d=storesfaere-kant, h=kant);
-        cylinder(d=lillesfaere-kant, h=kant);
     }
 }
 
@@ -173,7 +192,7 @@ module skrue(skruetype, gjenger) {
 tegne_dummy = 0;
 tegne_adapter_m = 0;
 tegne_adapter_f = 0;
-tegne_hode = 1;
+tegne_hode = 0;
 tegne_skrue = 1;
 stable_adapter_dummy = 0;
 
@@ -210,16 +229,10 @@ if (tegne_adapter_f) {
     }
 }
 
-if (tegne_skrue) {
-    translate(skrueskift - [50,0,0]) {
-        color("yellow") {
-            skrue(skruetype, 12);
-        }
-    }
-}
 
 if (tegne_skrue) {
-    translate(skrueskift + [50,0,0]) {
+//    translate(skrueskift + [50,0,0]) 
+    {
         color("yellow") {
             skrue(skruetype, 20);
         }
