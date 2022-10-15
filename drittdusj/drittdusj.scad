@@ -92,15 +92,6 @@ module hode() {
             cylinder(d=lillesfaere, h=kant);
         }
     }
-/*
-    translate([0,0,lift/2]) {
-        difference() {
-            cf(lift,.9) circle(d=storesfaere*.95);  
-            cf(lift,1) circle(d=lillesfaere);  
-        }
-    }
-    */
-
 
     difference() {
         cylinder(d=storesfaere, h=lift);
@@ -108,73 +99,75 @@ module hode() {
     }
 }
 
-module adapterdrit(hann=1) {
+module kropp() {
     a_h=15;
     x=17;
-
-    module kropp(hode=1) {
-        difference() {
-            union() {
-                cylinder(d=a_outer, h=h1-1);
-                difference() {
-                    union() {
-                        cylinder(d=a_outer2, h=h1+h2+h3+h4/3*2-1);
-    // <hode>
-                        if (hode) {
-                            hode();
-                        }
-    // </hode>
-
-                    }
-                    union() {
-                        cylinder(d=a_inner2+4, h=h1+h2+h3+h4/3*2+1);
-                        rotate([0,0,90]) {
-                            rotate_extrude(angle = 180, convexity = 2) {
-                                square([a_outer2/2,h1+h2+h3+h4/3*2-1]);
-                            }
-                        }
-                    }
-                }
-            }
-            union() {
-                cylinder(d=a_inner, h=h1+1);
-                rotate([0,0,90]) {
-                    rotate_extrude(angle = 180, convexity = 2)
-                    {
-                        square([a_outer/2,h1+1]);
-                    }
-                }
-            }
-        }
-    }
-    
-    echo("hann er ", hann);
-    if (hann) {
+    difference() {
         union() {
-            kropp(hann);
-            translate([-2, a_inner/2+2.1, 7.9]) {
-                cube([2,1.8,10.1]);
-            }
-            translate([-2, -(a_inner/2)-4.1, 7.9]) {
-                cube([2,1.8,10.1]);
+            cylinder(d=a_outer, h=h1-1);
+            difference() {
+                union() {
+                    cylinder(d=a_outer2, h=h1+h2+h3+h4/3*2-1);
+                }
+                union() {
+                    cylinder(d=a_inner2+4, h=h1+h2+h3+h4/3*2+1);
+                    rotate([0,0,90]) {
+                        rotate_extrude(angle = 180, convexity = 2) {
+                            square([a_outer2/2,h1+h2+h3+h4/3*2-1]);
+                        }
+                    }
+                }
             }
         }
-    } else {
-        difference() {
-            union() {
-                kropp(hann);
-            }
-            union() {
-                translate([0, a_inner/2+1.9, 8.1]) {
-                    cube([2,2.2,9.9]);
-                }
-                translate([0, -(a_inner/2)-4.1, 8.1]) {
-                    cube([2,2.2,9.9]);
+        union() {
+            cylinder(d=a_inner, h=h1+1);
+            rotate([0,0,90]) {
+                rotate_extrude(angle = 180, convexity = 2)
+                {
+                    square([a_outer/2,h1+1]);
                 }
             }
         }
     }
-}  
+}
+
+module kropp2() {
+    hakk_d = 50.0;
+    hakk_h = 2.5;
+    indre_oppe = 54.5;
+    ytre_d = 60;
+    vegg_h = 34;
+    midt_d = 37;
+    bunn_h = 5;
+    
+    h = 10+hakk_h;
+    
+    rotate([270,0,0]) {
+        difference() {
+            union() {
+                difference() {
+                    cylinder(h=hakk_h, d=ytre_d);
+                    cylinder(h=hakk_h, d=hakk_d);
+                }
+                translate([0,0,hakk_h]) {
+                    difference() {
+                        cylinder(h=vegg_h, d=ytre_d);
+                        cylinder(h=vegg_h, d=indre_oppe);
+                    }
+                }
+                translate([0,0,hakk_h+vegg_h]) {
+                    difference() {
+                        cylinder(h=bunn_h, d=ytre_d);
+                        cylinder(h=bunn_h, d=midt_d);
+                    }
+                }
+            }
+            translate([-30,0,0]) {
+                cube([60,60,60]);
+            }
+        }
+    }
+}
 
 module skrue(skruetype, gjenger) {
     linear_extrude(3) {
@@ -190,14 +183,13 @@ module skrue(skruetype, gjenger) {
 }
 
 tegne_dummy = 0;
-tegne_adapter_m = 0;
-tegne_adapter_f = 0;
+tegne_kropp = 1;
 tegne_hode = 0;
-tegne_skrue = 1;
+tegne_skrue = 0;
 stable_adapter_dummy = 0;
 
 adapterskift = (tegne_dummy && !stable_adapter_dummy) ? [50,0,0] : [0,0,0];
-skrueskift = (tegne_skrue >= 0 && (tegne_adapter_m || tegne_adapter_m || tegne_dummy)) ? [-50,0,0] : [0,0,0];
+skrueskift = (tegne_skrue >= 0 && (tegne_kropp || tegne_dummy)) ? [-50,0,0] : [0,0,0];
 
 if (tegne_dummy) {
     color("lightgreen") {
@@ -206,35 +198,21 @@ if (tegne_dummy) {
 }
 
 if (tegne_hode) {
-    translate(adapterskift) {
+    translate([-50,0,0]) {
         color("green") {
             hode();
         }
     }
 }
 
-if (tegne_adapter_m) {
-    translate(adapterskift) {
-        color("pink") {
-            adapterdrit(hann=1);
-        }
+if (tegne_kropp) {
+    color("pink") {
+        kropp2();
     }
 }
-
-if (tegne_adapter_f) {
-    translate(adapterskift) {
-        color("pink") {
-            adapterdrit(hann=0);
-        }
-    }
-}
-
 
 if (tegne_skrue) {
-//    translate(skrueskift + [50,0,0]) 
-    {
-        color("yellow") {
-            skrue(skruetype, 20);
-        }
+    color("yellow") {
+        skrue(skruetype, 20);
     }
 }
