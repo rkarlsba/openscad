@@ -142,30 +142,69 @@ module kropp2() {
     
     h = 10+hakk_h;
     
-    rotate([270,0,0]) {
+    //rotate([270,0,0]) 
+    {
         difference() {
             union() {
                 difference() {
                     cylinder(h=hakk_h, d=ytre_d);
                     cylinder(h=hakk_h, d=hakk_d);
                 }
+
                 translate([0,0,hakk_h]) {
                     difference() {
                         cylinder(h=vegg_h, d=ytre_d);
                         cylinder(h=vegg_h, d=indre_oppe);
                     }
                 }
+
                 translate([0,0,hakk_h+vegg_h]) {
                     difference() {
                         cylinder(h=bunn_h, d=ytre_d);
                         cylinder(h=bunn_h, d=midt_d);
                     }
                 }
+
             }
             translate([-30,0,0]) {
                 cube([60,60,60]);
             }
         }
+    }
+}
+
+module polykropp() {
+    
+    r1=25;
+    r2=27.25;
+    r3=18.5;
+    h1=2.5;
+    h2=34;
+    h3=5;
+    sb=7; // stripsbredde
+
+    profil = [
+        [0,0],              // 0
+        [r1,0],             // 1
+        [r1,h1],            // 2
+        [r2,h1+.8],         // 3
+        [r2,h1+h2-2],       // 4
+        [r3,h1+h2],         // 5
+        [r3,h1+h2+h3],      // 6
+        [0,h1+h2+h3]        // 7
+    ];
+
+    difference() {
+        cylinder(r=30,h=h1+h2+h3);
+        rotate_extrude($fn=180, angle=360, convexity = 2)
+            polygon(profil);
+        translate([-50,0,0]) {
+            cube([100,50,50]);
+        }
+        /*
+        translate([0,0,(h1+h2+h3)/2-sb/2) {
+        }
+        */
     }
 }
 
@@ -207,7 +246,7 @@ if (tegne_hode) {
 
 if (tegne_kropp) {
     color("pink") {
-        kropp2();
+        polykropp();
     }
 }
 
