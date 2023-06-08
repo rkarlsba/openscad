@@ -95,7 +95,7 @@ module bunn() {
             cube([_x,_y,_z+thickness]);
         }
         if (runded_slits) {
-            /* Avrunda spalter */
+            /* Rounded slits */
             for (fx=[8:14:_x-3]) {
                 hull() {
                     translate([fx+thickness,thickness*3,-renderfix]) {
@@ -107,7 +107,7 @@ module bunn() {
                 }
             }
         } else {
-            /* Firkanta spalter */
+            /* Square slits */
             for (fy=[8:7:_y-3]) {
                 translate([10,fy,-renderfix]) {
                     cube([_x-20+thickness*2,slitwidth,thickness+renderfix*2]);
@@ -119,7 +119,9 @@ module bunn() {
                 usb_port();
             }
         }
-        for (fz=[8:7:_z]) {
+        /* Make air holes for the psu part */
+        /* FIXME! Make a module out of this next time!!! */
+        for (fz=[8:7:z]) {
             for (fx=[10:10:_x-5]) {
                 translate([fx,-renderfix,fz]) {
                     rotate([270,0,0]) {
@@ -128,7 +130,7 @@ module bunn() {
                 }
             }
         }
-        for (fz=[8:7:_z]) {
+        for (fz=[8:7:z]) {
             for (fy=[10.5:10:_y-5]) {
                 translate([_x+thickness*2+renderfix,fy,fz]) {
                     rotate([0,270,0]) {
@@ -137,7 +139,7 @@ module bunn() {
                 }
             }
         }
-        for (fz=[8:7:_z]) {
+        for (fz=[8:7:z]) {
             for (fy=[10.5:10:_y-5]) {
                 translate([thickness+renderfix,fy,fz]) {
                     rotate([0,270,0]) {
