@@ -12,7 +12,6 @@ label_thickness = 1;
 text_thickness = 1.4;
 fontsize=12.5;
 fonttype="Apple Chancery:style=筆寫斜體";
-//fonttype="Liberation Sans";
 fontspacing=1;
 bugaddition = $preview ? 0.1 : 0;
 

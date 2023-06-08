@@ -1,3 +1,30 @@
+module torus(r1=1, r2=2, angle=360, endstops=0, $fn=50){
+    if(angle < 360){
+        intersection(){
+            rotate_extrude(convexity=10, $fn=$fn)
+            translate([r2, 0, 0])
+            circle(r=r1, $fn=$fn);
+            
+            color("blue")
+            wedge(h=r1*3, r=r2*2, a=angle);
+        }
+    }else{
+        rotate_extrude(convexity=10, $fn=$fn)
+        translate([r2, 0, 0])
+        circle(r=r1, $fn=$fn);
+    }
+    
+    if(endstops && angle < 360){
+        rotate([0,0,angle/2])
+        translate([0,r2,0])
+        sphere(r=r1);
+        
+        rotate([0,0,-angle/2])
+        translate([0,r2,0])
+        sphere(r=r1);
+    }
+}
+
 module flat_heart() {
   square(20);
 
@@ -13,7 +40,20 @@ module makeheart() {
     polygon([ for (t = [0 : 360 ]) heart(t) ]);
 }
 
-makeheart();
+linear_extrude(height = 6) {
+    scale([1.3,1.3,1]) {
+        makeheart();
+    }
+}
 
-//linear_extrude(height = 13) 
+difference() {
+    translate([0,10,0]) {
+        torus(r1=1, r2=6, $fn=128);
+    }
+    translate([-10,0,-5]) {
+        cube([20,20,5]);
+    }
+}
+
+//linear_extrude(height = 12) 
 //flat_heart();

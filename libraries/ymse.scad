@@ -133,3 +133,11 @@ linear_extrude(height = 13)
 */
 
 //flat_heart(10);
+
+// a:angle, r:radius, h:height
+module pie_slice(a, r, h){
+  rotate_extrude(angle=a) {
+    square([r,h]);
+  }
+}
+

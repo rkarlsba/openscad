@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:slic3rpe="http://schemas.slic3r.org/3mf/2017/06" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p">
+ <metadata name="BambuStudio:3mfVersion">1</metadata>
+ <metadata name="Title"></metadata>
+ <metadata name="Designer"></metadata>
+ <metadata name="DesignerUserId">1761114406</metadata>
+ <metadata name="DesignerCover"></metadata>
+ <metadata name="Description"></metadata>
+ <metadata name="CopyRight"></metadata>
+ <metadata name="License"></metadata>
+ <metadata name="CreationDate">2022-11-24</metadata>
+ <metadata name="ModificationDate">2022-11-24</metadata>
+ <metadata name="Application">BambuStudio-01.03.00.25</metadata>
+ <resources>
+ </resources>
+</model>

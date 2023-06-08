@@ -5,7 +5,7 @@ use <ymse.scad>
 
 $fn = $preview ? 8 : 64;
 
-xsize = 60;
+xsize = 45;
 ysize = 30;
 corner_rounding = 4;
 line = 1;
@@ -18,7 +18,7 @@ fonttype="Apple Chancery:style=筆寫斜體";
 fontspacing=1;
 bugaddition = $preview ? 0.1 : 0;
 
-name = "Doggie";
+name = "Mia";
 
 // avrunda firkant
 module roundedsquare(size, radius) {
@@ -33,11 +33,14 @@ module roundedsquare(size, radius) {
 // Selve merket
 difference() {
     hull() {
-        linear_extrude(label_thickness/3)
+        linear_extrude(label_thickness/3) {
             roundedsquare([xsize,ysize], corner_rounding);
-        translate([label_thickness,label_thickness,label_thickness/3])
-            linear_extrude(label_thickness/3*5)
+        }
+        translate([label_thickness,label_thickness,label_thickness/3]) {
+            linear_extrude(label_thickness/3*5) {
                 roundedsquare([xsize-label_thickness*2,ysize-label_thickness*2], corner_rounding);
+            }   
+        }
     }
     translate([label_thickness+line,label_thickness+line,label_thickness])
         linear_extrude(label_thickness+bugaddition)
@@ -48,7 +51,7 @@ difference() {
 }
 
 // Og teksten
-translate([6,ysize/3,label_thickness]) {
+translate([6,ysize/4,label_thickness]) {
     linear_extrude(text_thickness)
         text(name, size=fontsize, font=fonttype);
 }

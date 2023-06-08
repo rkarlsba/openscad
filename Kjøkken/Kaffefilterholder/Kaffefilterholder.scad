@@ -11,10 +11,11 @@ pin_h=10;
 clearance=0.2;
 logotext="Varme tanker, god kaffe";
 logospacing=1.2;
+logoonly=false;
 xlogo=true;
 ylogo=true;
 font="Copperplate Normal";
-fontsize=6.6;
+fontsize=5;
 
 test=false;
 
@@ -24,15 +25,21 @@ pinsonly=false;
 pincount=0;
 idiot=false;
 
-if (idiot) { echo("IDIOT!!!!!!"); }
+assert(!idiot, "IDIOT!!!!!!");
 
-module logo() {
-    rotate([90,0,0])
-        linear_extrude(height=2)
-            text(logotext, font=font, size=fontsize, spacing=logospacing);
+module logo(s="", stretch = 1) {
+    s = (s=="") ? logotext : s;
+    
+    rotate([180,0,0]) {
+        linear_extrude(height=2) {
+            scale([stretch,1,1]) {
+                text(s, font=font, size=fontsize, spacing=logospacing);
+            }
+        }
+    }
 }
 
-module arm(length, height=h, up=0, cut_corners = 1, text=undef) {
+module arm(length, height=h, up=0, cut_corners = 1, text=undef, extender=0) {
     difference() {
         if (up)  {
             difference() {
@@ -101,6 +108,14 @@ if (test) {
     }
 } else if (pinsonly) {
     drawpins(count=pincount);
+} else if (logoonly) {
+    if (xlogo)
+        translate([25,6,0])
+            logo("Varme tanker",1.6);
+    if (ylogo)
+        rotate([0,0,270])
+            translate([-100,6,0])
+                logo("God kaffe", 1.8);
 } else {
     // Corner
     difference() {
@@ -112,8 +127,12 @@ if (test) {
     difference() {
         arm(l);
         if (xlogo)
-            translate([10,2,3])
-                logo();
+            translate([25,6,0])
+                logo("Varme tanker",1.6);
+        if (ylogo)
+            rotate([0,0,270])
+                translate([-95,6,0])
+                    logo("God kaffe", 1.8);
     }
 
     if (separatepins) {
@@ -142,8 +161,8 @@ if (test) {
         arm(l, up=1);
         if (ylogo)
             rotate([0,0,270])
-                translate([-125,2,3])
-                    logo();
+                translate([-95,6,0])
+                    logo("God kaffe", 1.8);
     }
 
     difference() {

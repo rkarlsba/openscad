@@ -1,0 +1,1 @@
+rotate_extrude($fn=100, convexity = 2, angle=210) translate([55/2, 0, 0]) square([3,5]);

@@ -45,7 +45,8 @@ module rounded_cylinder(d=1, h=1, r=0.1, center=true, $fn=100){
     }
 }
 
-echo("Please 'use' this library - don't 'include' it unless you want all the test artifacts below ;)");
+echo("Please 'use' this library, torus.scad and don't 'include' it unless you");
+echo("want all the test artifacts below ;)");
 
 rotate([0,0,180])
 torus(r1=0.5, angle=90, endstops=1);
