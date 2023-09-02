@@ -21,12 +21,12 @@ y = 98;
 z = 43;
 
 // Give it some breathing room
-gap_x = 2;
-gap_y = 20;
+gap_x = 20;
+gap_y = 2;
 gap_z = 2;
 
 // Electronics bay height
-el_bay_height = 35;
+el_bay_z = 35;
 el_bay_gap_x = 1;
 el_bay_gap_y = 1;
 el_bay_gap_z = 5;
@@ -55,7 +55,7 @@ make_el_bay_board = 1;
 // Internal vars
 _x = x + gap_x;
 _y = y + gap_y;
-_z = z + gap_z + el_bay_height + el_bay_gap_z;
+_z = z + gap_z + el_bay_z + el_bay_gap_z;
 
 // Modules
 module usb_port() {
@@ -144,6 +144,37 @@ module bunn() {
                 translate([thickness+renderfix,fy,fz]) {
                     rotate([0,270,0]) {
                         cylinder(r=holesize, h=thickness+renderfix*2, $fn=16);
+                    }
+                }
+            }
+        }
+        /* og elektronikkboksen */
+        if (el_bay_z > 0) {
+            lz = z + gap_z + el_bay_gap_z;
+            for (fz=[8:7:el_bay_z]) {
+                for (fx=[10:10:_x-5]) {
+                    translate([fx,-renderfix,fz+lz]) {
+                        rotate([270,0,0]) {
+                            cylinder(r=holesize, h=_y+thickness*2+renderfix*2, $fn=16);
+                        }
+                    }
+                }
+            }
+            for (fz=[8:7:el_bay_z]) {
+                for (fy=[10.5:10:_y-5]) {
+                    translate([_x+thickness*2+renderfix,fy,fz+lz]) {
+                        rotate([0,270,0]) {
+                            cylinder(r=holesize, h=thickness+renderfix*2, $fn=16);
+                        }
+                    }
+                }
+            }
+            for (fz=[8:7:el_bay_z]) {
+                for (fy=[10.5:10:_y-5]) {
+                    translate([thickness+renderfix,fy,fz+lz]) {
+                        rotate([0,270,0]) {
+                            cylinder(r=holesize, h=thickness+renderfix*2, $fn=16);
+                        }
                     }
                 }
             }
