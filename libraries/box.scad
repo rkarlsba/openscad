@@ -1,4 +1,4 @@
-// vim:ts=2:sw=2:sws=2:et:ai
+// vim:ts=2:sw=2:sts=2:et:ai
 
 w_divider_color = "CadetBlue";
 h_divider_color = "CornflowerBlue";
@@ -36,6 +36,8 @@ module box(
   perf_walls = false,
   perf_top = false,
   perf_floor = false,
+  perf_shape = "circle",
+  perf_size = 0,
   roof = false)
 {
   w = inner ? width + 2 * thickness : width;
@@ -64,12 +66,12 @@ module box(
   // 2D panels with finger cuts
   module left() {
     cut_left()
-      panel2d(d, h, perf_walls);
+      panel2d(d, h, perf_walls, perf_shape, perf_size);
   }
 
   module right() {
     cut_right()
-      panel2d(d, h, perf_walls);
+      panel2d(d, h, perf_walls, perf_shape, perf_size);
   }
 
   module top(w=w,d=d) { 
@@ -614,8 +616,16 @@ module box(
     }
   }
 
-  module panel2d(x, y, perf=false) {
+  // perf == perforate board
+  // perf_shape == circle or square
+  // perf_size == -1 for auto or mm for either diameter or square side length
+  module panel2d(x, y, perf=false, perf_shape="circle", perf_size=0) {
+    if (perf_size == -1) {
+      assert(false,"Automatic perf_size not supported yet");
+    }
     square([x,y]);
+    if (perf) {
+    }
   }
 
   if (assemble)

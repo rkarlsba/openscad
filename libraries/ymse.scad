@@ -6,6 +6,7 @@
 // Bloody OpenSCAD has no idea about what a global variable might be and
 // noone seems to care, but functions work.
 function pi() =  3.141592653589793;
+function e() = 2.718281828459045;
 
 // Colours - all in RGB, as to be passed to rgb()
 function c_red() = "#ff0000";
@@ -17,6 +18,18 @@ function c_indigo() = "#4b0082"; // '75, 0, 130';
 function c_purple() = "#ff00ff";
 
 // Various modules
+module xor(){
+    difference(){
+        union(){
+            children(0);
+            children(1);
+        };
+        intersection(){
+            children(0);
+            children(1);
+        }
+    }
+}
 
 /*
  * rgb(), like color(), except it takes an array of values 0-255,
