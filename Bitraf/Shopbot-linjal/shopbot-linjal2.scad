@@ -3,7 +3,7 @@ ytterkant = [
     [60, 41.4], [58, 41.4],
     [57.3, 40], [56.6, 41.4],
     [45, 41.4], [17.3, 13.5],
-    [0, 13.5]
+    [0, 13.5], 
 ];
 
 innerkant = [
@@ -13,18 +13,27 @@ innerkant = [
 
 bottom=1;
 
-if (bottom) {
-    difference() {
-        translate([0,60,0]) {
-            linear_extrude(2) {
-                rotate([0,0,270]) {
-                    difference() {
-                        polygon(ytterkant);
-                        translate([31,13.5]) {
-                            polygon(innerkant);
-                        }
+module trekant() {
+    translate([0,60,0]) {
+        linear_extrude(2) {
+            rotate([0,0,270]) {
+                difference() {
+                    polygon(ytterkant);
+                    translate([31,13.5]) {
+                        polygon(innerkant);
                     }
                 }
+            }
+        }
+    }
+}
+
+if (bottom) {
+    difference() {
+        union() {
+            trekant();
+            mirror([0,1,0]) {
+                trekant();
             }
         }
         // 10mm index Marks

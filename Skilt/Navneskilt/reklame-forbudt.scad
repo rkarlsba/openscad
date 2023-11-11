@@ -1,7 +1,7 @@
 // Pakkelapp
 
 use <ymse.scad>
-use <NoiseLib.scad>
+//use <NoiseLib.scad>
 
 $fn = $preview ? 12 : 64;
 
@@ -11,7 +11,9 @@ hole_radius = 0;
 label_thickness = 1;
 text_thickness = 1.4;
 fontsize=12.5;
+//fonttype="Apple Chancery";
 fonttype="Apple Chancery:style=筆寫斜體";
+//fonttype="Apple Chancery:style=筆寫斜體";
 //fonttype="Liberation Sans";
 fontspacing=1;
 bugaddition = $preview ? 0.1 : 0;
@@ -36,7 +38,7 @@ module ramme(xsize,ysize) {
     }
 }
 
-module tekst(tekst, storrelse, font=fonttype, spacing=1) {
+module tekst(tekst, storrelse, font=fonttype, spacing=fontspacing) {
     translate([6,7.5,label_thickness]) {
         linear_extrude(text_thickness) {
             text(tekst, size=storrelse, font=font, spacing=spacing);
