@@ -121,7 +121,7 @@ module todelinjal_drit(hoyde=topphoyde) {
 
 module todelinjal(hoyde=topphoyde, oppnedlinjal=oppnedlinjal) {
     // Variables
-    // oppnedlinjal = 0; // for test
+    // oppnedlinjal = 0;
     strekstart = oppnedlinjal ? hoyde : 10;
     strekstopp = oppnedlinjal ? 0 : hoyde+1;
     tekststart = oppnedlinjal ? hoyde-2 : 10;
