@@ -1,4 +1,4 @@
-// vim:ts=2:sw=2:sws=2:et:ai
+// vim:ts=2:sw=2:sts=2:et:ai
 
 w_divider_color = "CadetBlue";
 h_divider_color = "CornflowerBlue";
@@ -38,8 +38,9 @@ module box(
   perf_floor = false,
   roof = false)
 {
+  vlayers = (open ? 0 : 1) + (open_bottom ? 0 : 1);
   w = inner ? width + 2 * thickness : width;
-  h = inner ? height + 2 * thickness : height;
+  h = inner ? height + vlayers * thickness : height;
   d = inner ? depth + 2 * thickness : depth;
   t = thickness;
   dd = double_doors;
