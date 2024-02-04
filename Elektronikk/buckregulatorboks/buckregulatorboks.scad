@@ -21,8 +21,8 @@ top = 2;
 hole_r = 1.5;
 lh_width = 4; // lead hole
 lh_height = 5.5; // lead hole
-fitness_x = .05;
-fitness_z = .4;
+tolerance_x = .05;
+tolerance_z = .4;
 pot_x = 9.5;
 pot_y = 4.5;
 pot_z = 1.5;
@@ -116,8 +116,8 @@ module top() {
         translate([walls,walls,top]) {
             cube([board_x+gap*2,board_y+gap*2,t_height+idiot]);
         }
-        translate([walls/2-fitness_x/2,walls/2-fitness_x/2,top+t_height-ol_height-fitness_z]) {
-            cube([board_x+walls+gap*2-fitness_x,board_y+walls+gap*2-fitness_x,ol_height+fitness_z]);
+        translate([walls/2-tolerance_x/2,walls/2-tolerance_x/2,top+t_height-ol_height-tolerance_z]) {
+            cube([board_x+walls+gap*2-tolerance_x,board_y+walls+gap*2-tolerance_x,ol_height+tolerance_z]);
         }
         translate([walls+gap+18,walls+board_y+gap-2.3,0]) {
             cylinder(d1=3.4, d2=4.6, h=top+idiot, $fn=fn);
