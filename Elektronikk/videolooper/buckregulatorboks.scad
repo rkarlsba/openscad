@@ -1,4 +1,9 @@
-// Boks LM2596-basert buck-converter
+/*
+ * Friction-fit Chassis for LM2596-based buck converter
+ *
+ * Designed and written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> 2024
+ * Licensed under CC BY NC 4.0 https://creativecommons.org/licenses/by/4.0/
+ */
 
 debug = true;
 idiot = $preview ? .5 : 0;
@@ -117,9 +122,7 @@ module top() {
         translate([walls+gap+18,walls+board_y+gap-2.3,0]) {
             cylinder(d1=3.4, d2=4.6, h=top+idiot, $fn=fn);
         }
-        //  for(variable = [start : increment : end])
         for (x=[walls*2-.2:3.1:board_x+walls]) {
-            echo(x);
             translate([x,walls*2,0]) {
                 hull() {
                     corr = (x > 20 && x < 26) ? -5 : 0;
@@ -132,24 +135,12 @@ module top() {
         }
     }
 }
+
+/* Draw them */
 //bottom();
 top();
 /*
-translate([0,-40,0]) {
+translate([0,-32,0]) {
     top();
-}
-*/    
-/*
-translate([(walls+walls/2+3), walls+walls/2+3,-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-translate([board_x-(walls-walls/2-3),(walls+walls/2+3),-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-translate([(walls+walls/2+3),board_y-(walls-3),-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-translate([board_x-walls+3,board_y-(walls-3),-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
 }
 */

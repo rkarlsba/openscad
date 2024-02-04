@@ -1,155 +1,124 @@
-// Boks LM2596-basert buck-converter
+// vim:ts=4:sw=4:sts=4:et:ai:fdm=marker
 
-debug = true;
+// Boksholder til krykke
+
+// Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> 2024
+use <torus.scad>
+
+$fn = $preview ? 32 : 128;
+
 idiot = $preview ? .5 : 0;
-fn = $preview ? 12 : 31;
+std_can_d = 66;
+std_can_bottom_d = 50;
+bottom_taper_h = 8;
+500ml_can_h = 168;
+330ml_can_h = 116;
+wall = 2;
+bottom = 4;
+gap = 2;
+corner_test = false; // Draw a little corner to check for inside fit
+full_test = true; // Draw a full cup, only very small
 
-board_x = 43.5;
-board_y = 21;
-ol_height = 3; // overlapp
-b_height = 9;
-t_height = 16-b_height; // bare skruen stikker ut
-walls = 3;
-gap = 1;
-bottom = 3;
-top = 2;
-hole_r = 1.5;
-lh_width = 4; // lead hole
-lh_height = 5.5; // lead hole
-fitness_x = .05;
-fitness_z = .4;
-pot_x = 9.5;
-pot_y = 4.5;
-pot_z = 1.5;
-b_wedge = 1.15;
-t_wedge = .01;
-w_wedge = 2;
+can_extrude = 20;
+can_h = 330ml_can_h-can_extrude;
+_can_h = corner_test ? 40 : full_test ? 30 : can_h;
+can_d = std_can_d + gap*2;
+can_outer_d = can_d+wall*2;
 
-module bottom() {
-    difference() {
-        cube([board_x+walls*2+gap*2,board_y+walls*2+gap*2,b_height+bottom]);
-        translate([walls,walls,bottom]) {
-            cube([board_x+gap*2,board_y+gap*2,b_height+idiot]);
-        }
-        translate([0,0,bottom+b_height-ol_height]) {
-            difference() {
-                cube([board_x+walls*2+gap*2,board_y+walls*2+gap*2,ol_height]);
-                translate([walls/2,walls/2,0]) {
-                    cube([board_x+walls+gap*2,board_y+walls+gap*2,ol_height]);
-                }
-            }
-        }
-        translate([0,walls+gap,bottom-1]) {
-            cube([walls+5,lh_width,lh_height+1]);
-        }
-        translate([0,walls+board_y-lh_width+gap,bottom-1]) {
-            cube([walls+5,lh_width,lh_height+1]);
-        }
-        translate([walls+board_x+gap*2-5,walls+gap,bottom-1]) {
-            cube([walls+5,lh_width,lh_height+1]);
-        }
-        translate([walls+board_x+gap*2-5,walls+board_y-lh_width+gap,bottom-1]) {
-            cube([walls+5,lh_width,lh_height+1]);
-        }
-        translate([walls+gap+23.8,walls+board_y+gap-pot_y,bottom-pot_z]) {
-            cube([pot_x,pot_y,pot_z]);
-        }
-    }
-    translate([walls+board_x*.15,walls,bottom]) {
-        hull() {
-            cube([w_wedge,b_wedge,t_wedge]);
-            translate([0,0,b_height]) {
-                cube([w_wedge,t_wedge,t_wedge]);
-            }
-        }
-    }
-    translate([walls+board_x*.85-1,walls,bottom]) {
-        hull() {
-            cube([w_wedge,b_wedge,t_wedge]);
-            translate([0,0,b_height]) {
-                cube([w_wedge,t_wedge,t_wedge]);
-            }
-        }
-    }
-    translate([walls+board_x*.15,board_y+walls+gap*2-b_wedge,bottom]) {
-        hull() {
-            cube([w_wedge,b_wedge,t_wedge]);
-            translate([0,b_wedge,b_height]) {
-                cube([w_wedge,t_wedge,t_wedge]);
-            }
-        }
-    }
-    translate([walls+board_x*.85-1,board_y+walls+gap*2-b_wedge,bottom]) {
-        hull() {
-            cube([w_wedge,b_wedge,t_wedge]);
-            translate([0,b_wedge,b_height]) {
-                cube([w_wedge,t_wedge,t_wedge]);
-            }
-        }
-    }
-    translate([walls,board_y/2+walls-w_wedge/2,bottom]) {
-        hull() {
-            cube([b_wedge,w_wedge,t_wedge]);
-            translate([0,b_wedge,b_height]) {
-                cube([t_wedge,w_wedge,t_wedge]);
-            }
-        }
-    }
-    translate([walls+board_x+gap*2-b_wedge,board_y/2+walls-w_wedge/2,bottom]) {
-        hull() {
-            cube([b_wedge,w_wedge,t_wedge]);
-            translate([b_wedge,0,b_height]) {
-                cube([t_wedge,w_wedge,t_wedge]);
-            }
-        }
-    }
-}
+crutch_d = 20;
+handle_height = _can_h;
+handle_width=crutch_d*sqrt(2);
+handle_depth=crutch_d*1.2;
 
-module top() {
-    difference() {
-        cube([board_x+walls*2+gap*2,board_y+walls*2+gap*2,t_height+top]);
-        translate([walls,walls,top]) {
-            cube([board_x+gap*2,board_y+gap*2,t_height+idiot]);
-        }
-        translate([walls/2-fitness_x/2,walls/2-fitness_x/2,top+t_height-ol_height-fitness_z]) {
-            cube([board_x+walls+gap*2-fitness_x,board_y+walls+gap*2-fitness_x,ol_height+fitness_z]);
-        }
-        translate([walls+gap+18,walls+board_y+gap-2.3,0]) {
-            cylinder(d1=3.4, d2=4.6, h=top+idiot, $fn=fn);
-        }
-        //  for(variable = [start : increment : end])
-        for (x=[walls*2-.2:3.1:board_x+walls]) {
-            echo(x);
-            translate([x,walls*2,0]) {
-                hull() {
-                    corr = (x > 20 && x < 26) ? -5 : 0;
-                    cylinder(h=top, r=.7, $fn=fn);
-                    translate([0,17+corr,0]) {
-                        cylinder(h=top, r=.7, $fn=fn);
+cable_tie_height=10;
+cable_tie_width=5;
+cable_ties=3;
+_cable_ties=full_test ? 1 : cable_ties;
+
+// Sanity check
+assert (!(full_test && corner_test), "Can't do both corner test and full test at the same time, dummy!");
+
+// Internals
+
+
+/*
+ * module can() - draw can
+ *
+ * This takes the following arguments:
+ *   h      Can height
+ *   d      Can diameter
+ *   w      Wall
+ *   bd     Can bottom diameter
+ *   bth    Bottom taper height
+ *   b      Bottom height
+ *   hh     Handle height (Z)
+ *   hw     Handle width (Y)
+ *   hd     Handle depth (X)
+ *   cd     Crutch diameter
+ *   cth    Cable tie height
+ *   ctw    Cable tie width
+ *   ct     Cable ties
+ */
+ module can(h=_can_h, d=can_d, w=wall, bd=std_can_bottom_d, bth=bottom_taper_h, 
+    b=bottom, hh=handle_height, hw=handle_width, hd=handle_depth, cd=crutch_d,
+    cth=cable_tie_height, ctw=cable_tie_width, ct=_cable_ties) {
+
+    od=d+w*2;
+    
+    module handle(h=h, d=od, hh=hh, hw=hw, cd=cd, cth=cth, ctw=ctw, ct=ct) {
+        difference() 
+        {
+            translate([-d/2-hw+3,-hd/2,h/2-hh/2]) {
+                cube([hw,hd,hh]);
+            }
+            translate([-d/2-hw+3,0,h/2-hh/2-idiot]) {
+                cylinder(h=hh+idiot*2, d=cd);
+                for (i = [1:ct]) {
+                    translate([cd/sqrt(2),-hd/2-idiot,(hh/(ct))*(i-.5)-cth/2]) {
+                        cube([ctw,hd+idiot*2,cth]);
                     }
                 }
             }
         }
     }
+
+    cylinder(d=od,h=b);
+    translate([0,0,b]) {
+        difference() {
+            union() {
+                cylinder(d=od, h=h-b);
+                translate([0,0,h-b]) {
+                    torus(r1=w/2, r2=d/2+w/2);
+                }
+                translate([0,0,-b]) {
+                    handle();
+                }
+            }
+            union() {
+                cylinder(d1=bd, d2=d, h=bth+idiot);
+                translate([0,0,bth]) {
+                    cylinder(d=d, h=h-bth-b+idiot);
+                }
+            }
+        }
+    }
 }
-//bottom();
-top();
-/*
-translate([0,-40,0]) {
-    top();
+
+if (corner_test) {
+    difference() {
+        can(h=40);
+        union() {
+            translate([-(can_d/2+wall),0,0]) {
+                cube([can_d+wall*2,can_d/2+wall,can_h+wall/2]);
+            }
+            rotate([0,0,90]) {
+                translate([-(can_d/2+wall),0,0]) {
+                    //cube([400,200,40]);
+                    cube([can_d+wall*2,can_d/2+wall,can_h+wall/2]);
+                }
+            }
+        }
+    }
+} else {
+    can();
 }
-*/    
-/*
-translate([(walls+walls/2+3), walls+walls/2+3,-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-translate([board_x-(walls-walls/2-3),(walls+walls/2+3),-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-translate([(walls+walls/2+3),board_y-(walls-3),-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-translate([board_x-walls+3,board_y-(walls-3),-idiot], $fn=fn) {
-    cylinder(r=hole_r,h=bottom+idiot*2);
-}
-*/
