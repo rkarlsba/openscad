@@ -29,8 +29,9 @@ gap = 2;
 corner_test = false; // Draw a little corner to check for inside fit
 full_test = false; // Draw a full cup, only very small
 // mode can be either "canholder" or "tray"
-//mode = "canholder";
-mode = "tray";
+// mode = "canholder";
+// mode = "tray";
+mode = "lokk";
 
 can_extrude = 20;
 can_h = 500ml_can_h-can_extrude;
@@ -44,10 +45,12 @@ handle_height = _can_h;
 handle_width=crutch_d*sqrt(2);
 handle_depth=crutch_d*1.2;
 
-tray_width=120;
-tray_depth=180;
-tray_thickness=3;
-tray_edge=20;
+tray_width=150; // 120;
+tray_depth=200; // 180;
+tray_thickness=2;
+tray_cover=true;
+tray_wall=tray_cover ? wall*1.5 : wall;
+tray_edge=35;
 
 cable_tie_height=10;
 cable_tie_width=5;
@@ -56,7 +59,8 @@ _cable_ties=full_test ? 1 : cable_ties;
 
 // Sanity check
 assert(!(full_test && corner_test), "Can't do both corner test and full test at the same time, dummy!");
-assert((mode == "canholder" || mode == "tray"), str("Mode \"", mode, "\" unknown - giving up"));
+assert((mode == "canholder" || mode == "tray" || mode == "lokk"), 
+    str("Mode \"", mode, "\" unknown - giving up"));
 
 // Modules
 module roundedsquare(size, radius) {
@@ -143,36 +147,113 @@ module roundedsquare(size, radius) {
 }
 
 module tray(trw=tray_width, trd=tray_depth, trt=tray_thickness, tre=tray_edge,
-    hh=handle_height, hw=handle_width, hd=handle_depth, cd=crutch_d, w=wall,
-    cth=cable_tie_height, ctw=cable_tie_width, ct=_cable_ties) {
+    hh=handle_height, hw=handle_width, hd=handle_depth, cd=crutch_d, w=tray_wall,
+    cth=cable_tie_height, ctw=cable_tie_width, ct=_cable_ties, tc=tray_cover) {
 
     // Tray
-    translate([0,-trd/2,0]) {
-        difference() {
-            linear_extrude(tre) {
-                roundedsquare([trw,trd], 15);
-            }
-            translate([w,w,w]) {
-                linear_extrude(tre-w+idiot) {
-                    roundedsquare([trw-w*2,trd-w*2], 15);
+    difference() {
+        union() {
+            translate([0,-trd/2,0]) {
+                difference() {
+                    linear_extrude(tre) {
+                        roundedsquare([trw,trd], 15);
+                    }
+                    translate([w,w,w]) {
+                        linear_extrude(tre-w+idiot) {
+                            roundedsquare([trw-w*2,trd-w*2], 13);
+                        }
+                    }
                 }
             }
-        }
-    }
-    // Handle
-    translate([-hw+w,-hd/2,0]) {
-        difference() {
-            cube([hw,hd,hh]);
-            translate([0,hd/2,-idiot]) {
-                cylinder(h=hh+idiot*2, d=cd);
-                for (i = [1:ct]) {
-                    translate([cd/sqrt(2),-hd/2-idiot,(hh/(ct))*(i-.5)-cth/2]) {
-                        cube([ctw,hd+idiot*2,cth]);
+            // Handle
+            translate([-hw+w,-hd/2,0]) {
+                difference() {
+                    cube([hw,hd,hh]);
+                    translate([0,hd/2,-idiot]) {
+                        cylinder(h=hh+idiot*2, d=cd);
+                        for (i = [1:ct]) {
+                            translate([cd/sqrt(2),-hd/2-idiot,(hh/(ct))*(i-.5)-cth/2]) {
+                                cube([ctw,hd+idiot*2,cth]);
+                            }
+                        }
                     }
                 }
             }
         }
+        // Hakk til lokk
+        if (tc) {
+            translate([w/2,w/2-trd/2,tre-trt*1.5]) {
+                linear_extrude(w/3*2) {
+                    roundedsquare([trw-w,trd-w], 14);
+                }
+                translate([trw-14,-wall,0]) {
+                    cube([trw,trd,10]);
+                }
+            }
+        }
     }
+}
+/*
+(trw=tray_width, trd=tray_depth, trt=tray_thickness, w=tray_wall)
+tre=tray_edge,
+    hh=handle_height, hw=handle_width, hd=handle_depth, cd=crutch_d, w=tray_wall,
+    cth=cable_tie_height, ctw=cable_tie_width, ct=_cable_ties, tc=tray_cover) {
+*/
+module lokk(trw=tray_width, trd=tray_depth, trt=tray_thickness, w=tray_wall) {
+    handtak_r = 10;
+    festedings_x = 14;
+    festedings_y = 20;
+    festedings_z = 6;
+    /*
+    festedings = [
+        points = [
+            [0, 0, 0],                                  // 0    
+            [festedings_x, 0, 0],                       // 1
+            [festedings_x, festedings_y, 0],            // 2
+            [0, festedings_x, 0],                       // 3
+            [festedings_x, 0, festedings_z],            // 4
+            [festedings_x, festedings_y, festedings_z]  // 5
+        ],
+        faces = [
+            [0, 1, 2, 3],
+            [0, 1, 4],
+            [0, 1, 4, 5],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+        ]
+    ];*/
+    
+    // polyhedron( points = [ [X0, Y0, Z0], [X1, Y1, Z1], ... ], faces = [ [P0, P1, P2, P3, ...], ... ], convexity = N);   // 2014.03 & later
+
+    hull() {
+        linear_extrude(trt*0.4) {
+            roundedsquare([trw-w,trd-w], 14);
+        }
+        translate([w/2, w/2, trt*0.4]) {
+            linear_extrude(trt*.45) {
+                roundedsquare([trw-w*2,trd-w*2], 14);
+            }
+        }
+    }
+    translate([trw-w, trd/2-w, 0]) {
+        linear_extrude(trt*.85) {
+            circle(r=handtak_r);
+        }
+    }
+    /*
+    translate([0,0,festedings_z]) {
+        rotate([0, 90, 90]) {
+            linear_extrude(festedings_y) {
+                polygon([
+                    [0, 0],
+                    [festedings_x, 0],
+                    [festedings_x, festedings_y]
+                ]);
+            }
+        }
+    }
+    */
 }
 
 if (mode == "canholder") {
@@ -195,5 +276,10 @@ if (mode == "canholder") {
         can();
     }
 } else if (mode == "tray") {
-    tray(hh=tray_hh, ct=1, w=3);
+    tray(hh=tray_hh, ct=2);
+} else if (mode == "lokk") {
+//    translate([tray_width+10,-tray_depth/2+wall,0]) {
+    translate([tray_width+10,-tray_depth/2+wall,0]) {
+        lokk();
+    }
 }
