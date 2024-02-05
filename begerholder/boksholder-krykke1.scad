@@ -29,17 +29,17 @@ gap = 2;
 corner_test = false; // Draw a little corner to check for inside fit
 full_test = false; // Draw a full cup, only very small
 // mode can be either "canholder" or "tray"
-// mode = "canholder";
+mode = "tray";
 // mode = "tray";
-mode = "lokk";
+// mode = "lokk";
 
 can_extrude = 20;
-can_h = 500ml_can_h-can_extrude;
+can_h = 330ml_can_h-can_extrude;
 _can_h = corner_test ? 40 : full_test ? 30 : can_h;
 can_d = std_can_d + gap*2;
 can_outer_d = can_d+wall*2;
 
-crutch_d = 20;
+crutch_d = 21;
 
 handle_height = _can_h;
 handle_width=crutch_d*sqrt(2);
@@ -169,11 +169,11 @@ module tray(trw=tray_width, trd=tray_depth, trt=tray_thickness, tre=tray_edge,
             translate([-hw+w,-hd/2,0]) {
                 difference() {
                     cube([hw,hd,hh]);
-                    translate([0,hd/2,-idiot]) {
+                    translate([0,hd/2-idiot,0]) {
                         cylinder(h=hh+idiot*2, d=cd);
                         for (i = [1:ct]) {
-                            translate([cd/sqrt(2),-hd/2-idiot,(hh/(ct))*(i-.5)-cth/2]) {
-                                cube([ctw,hd+idiot*2,cth]);
+                            translate([cd/sqrt(2),-hd-idiot,(hh/(ct))*(i-.5)-cth/2]) {
+                                cube([ctw,hd*2+idiot*2,cth]);
                             }
                         }
                     }
