@@ -22,15 +22,14 @@ std_can_bottom_d = 50;
 bottom_taper_h = 8;
 500ml_can_h = 168;
 330ml_can_h = 116;
-tray_hh = 42;
 wall = 2;
 bottom = 4;
 gap = 2;
 corner_test = false; // Draw a little corner to check for inside fit
 full_test = false; // Draw a full cup, only very small
 // mode can be either "canholder" or "tray"
+// mode = "canholder";
 mode = "tray";
-// mode = "tray";
 // mode = "lokk";
 
 can_extrude = 20;
@@ -45,12 +44,13 @@ handle_height = _can_h;
 handle_width=crutch_d*sqrt(2);
 handle_depth=crutch_d*1.2;
 
+tray_hh = 50;
 tray_width=150; // 120;
 tray_depth=200; // 180;
 tray_thickness=2;
 tray_cover=true;
 tray_wall=tray_cover ? wall*1.5 : wall;
-tray_edge=35;
+tray_edge=50;
 
 cable_tie_height=10;
 cable_tie_width=5;
