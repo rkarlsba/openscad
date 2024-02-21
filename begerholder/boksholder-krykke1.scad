@@ -28,8 +28,11 @@ gap = 2;
 corner_test = false; // Draw a little corner to check for inside fit
 full_test = false; // Draw a full cup, only very small
 // mode can be either "canholder" or "tray"
-// mode = "canholder";
-mode = "tray";
+mode = "canholder";
+
+hanksprekk = false;
+hank = 16;
+// mode = "tray";
 // mode = "lokk";
 
 can_extrude = 20;
@@ -38,7 +41,7 @@ _can_h = corner_test ? 40 : full_test ? 30 : can_h;
 can_d = std_can_d + gap*2;
 can_outer_d = can_d+wall*2;
 
-crutch_d = 21;
+crutch_d = 20;
 
 handle_height = _can_h;
 handle_width=crutch_d*sqrt(2);
@@ -142,7 +145,13 @@ module roundedsquare(size, radius) {
                     cylinder(d=d, h=h-bth-b+idiot);
                 }
             }
+            if (hanksprekk) {
+                translate([0,-hank/2, bth]) {
+                    cube([d/2+w,17,h-bth-b+w]);
+                }
+            }
         }
+        echo(d/4);
     }
 }
 

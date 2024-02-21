@@ -1,95 +1,110 @@
-markers_rows = 2;
-markers = [7,6];
+markers = 5;
 
 height = 50;
 thickness = 3; // General padding between markers
-backplate_thickness = thickness * 2;
+backbone = 3;
 
-eraser_width = 52;
-eraser_depth = 38;
+// Values for the eraser width/depth and marker radius are set to work with the eraser and marker in this set: https://smile.amazon.com/gp/product/B00T3ROM9G/ 
+eraser_width = 55;
+eraser_depth = 41;
 
-marker_rad = 10; // This radius value works for standard expo dry erase markers
-marker_ridge_height = 5; // sure, why not?
+marker_rad = 10;
+marker_ridge_height = 5; // Height of inner bevel in marker slots
 
-//fastener_width = 15;
-fastener_width = 0;
-
-nudge = 0.1;
+nudge = 0.1; 
 precision = 100;
 
 difference() {
 	union() {
-		//eraser block
+		// Eraser block
 		color("blue") {
-            cube([eraser_width + thickness * 2, eraser_depth + thickness * 2, height + thickness]);
+            cube([
+                eraser_width + thickness * 2, 
+                eraser_depth + thickness * 2, 
+                height + thickness
+            ]);
         }
 
-		//markers block
-		color("green") {
-            translate([eraser_width + thickness * 2,0,0]) {
-                cube([(marker_rad * 2 + thickness) * markers[0], 
-                       marker_rad * 2 + thickness * 2, height + thickness]);
+        // Markers block
+        color("green") {
+            translate([eraser_width + thickness * 2, 0, 0]) {
+                cube([
+                    (marker_rad * 2 + thickness*1.5) * markers, 
+                    marker_rad * 2 + thickness * 2, 
+                    height + thickness
+                ]);
+            }
+        }
+        color("yellow") {
+            translate([eraser_width + thickness * 2, marker_rad * 1.5 + thickness * 2, 0]) {
+                cube([
+                    (marker_rad * 2 + thickness*1.5) * markers, 
+                    marker_rad * 2 + thickness * 2, 
+                    height + thickness
+                ]);
             }
         }
 
-		color("red") {
-            fasteners();
-        }
 	}
 	
-	//eraser hole
+	// Eraser well
 	translate([thickness, thickness, thickness]) {
         cube([eraser_width, eraser_depth, height]);
     }
 	
-	//marker holes
-	translate([thickness * 2 + eraser_width + marker_rad,thickness + markers[0],thickness]) {
-        markers([0]+1);
+	// Marker slots
+	translate([
+        thickness * 2 + eraser_width + marker_rad,
+        thickness + marker_rad,
+        thickness
+    ]) {
+        markers();
+    }
+	translate([
+        thickness * 2 + eraser_width + marker_rad*2+1.5,
+        thickness * sqrt(2)*3 + marker_rad*2 + 1,
+        thickness
+    ]) {
+        markers(markers-1);
     }
 }
 
-module fastener() {
-	cube([fastener_width, thickness, height + thickness]);
-}
-
-module fasteners() {
-	translate([-fastener_width,0,0])
-	fastener();
-
-	translate([eraser_width + thickness * 2 + (marker_rad * 2 + thickness) * markers[0], 0, 0])
-	fastener();
-}
-
-module markers() {
-    for (m = [0:1]) {
-        for (i = [0:7]) {
-            translate([(marker_rad * 2 + thickness) * i, 0, 0]) {
-                union(){
-                    cylinder(r=marker_rad, h = height, $fn = precision);
-                    translate([0,0,height - marker_ridge_height]) {
-                        cylinder(r1 = marker_rad,
-                                 r2 = marker_rad + thickness / 2 - nudge,
-                                 h = marker_ridge_height, 
-                                 $fn = precision);
+color("darkgrey") {
+    x = eraser_width + thickness*2 + (marker_rad*2+thickness*1.5)*markers;
+    y = backbone;
+    z = height + thickness;
+    translate([0, -y, 0]) {
+        difference() {
+            cube([x, y, z]);
+            for (xx=[1:2:9]) {
+                translate([x / 10 * xx, y-2, z/4]) {
+                    rotate([90,0,0]) {
+                        cylinder(h=2, d=6, $fn = precision);
+                    }
+                }
+                translate([x / 10 * xx, y-2, z/4*3]) {
+                    rotate([90,0,0]) {
+                        cylinder(h=2, d=6, $fn = precision);
                     }
                 }
             }
         }
     }
-    if (0)
-    translate([0, marker_rad * 2 + thickness/sqrt(2), 0]) {
-        for(i = [0:(markers_a - 1)]) {
-            translate([(marker_rad * 2 + thickness) * i, 0, 0]) {
-                union(){
-                    cylinder(r=marker_rad, h = height, $fn = precision);
-                    translate([0,0,height - marker_ridge_height]) {
-                        cylinder(r1 = marker_rad,
-                                 r2 = marker_rad + thickness / 2 - nudge,
-                                 h = marker_ridge_height, 
-                                 $fn = precision);
-                    }
-                }
-            }
-        }
-    }
+}
+
+module markers(markers=markers){
+	for(i = [0:(markers - 1)]){
+		translate([(marker_rad * 2 + thickness*1.5) * i, 0, 0])
+		union(){
+			cylinder(r = marker_rad, h = height, $fn = precision);
+			
+			translate([0,0,height - marker_ridge_height])
+			cylinder(
+                r1 = marker_rad, 
+                r2 = marker_rad + thickness / 2 - nudge, 
+                h = marker_ridge_height, 
+                $fn = precision
+            );
+		}
+	}
 }
