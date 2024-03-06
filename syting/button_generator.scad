@@ -9,12 +9,13 @@
 // Added scaling and beautified the code a bit by
 // 
 
-// VARIABLES - for most users
+// VARIABLES - for most users. Change them, play with them, press F5 to preview
+// or F6 to render.
 
 // Diameter of button [mm]
 button_diameter = 20.0;  
-// Button scale [x,y,z] - keep z to one (1) for normal stuff
-button_scale = [1.6,1,1];
+// Button scale [x,y] - each one from 0 to lots - 1 == don't scale.
+button_scale = [1.6,1.0];
 // Height of button (without lip or center) [mm]
 button_height = 2.0; // [0.1:0.1:10.0]
 // Button bottom chamfer [mm]
