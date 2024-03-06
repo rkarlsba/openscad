@@ -9,6 +9,8 @@
 // Added scaling and beautified the code a bit by
 // 
 
+// VARIABLES - for most users
+
 // Diameter of button [mm]
 button_diameter = 20.0;  
 // Button scale [x,y,z] - keep z to one (1) for normal stuff
@@ -33,6 +35,8 @@ hole_count = 2; // [0:1:12]
 hole_diameter = 2; // [0.0:0.1:10.0]
 // Button hole center offset [mm]
 hole_offset = 3; // [0.0:0.1:50.0]
+
+// MAIN CODE - for hackers and the likes
 
 // Quality (+ 0 to hide from customizer)
 $fa=4 + 0;
