@@ -6,7 +6,8 @@
 //
 // 2024-03-06:
 // Roy Sigurd Karlsbakk <roy@karlsbakk.net> 
-// Added scaling and beautified the code a bit by
+// Added scaling and beautified the code a bit. Also added more comments to
+// better document the code.
 // 
 
 // VARIABLES - for most users. Change them, play with them, press F5 to preview
