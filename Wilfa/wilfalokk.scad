@@ -1,13 +1,13 @@
-$fn = $preview ? 32 : 64;
+$fn = $preview ? 32 : 128;
 
 jall = $preview ? .1 : 0;
 bleed = 0.5;
-height = 15;
-theight = 0.2+jall*2;
+height = 20;
+theight = 0.4+jall*2;
 thickness = 1.5;
 tolerance = 1;
-outer_dim = 112.5;
-inner_dim = outer_dim-(thickness*2+tolerance); // 108.5;
+outer_dim = 114;
+inner_dim = outer_dim-(thickness*4+tolerance); // 108.5;
 font = "Papyrus:style=Regular";
 fontsize = 21;
 beans = [
@@ -68,13 +68,13 @@ module lid() {
             }
 
             difference() {
-                cylinder(d=inner_dim-bleed, h=height/2);
-                cylinder(d=inner_dim-bleed-thickness*2+bleed, h=height/2);
+                cylinder(d=inner_dim-bleed, h=height/sqrt(3));
+                cylinder(d=inner_dim-bleed-thickness*2+bleed, h=height/sqrt(3));
             }
         }
         gfx();
     }
 }
 
-// lid();
+// emlid();
 gfx();

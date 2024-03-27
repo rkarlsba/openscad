@@ -1,34 +1,21 @@
-// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
-
-// Variables etc {{{
-
-// Quality settings
+// Please note that this is the one from hawken in 2022-07-11
+//$fn=47;
 $fn=$preview ? 32 : 64;
 
-// Variables
-round_d = 1;
+round_d=1;
 
-center_hole_d = 12.2;
-center_t = 5 + .01;
-center_d = 25;
+center_hole_d=12.2;
+center_t=5 + .01;
+center_d=25;
 
 
-main_plate_t = 7 + .01;
-main_plate_d = 40;
+main_plate_t=7 + .01;
+main_plate_d=40;
 
-screw_hole_d = 3.5;
+screw_hole_d=3.5;
 
-// More variables
-arm_start_x = 18;
-arm_size_x = 10.1;
-arm_size_y = 40;
-arm_hole_elev = 3.5;
-arm_hole_d = 3.4;
-arm_hole_x = 23.05;
-
-// }}}
-/* {{{ Old effector_arm() - not in use
-module effector_arm() {
+/*module effector_arm() {
+   // OLD TYPE
     
     translate([15,-arm_main_w/2,0])
     cube([5,arm_main_w,main_plate_t]);
@@ -60,135 +47,111 @@ module effector_arm() {
         weird_part();
     
 }
-}}} */
-// module copy_mirror() - Shamefully stolen {{{
+*/
 
-module copy_mirror(vec=[0,1,0]) {
+arm_start_x = 18;
+arm_size_x = 10.1;
+arm_size_y = 40;
+arm_hole_elev = 3.5;
+arm_hole_d = 3.4;
+arm_hole_x = 23.05;
+
+// shamefully stolen
+module copy_mirror(vec=[0,1,0])
+{
     children();
-    mirror(vec) {
-        children();
-    }
+    mirror(vec) children();
 } 
 
-// }}}
-// module effector_arm() {{{
-
 module effector_arm() {
-    /* {{{ Description
+    /*
      *             _
      *            / \
      *            | |  ^ y
      *    -> x    | |
      *            | |
      *            \_/
-     * }}} */
-    // And now - rounded edges..
+     */
+
+    
+    // now, rounded edges..
+    
+    
     difference() {
-        translate([arm_start_x,-arm_size_y/2,0]) {
-            rotate([90,0,90]) {
-                linear_extrude(arm_size_x) {
-                    translate([round_d, round_d]) {
-                        offset(round_d) {
-                            square([arm_size_y-2*round_d, main_plate_t-2*round_d]);
-                        }
-                    }
-                }
-            }
-        }
-            
+        translate([arm_start_x,-arm_size_y/2,0])
+            rotate([90,0,90])
+            linear_extrude(arm_size_x)
+            translate([round_d, round_d])
+            offset(round_d)
+            square([arm_size_y-2*round_d, main_plate_t-2*round_d]);
+        
         // some cuts here
         // inside 1+2
-        copy_mirror([0,1,0]) {
-            translate([13.1, 15, 0]) {
-                rotate([0,0,-22.5]) {
-                    cube([5, 10, main_plate_t]);
-                }
-            }
-        }
+        copy_mirror([0,1,0])
+            translate([13.1, 15, 0])
+            rotate([0,0,-22.5])
+            cube([5, 10, main_plate_t]);
         // outside 1
-        copy_mirror([0,1,0]) {
-            translate([29.7, 10, 0]) {
-                rotate([0,0,22.5]) {
-                    cube([15, 15, main_plate_t]);
-                }
-            }
-        }
+        copy_mirror([0,1,0])
+            translate([29.7, 10, 0])
+            rotate([0,0,22.5])
+            cube([15, 15, main_plate_t]);
 
         // chamfer edge
-        translate([26,-arm_size_y/2,7]) {
-            rotate([0,45,0]) {
-                cube([5,arm_size_y,5]);
-            }
-        }
+        translate([26,-arm_size_y/2,7])
+            rotate([0,45,0])
+            cube([5,arm_size_y,5]);
+
     }
 
     //translate([arm_start_x,-arm_size_y/2,0])
     //    cube([arm_size_x,arm_size_y,main_plate_t]);
-}
 
-// }}}
-// module effector_arm_cut() {{{
+    
+}
 
 module effector_arm_cut() {
     // screw hole
-    translate([arm_hole_x,arm_size_y/2,arm_hole_elev]) {
-        rotate([90,0,0]) {
-            cylinder(d=arm_hole_d, h=arm_size_y);
-        }
-    }
+    translate([arm_hole_x,arm_size_y/2,arm_hole_elev])
+        rotate([90,0,0])
+        cylinder(d=arm_hole_d, h=arm_size_y);
     // square nut holders
-    copy_mirror([0,1,0]) {
-        translate([arm_hole_x, 11.5, arm_hole_elev]) {
-            nut_cutout();
-        }
-    }
+    copy_mirror([0,1,0])
+        translate([arm_hole_x, 11.5, arm_hole_elev])
+        nut_cutout();
 }
 
-// }}}
-// module nut_cutout() {{{
-
 module nut_cutout() {
-    // Center on all axis
-    // Allow top down insertion
-    /* Square nut: {{{
+    // center on all axis
+    // allow top down insertion
+    
+    /* Square nut:
     square_nut_sz = 6.5;
     square_nut_t = 3;
 
     translate([-square_nut_sz/2,
                -square_nut_t/2,
-               -square_nut_sz/2]) {
-        cube([square_nut_sz, square_nut_t, square_nut_sz+2]);
-    }
-    }}} */
+               -square_nut_sz/2])
+    cube([square_nut_sz, square_nut_t, square_nut_sz+2]);
+    */
     
     // Hex nut:
     hex_nut_t = 3;
     hex_nut_d = 6;
-    // Actual nut
-    rotate([90,0,0]) {
-        translate([0,0,-hex_nut_t/2]) {
-            cylinder(d=hex_nut_d, h=hex_nut_t, $fn=6);
-        }
-    }
-    // Opening
-    translate([-hex_nut_d/2, -hex_nut_t/2,0]) {
-        cube([hex_nut_d, hex_nut_t, hex_nut_d/2+2]);
-    }
+    // actual nut
+    rotate([90,0,0])
+        translate([0,0,-hex_nut_t/2])
+        cylinder(d=hex_nut_d, h=hex_nut_t, $fn=6);
+    // opening
+    translate([-hex_nut_d/2, -hex_nut_t/2,0])
+    cube([hex_nut_d, hex_nut_t, hex_nut_d/2+2]);
 }
-
-// }}}
-// module rotate_copy() {{{
 
 module rotate_copy(rotations) {
-    for(r = rotations) {
-        rotate([0,0,r]) {
-            children();
-        }
-    }
+    for(r = rotations)
+        rotate([0,0,r])
+        children();
 }
-
-// }}}
-// module probe_holder() (with vars) {{{
 
 probe_holder_w = 20;
 probe_holder_offset = 30;
@@ -197,21 +160,13 @@ probe_d = 12.5;
 module probe_holder() {
     translate([-probe_holder_w/2,
                probe_holder_offset-probe_holder_w/2,
-               probe_holder_z]) {
-        linear_extrude(-probe_holder_z) {
-            translate([round_d, round_d]) {
-                offset(round_d) {
-                    square([probe_holder_w-2*round_d,
-                            probe_holder_w-2*round_d]);
-                }
-            }
-        }
-    }
+               probe_holder_z])
+    linear_extrude(-probe_holder_z)
+        translate([round_d, round_d])
+        offset(round_d)
+        square([probe_holder_w-2*round_d,
+                probe_holder_w-2*round_d]);
 }
-
-// }}}
-// module probe_holder_cut() {{{
-
 module probe_holder_cut() {
     // main hole
     translate([0,probe_holder_offset,probe_holder_z])
@@ -227,16 +182,14 @@ module probe_holder_cut() {
           -probe_holder_z]);
 }
 
-// }}}
-// module fan_duct() (with vars) {{{
-// Fan variables 
-
+// fan stuff:
 // fan outer dim: 40 x 40
 // fan blade diameter: Little less, around 37mm
 // screw distance: 32
 // screw dim: Max: M4
 
 //cylinder(d1=37, d2=10, h=40);
+
 
 fan_mount_plate_t = 5;
 fan_duct_len = 40;
@@ -271,40 +224,28 @@ module fan_duct() {
         square([40-2*round_d,40-2*round_d]);
 }
 
-// }}}
-// module fan_duct_cut() {{{
-
 module fan_duct_cut() {
 
     hull() {
         cylinder(d=fan_inner_d, h=1);
-        translate([0,0,fan_duct_len-1]) {
-            scale([1,inner_scale,1]) {
-                cylinder(d=outlet_inner_d, h=1);
-            }
-        }
+        translate([0,0,fan_duct_len-1])
+            scale([1,inner_scale,1])
+            cylinder(d=outlet_inner_d, h=1);
     }
     
-    // cylinder(d=37, h=fan_mount_plate_t);
+    //cylinder(d=37, h=fan_mount_plate_t);
     
     // screws
-    translate([16,16,0]) {
+    translate([16,16,0])
         cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
-    }
-    translate([16,-16,0]) {
+    translate([16,-16,0])
         cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
-    }
-    translate([-16,16,0]) {
+    translate([-16,16,0])
         cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
-    }
-    translate([-16,-16,0]) {
+    translate([-16,-16,0])
         cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5);
-    }
 
 }
-
-// }}}
-// module hotend_fan_duct() (with vars) {{{
 
 // adjusted for safeties
 hotend_fan_duct_e3d_h = 28;
@@ -346,11 +287,8 @@ module hotend_fan_duct() {
             offset(round_d)
             square([40-2*round_d,40-2*round_d]);
     }
+
 }
-
-// }}}
-// module hotend_fan_duct_cut() {{{
-
 module hotend_fan_duct_cut() {
     rotate([-90,0,0]) {
         hull() {
@@ -389,9 +327,6 @@ module hotend_fan_duct_cut() {
         }
     }
 }
-
-// }}}
-// module effector() {{{
 
 module effector() {
     difference() {
@@ -460,8 +395,6 @@ module effector() {
     }
 }
 
-// }}}
-// module preview_examples() {{{
 
 module preview_examples() {
     // heatsink
@@ -482,10 +415,6 @@ module preview_examples() {
         cylinder(d2=9, d1=0.4, h=5);
 
 }
-
-// }}}
-// Main code {{{
-
 if($preview)
     preview_examples();
 //translate([-2.5,11,-15])
@@ -497,5 +426,3 @@ effector();
     hotend_fan_duct();
     hotend_fan_duct_cut();
 }*/
-
-// }}}
