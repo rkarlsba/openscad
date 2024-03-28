@@ -57,13 +57,23 @@ inner_scale = 0.4;
 outer_scale = ((outlet_inner_d * inner_scale)
                + 2*fan_wall_t)/outlet_outer_d;
 
-
 // Probe holder variables
 probe_holder_w = 20;
 probe_holder_offset = 30;
 probe_holder_z = -20;
 probe_d = 12.5;
                
+// Hotend fan duct vars
+// adjusted for safeties
+hotend_fan_duct_e3d_h = 28;
+hotend_fan_duct_e3d_w = 22 + .5;
+hotend_fan_duct_wall_t = 1.5;
+hotend_fan_duct_mount_y = -50;
+hotend_fan_duct_mount_z = -hotend_fan_duct_e3d_h/2;
+
+hotend_fan_mount_zshift = -3;
+hotend_fan_mount_rot = 45;
+
 // }}}
 // module copy_mirror() - Shamefully stolen {{{
 
@@ -193,7 +203,7 @@ module rotate_copy(rotations) {
 }
 
 // }}}
-// module probe_holder() (with vars) {{{
+// module probe_holder() {{{
 
 module probe_holder() {
     translate([-probe_holder_w/2,
@@ -227,7 +237,7 @@ module probe_holder_cut() {
 }
 
 // }}}
-// module fan_duct() (with vars) {{{
+// module fan_duct() {{{
 
 module fan_duct() {
     round_d = 3;
@@ -288,16 +298,6 @@ module fan_duct_cut() {
 
 // }}}
 // module hotend_fan_duct() (with vars) {{{
-
-// adjusted for safeties
-hotend_fan_duct_e3d_h = 28;
-hotend_fan_duct_e3d_w = 22 + .5;
-hotend_fan_duct_wall_t = 1.5;
-hotend_fan_duct_mount_y = -50;
-hotend_fan_duct_mount_z = -hotend_fan_duct_e3d_h/2;
-
-hotend_fan_mount_zshift = -3;
-hotend_fan_mount_rot = 45;
 
 module hotend_fan_duct() {
     round_d = 3;
