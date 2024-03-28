@@ -40,14 +40,15 @@ arm_hole_x = 23.05;
 //cylinder(d1=37, d2=10, h=40);
 
 fan_mount_plate_t = 5;
-fan_duct_len = 40;
+fan_duct_len = 40+arm_stretch_x;
 fan_outer_d = 40;
 fan_wall_t = 1.5;
 fan_inner_d = fan_outer_d-2*fan_wall_t;
 fan_offset_y = 50;
 fan_offset_z = -10;
-fan_rotation = 45;
+fan_base_rotation = 45;
 fan_screw_hole_d = 4.3;
+fan_rotation = fan_base_rotation+arm_stretch_x/1.25;
 
 //outlet_inner_d = 10;
 outlet_inner_d = 16;
