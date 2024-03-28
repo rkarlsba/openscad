@@ -16,7 +16,6 @@ center_hole_d = 12.2;
 center_t = 5 + fuckupfix;
 center_d = 25;
 
-
 main_plate_t = 7 + fuckupfix;
 main_plate_d = 40;
 
@@ -24,47 +23,48 @@ screw_hole_d = 3.5;
 
 // More variables
 arm_start_x = 18;
-arm_size_x = 10.1;
+arm_stretch_x = 10;
+arm_size_x = 10.1+arm_stretch_x;
 arm_size_y = 40;
 arm_hole_elev = 3.5;
 arm_hole_d = 3.4;
 arm_hole_x = 23.05;
 
-// }}}
-/* {{{ Old effector_arm() - not in use
-module effector_arm() {
-    
-    translate([15,-arm_main_w/2,0])
-    cube([5,arm_main_w,main_plate_t]);
+// Fan variables 
 
-    translate([23,arm_main_w/2,arm_main_elev])
-        rotate([90,0,0])
-        cylinder(d=arm_main_d, h=arm_main_w);
-    
-    translate([18,-arm_main_w/2,0])
-        cube([arm_main_d, arm_main_w, arm_main_elev]);
-    
-    // left
-    translate([23,-arm_main_w/2,arm_main_elev])
-        rotate([90,0,0])
-        cylinder(d1=arm_main_d,
-                 d2=arm_small_d,
-                 h=arm_small_l);
-    translate([23,arm_main_w/2,0])
-        weird_part();
-    
-    // right
-    translate([23,arm_main_w/2,arm_main_elev])
-        rotate([-90,0,0])
-        cylinder(d1=arm_main_d,
-                 d2=arm_small_d,
-                 h=arm_small_l);
-    translate([23,-arm_main_w/2,0])
-        rotate([0,0,180])
-        weird_part();
-    
-}
-}}} */
+// fan outer dim: 40 x 40
+// fan blade diameter: Little less, around 37mm
+// screw distance: 32
+// screw dim: Max: M4
+
+//cylinder(d1=37, d2=10, h=40);
+
+fan_mount_plate_t = 5;
+fan_duct_len = 40;
+fan_outer_d = 40;
+fan_wall_t = 1.5;
+fan_inner_d = fan_outer_d-2*fan_wall_t;
+fan_offset_y = 50;
+fan_offset_z = -10;
+fan_rotation = 45;
+fan_screw_hole_d = 4.3;
+
+//outlet_inner_d = 10;
+outlet_inner_d = 16;
+outlet_outer_d = outlet_inner_d + 2*fan_wall_t;
+//inner_scale = 0.3;
+inner_scale = 0.4;
+outer_scale = ((outlet_inner_d * inner_scale)
+               + 2*fan_wall_t)/outlet_outer_d;
+
+
+// Probe holder variables
+probe_holder_w = 20;
+probe_holder_offset = 30;
+probe_holder_z = -20;
+probe_d = 12.5;
+               
+// }}}
 // module copy_mirror() - Shamefully stolen {{{
 
 module copy_mirror(vec=[0,1,0]) {
@@ -99,7 +99,7 @@ module effector_arm() {
                 }
             }
         }
-            
+
         // some cuts here
         // inside 1+2
         copy_mirror([0,1,0]) {
@@ -109,9 +109,10 @@ module effector_arm() {
                 }
             }
         }
+
         // outside 1
         copy_mirror([0,1,0]) {
-            translate([29.7, 10, 0]) {
+            translate([29.7+arm_stretch_x, 10, 0]) {
                 rotate([0,0,22.5]) {
                     cube([15, 15, main_plate_t]);
                 }
@@ -119,13 +120,13 @@ module effector_arm() {
         }
 
         // chamfer edge
-        translate([26,-arm_size_y/2,7]) {
+        translate([26+arm_stretch_x,-arm_size_y/2,7]) {
             rotate([0,45,0]) {
                 cube([5,arm_size_y,5]);
             }
         }
     }
-
+    
     //translate([arm_start_x,-arm_size_y/2,0])
     //    cube([arm_size_x,arm_size_y,main_plate_t]);
 }
@@ -135,14 +136,14 @@ module effector_arm() {
 
 module effector_arm_cut() {
     // screw hole
-    translate([arm_hole_x,arm_size_y/2,arm_hole_elev]) {
+    translate([arm_hole_x+arm_stretch_x,arm_size_y/2,arm_hole_elev]) {
         rotate([90,0,0]) {
             cylinder(d=arm_hole_d, h=arm_size_y);
         }
     }
     // square nut holders
     copy_mirror([0,1,0]) {
-        translate([arm_hole_x, 11.5, arm_hole_elev]) {
+        translate([arm_hole_x+arm_stretch_x, 11.5, arm_hole_elev]) {
             nut_cutout();
         }
     }
@@ -194,11 +195,6 @@ module rotate_copy(rotations) {
 // }}}
 // module probe_holder() (with vars) {{{
 
-probe_holder_w = 20;
-probe_holder_offset = 30;
-probe_holder_z = -20;
-probe_d = 12.5;
-
 module probe_holder() {
     translate([-probe_holder_w/2,
                probe_holder_offset-probe_holder_w/2,
@@ -232,32 +228,6 @@ module probe_holder_cut() {
 
 // }}}
 // module fan_duct() (with vars) {{{
-// Fan variables 
-
-// fan outer dim: 40 x 40
-// fan blade diameter: Little less, around 37mm
-// screw distance: 32
-// screw dim: Max: M4
-
-//cylinder(d1=37, d2=10, h=40);
-
-fan_mount_plate_t = 5;
-fan_duct_len = 40;
-fan_outer_d = 40;
-fan_wall_t = 1.5;
-fan_inner_d = fan_outer_d-2*fan_wall_t;
-fan_offset_y = 50;
-fan_offset_z = -10;
-fan_rotation = 45;
-fan_screw_hole_d = 4.3;
-
-//outlet_inner_d = 10;
-outlet_inner_d = 16;
-outlet_outer_d = outlet_inner_d + 2*fan_wall_t;
-//inner_scale = 0.3;
-inner_scale = 0.4;
-outer_scale = ((outlet_inner_d * inner_scale)
-               + 2*fan_wall_t)/outlet_outer_d;
 
 module fan_duct() {
     round_d = 3;
@@ -448,7 +418,7 @@ module effector() {
             probe_holder();
             
             rotate_copy([120,240]) {
-                translate([0,fan_offset_y,fan_offset_z]) {
+                translate([0,fan_offset_y+arm_stretch_x,fan_offset_z]) {
                     rotate([180-fan_rotation,0,0]) {
                         fan_duct();
                     }
@@ -464,7 +434,7 @@ module effector() {
         union() {
             hotend_fan_duct_cut();
             rotate_copy([120,240]) {
-                translate([0,fan_offset_y,fan_offset_z+.01]) {
+                translate([0,fan_offset_y+arm_stretch_x,fan_offset_z+.01]) {
                     rotate([180-fan_rotation,0,0]) {
                         fan_duct_cut();
                     }
@@ -541,17 +511,25 @@ module preview_examples() {
 // Main code {{{
 
 if (test_run) {
+    effector_arm();
+    /*
     difference() {
         //hotend_fan_duct();
         //hotend_fan_duct_cut();
         fan_duct();
         fan_duct_cut();
     }
+    */
 } else {
     if ($preview) {
         preview_examples();
     }
     effector();
+    translate([100,-30,0]) {
+        rotate([0,0,90]) {
+            //effector_arm();
+        }
+    }
 }
 /*
 translate([-2.5,11,-15]) {
