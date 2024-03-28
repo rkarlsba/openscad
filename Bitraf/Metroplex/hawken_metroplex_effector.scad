@@ -23,7 +23,7 @@ screw_hole_d = 3.5;
 
 // More variables
 arm_start_x = 18;
-arm_stretch_x = 10;
+arm_stretch_x = 13;
 arm_size_x = 10.1+arm_stretch_x;
 arm_size_y = 40;
 arm_hole_elev = 3.5;
