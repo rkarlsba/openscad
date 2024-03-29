@@ -48,7 +48,7 @@ fan_offset_y = 50;
 fan_offset_z = -10;
 fan_base_rotation = 45;
 fan_screw_hole_d = 4.3;
-fan_rotation = fan_base_rotation+arm_stretch_x/1.25;
+fan_rotation = fan_base_rotation+arm_stretch_x/1.1;
 
 //outlet_inner_d = 10;
 outlet_inner_d = 16;
@@ -226,15 +226,18 @@ module probe_holder() {
 
 module probe_holder_cut() {
     // main hole
-    translate([0,probe_holder_offset,probe_holder_z])
-    cylinder(d=probe_d, h=main_plate_t - probe_holder_z);
+    translate([0,probe_holder_offset,probe_holder_z]) {
+        cylinder(d=probe_d, h=main_plate_t - probe_holder_z);
+    }
     
     // nut is 19mm x 3.5mm
-    translate([0,probe_holder_offset, probe_holder_z+7])
-    cylinder(d=19, h=40, $fn=6);
+    translate([0,probe_holder_offset, probe_holder_z+7]) {
+        cylinder(d=19, h=40, $fn=6);
+    }
     
-    translate([-probe_holder_w/2, arm_start_x+arm_size_x, probe_holder_z+main_plate_t])
-    cube([probe_holder_w, probe_holder_w, -probe_holder_z]);
+    translate([-probe_holder_w/2, arm_start_x+arm_size_x, probe_holder_z+main_plate_t]) {
+        cube([probe_holder_w, probe_holder_w, -probe_holder_z]);
+    }
 }
 
 // }}}
@@ -243,20 +246,23 @@ module probe_holder_cut() {
 module fan_duct() {
     round_d = 3;
     
-    hull() {
-        cylinder(d=fan_outer_d, h=1);
-        translate([0,0,fan_duct_len-1]) {
-            scale([1,outer_scale,1]) {
-                cylinder(d=outlet_outer_d, h=1);
+    // FIXME: Det under er jalla - det skal ikke være hardkoda verdier i en translate() her!
+    translate([0,-arm_stretch_x/(10*sqrt(arm_stretch_x)),sqrt(arm_stretch_x)]) {
+        hull() {
+            cylinder(d=fan_outer_d, h=1);
+            translate([0,0,fan_duct_len-1]) {
+                scale([1,outer_scale,1]) {
+                    cylinder(d=outlet_outer_d, h=1);
+                }
             }
         }
-    }
-    translate([-20+round_d,
-               -20+round_d,
-               0]) {
-        linear_extrude(fan_mount_plate_t) {
-            offset(round_d) {
-                square([40-2*round_d,40-2*round_d]);
+        translate([-20+round_d,
+                   -20+round_d,
+                   0]) {
+            linear_extrude(fan_mount_plate_t) {
+                offset(round_d) {
+                    square([40-2*round_d,40-2*round_d]);
+                }
             }
         }
     }
@@ -268,33 +274,34 @@ module fan_duct() {
 module fan_duct_cut() {
     echo(str("fuckupfix is ", fuckupfix));
     
-    hull() {
-        translate([0,0,-fuckupfix]) {
-            cylinder(d=fan_inner_d, h=1+fuckupfix);
-        }
-        translate([0,0,fan_duct_len-1+fuckupfix]) {
-            scale([1,inner_scale,1]) {
-                cylinder(d=outlet_inner_d, h=1+fuckupfix);
+    translate([0,-arm_stretch_x/(10*sqrt(arm_stretch_x)),sqrt(arm_stretch_x)]) {
+        hull() {
+            translate([0,0,-fuckupfix]) {
+                cylinder(d=fan_inner_d, h=1+fuckupfix);
+            }
+            translate([0,0,fan_duct_len-1+fuckupfix]) {
+                scale([1,inner_scale,1]) {
+                    cylinder(d=outlet_inner_d, h=1+fuckupfix);
+                }
             }
         }
-    }
-    
-    // cylinder(d=37, h=fan_mount_plate_t);
-    
-    // screws
-    translate([16,16,-fuckupfix]) {
-        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
-    }
-    translate([16,-16,-fuckupfix]) {
-        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
-    }
-    translate([-16,16,-fuckupfix]) {
-        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
-    }
-    translate([-16,-16,-fuckupfix]) {
-        cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
-    }
-
+        
+        // cylinder(d=37, h=fan_mount_plate_t);
+        
+        // screws
+        translate([16,16,-fuckupfix]) {
+            cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
+        }
+        translate([16,-16,-fuckupfix]) {
+            cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
+        }
+        translate([-16,16,-fuckupfix]) {
+            cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
+        }
+        translate([-16,-16,-fuckupfix]) {
+            cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
+        }
+    }   
 }
 
 // }}}
