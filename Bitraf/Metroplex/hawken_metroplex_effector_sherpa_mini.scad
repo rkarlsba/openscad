@@ -82,6 +82,12 @@ hotend_fan_duct_mount_z = -hotend_fan_duct_e3d_h/2;
 hotend_fan_mount_zshift = -3;
 hotend_fan_mount_rot = 45;
 
+// Effector - sherpa stuff
+sherpa_hole_dist = 21.75;
+oblong_holes = 0; // don't use it - the nuts won't fit
+m3mutter_d = 6.6;
+m3mutter_h = 2.5;
+
 // }}}
 // module copy_mirror() - Shamefully stolen {{{
 
@@ -405,11 +411,6 @@ module hotend_fan_duct_cut() {
 
 // }}}
 // module effector() {{{
-
-sherpa_hole_dist = 21.75;
-oblong_holes = 0; // don't use it - the nuts won't fit
-m3mutter_d = 6.6;
-m3mutter_h = 2.5;
 
 module effector() {
     difference() {
