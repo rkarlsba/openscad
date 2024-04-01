@@ -162,7 +162,9 @@ module effector_arm_cut() {
     // screw hole
     translate([arm_hole_x+arm_stretch_x,arm_size_y/2,arm_hole_elev]) {
         rotate([90,0,0]) {
-            cylinder(d=arm_hole_d, h=arm_size_y);
+            translate([0,0,-.1]) {
+                cylinder(d=arm_hole_d, h=arm_size_y+.2);
+            }
         }
     }
     // square nut holders
@@ -174,7 +176,7 @@ module effector_arm_cut() {
 }
 
 // }}}
-// module nut_cutout() {{{
+// module nut_cutout() {{
 
 module nut_cutout() {
     // Center on all axis
@@ -191,8 +193,16 @@ module nut_cutout() {
     }}} */
     
     // Hex nut:
+    /*
     hex_nut_t = 3;
     hex_nut_d = 6;
+    hex_nut_d = 6;
+    hex_nut_t = hex_nut_t/2;
+    */
+    hex_nut_t = 3;
+    hex_nut_d = 6.6;
+    echo("hex_nut_d is ", hex_nut_d, " whereas hex_nut_t is ", hex_nut_t);
+
     // Actual nut
     rotate([90,0,0]) {
         translate([0,0,-hex_nut_t/2]) {
@@ -481,8 +491,7 @@ module effector() {
 
             // center cutout
             translate([0,0,center_t]) {
-                cylinder(h=main_plate_t-center_t,
-                         d=center_d);
+                cylinder(h=main_plate_t-center_t, d=center_d);
             }
             
             // upper cutout
