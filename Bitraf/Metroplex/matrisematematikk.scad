@@ -6,11 +6,12 @@ mh = -h;
 
 x = a+b;
 y = x+c;
+z = h*2;
 
 
 echo(str("\na is ", a, "\nb is ", b, "\nc is ", c, 
          "\nh is ", h, "\nmh is ", mh,
-         "\nx is ", x, "\ny is ", y, "\n"));
+         "\nx is ", x, "\ny is ", y, "\n", "\nz is ", z));
 
 
 
