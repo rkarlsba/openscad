@@ -56,6 +56,7 @@ fan_offset_z = -10;
 fan_base_rotation = 45;
 fan_screw_hole_d = 4.3;
 fan_rotation = fan_base_rotation+arm_stretch_x/1.1;
+fan_sidecut = 10;
 
 //outlet_inner_d = 10;
 outlet_inner_d = 16;
@@ -76,11 +77,11 @@ probe_d = 12.5;
 hotend_fan_duct_e3d_h = 28;
 hotend_fan_duct_e3d_w = 22 + .5;
 hotend_fan_duct_wall_t = 1.5;
-hotend_fan_duct_mount_y = -50;
+hotend_fan_duct_mount_y = -60;
 hotend_fan_duct_mount_z = -hotend_fan_duct_e3d_h/2;
 
 hotend_fan_mount_zshift = -3;
-hotend_fan_mount_rot = 45;
+hotend_fan_mount_rot = 25;
 
 // Effector - sherpa stuff
 sherpa_hole_dist = 21.75;
@@ -88,6 +89,12 @@ oblong_holes = 0; // don't use it - the nuts won't fit
 m3mutter_d = 6.6;
 m3mutter_h = 2.5;
 
+heatblock_size = [12,20,11];
+heatblock_location = [-6,-6,-42];
+si_sock_thickness = 2;
+si_sock_helper = [si_sock_thickness,si_sock_thickness,si_sock_thickness];
+si_sock_size = heatblock_size+si_sock_helper;
+si_sock_enabled = 0;
 // }}}
 // module copy_mirror() - Shamefully stolen {{{
 
@@ -201,7 +208,7 @@ module nut_cutout() {
     */
     hex_nut_t = 3;
     hex_nut_d = 6.6;
-    echo("hex_nut_d is ", hex_nut_d, " whereas hex_nut_t is ", hex_nut_t);
+    // echo("hex_nut_d is ", hex_nut_d, " whereas hex_nut_t is ", hex_nut_t);
 
     // Actual nut
     rotate([90,0,0]) {
@@ -295,8 +302,6 @@ module fan_duct() {
 // module fan_duct_cut() {{{
 
 module fan_duct_cut() {
-    echo(str("fuckupfix is ", fuckupfix));
-    
     translate([0,-arm_stretch_x/(10*sqrt(arm_stretch_x)),sqrt(arm_stretch_x)]) {
         hull() {
             translate([0,0,-fuckupfix]) {
@@ -324,7 +329,23 @@ module fan_duct_cut() {
         translate([-16,-16,-fuckupfix]) {
             cylinder(d=fan_screw_hole_d, h=fan_mount_plate_t+5+fuckupfix);
         }
+        
+
     }   
+}
+
+// }}}
+
+// module fan_duct_chop() {{{
+
+module fan_duct_chop() {
+    // fan_duct_len = 40+arm_stretch_x;
+    // fan_outer_d = 40;
+
+    echo(sqrt(arm_stretch_x));
+    translate([-fan_outer_d/2,-fan_outer_d/2,sqrt(arm_stretch_x)]) {
+        cube([fan_outer_d,fan_outer_d,fan_duct_len]);
+    }
 }
 
 // }}}
@@ -424,7 +445,7 @@ module hotend_fan_duct_cut() {
 
 module effector() {
     difference() {
-        union() {
+        union() { // this is added
             // main plate
             //cylinder(h=main_plate_t, d=main_plate_d);
             // sides
@@ -461,7 +482,7 @@ module effector() {
             }
             hotend_fan_duct();
         }
-        union() {
+        union() { // this is removed
             hotend_fan_duct_cut();
             rotate_copy([120,240]) {
                 translate([0,fan_offset_y+arm_stretch_x,fan_offset_z+.01]) {
@@ -470,7 +491,7 @@ module effector() {
                     }
                 }
             }
-
+            
             probe_holder_cut();
 
             rotate_copy([90,210,330]) {
@@ -541,15 +562,31 @@ module preview_examples() {
         }
     }
         
-    // block
+    // heatblock
     color("gray") {
-        translate([-6,-6,-42]) {
-            cube([12,20,11]);
+        translate(heatblock_location) {
+            cube(heatblock_size); 
         }
     }
-        
+
+    // silicone sock for heatblock
+    if (si_sock_enabled) {
+        color("orange") {
+            translate([heatblock_location]-si_sock_helper) {
+                difference() {
+                    cube([12,20,11]);
+                    translate(si_sock_helper) {
+                        difference() {
+                            cube([12,20,11]+si_sock_helper+si_sock_helper);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     // nozzle
-    color("gray") {
+    color("yellow") {
         translate([0,0,-42-5]) {
             cylinder(d2=9, d1=0.4, h=5);
         }
@@ -559,17 +596,17 @@ module preview_examples() {
 
 // }}}
 // Main code {{{
-
 if (test_run) {
-    effector_arm();
-    /*
+    //effector_arm();
+    
     difference() {
         //hotend_fan_duct();
         //hotend_fan_duct_cut();
         fan_duct();
         fan_duct_cut();
+        fan_duct_chop();
     }
-    */
+    
 } else {
     if ($preview) {
         preview_examples();
