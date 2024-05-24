@@ -1,8 +1,8 @@
-bredde = [270,170];    // pluss ei bue på 7mm
+bredde = [275,170];    // pluss ei bue på 7mm
 hoyde = [33,60];
 hull_d = 8;
-hullgloppe = 12;   // sentrum av høla langs y
-hullmellomrom = 43-hull_d;
+hullgloppe = 11;   // sentrum av høla langs y
+hullmellomrom = 36;
 antall_hull = [8,5];
 borstelengde = [11,35]; // Børstelengde
 borstebredde = 6;
