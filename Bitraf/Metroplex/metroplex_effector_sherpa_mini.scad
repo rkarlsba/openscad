@@ -30,7 +30,7 @@ screw_hole_d = 3.5;
 
 // More variables
 arm_start_x = 18;
-arm_stretch_x = 13;
+arm_stretch_x = 13.5;
 arm_size_x = 10.1+arm_stretch_x;
 arm_size_y = 40;
 arm_hole_elev = 3.5;
@@ -262,7 +262,7 @@ module probe_holder_cut() {
     
     // nut is 19mm x 3.5mm
     translate([0,probe_holder_offset, probe_holder_z+7]) {
-        cylinder(d=19, h=40, $fn=6);
+        cylinder(d=20, h=40, $fn=6);
     }
     
     translate([-probe_holder_w/2, arm_start_x+arm_size_x, probe_holder_z+main_plate_t]) {
@@ -278,12 +278,19 @@ module fan_duct() {
     
     // FIXME: Det under er jalla - det skal ikke være hardkoda verdier i en translate() her!
     translate([0,-arm_stretch_x/(10*sqrt(arm_stretch_x)),sqrt(arm_stretch_x)]) {
-        hull() {
-            cylinder(d=fan_outer_d, h=1);
-            translate([0,0,fan_duct_len-1]) {
-                scale([1,outer_scale,1]) {
-                    cylinder(d=outlet_outer_d, h=1);
+        difference() {
+            hull() {
+                cylinder(d=fan_outer_d, h=1);
+                translate([0,0,fan_duct_len-1]) {
+                    scale([1,outer_scale,1]) {
+                        rotate([0,0,0]) {
+                            cylinder(d=outlet_outer_d, h=1);
+                        }
+                    }
                 }
+            }
+            translate([-fan_outer_d/2,-fan_outer_d,fan_outer_d/4]) {
+                cube([40,40,50]);
             }
         }
         translate([-20+round_d,
