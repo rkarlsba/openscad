@@ -9,7 +9,7 @@ borstebredde = 6;
 borstespalte = 1;
 borster = [38,23]; // veit ikke om jeg trenger denne
 dust_d = 24;
-dust_y = -1;
+dust_y = -2;
 
 foran = 0;
 bak = 1;
@@ -20,11 +20,11 @@ module freseskjort(versjon) {
             square([bredde[versjon],hoyde[versjon]]);
             if (versjon == foran) {
                 difference() {
-                    translate([hullgloppe,hullgloppe]) {
+                    translate([hullgloppe,hullgloppe+dust_y]) {
                         circle(d = dust_d*1.5);
                     }
                     translate([-hull_d,-hull_d]) {
-                        square([hull_d*4,hull_d]);
+                        square([hull_d*5,hull_d]);
                     }
                 }
             }
