@@ -1,4 +1,4 @@
-// Total lengde 950mm
+// Total lengde 960mm
 hull_d = 4;
 hullbrem_d = 10;
 hullbrem_h = 1.2;
@@ -8,13 +8,14 @@ bunn = 2 + (bruk_skruehull ? hullbrem_h : 0);
 hull_h = bunn;
 bredde = 24;
 hoyde = 20;
-lengde = 160;
+lengde = 40;
 vegg = 2;
-avrunding = vegg;
+avrunding = vegg*1.5;
 kant = 1.5;
 vkant = kant*1.5;
-plugg_d = 1.8;
-plugg_h = 15;
+plugg_d = 2;
+plugg_h_basis = 20;
+plugg_h = (lengde/2 >= plugg_h_basis) ? lengde*.4 : plugg_h_basis;
 bruk_plugger = true;
 
 skinne_p = [
@@ -23,8 +24,8 @@ skinne_p = [
     [bredde+vegg*2, hoyde+bunn],
     [bredde+vegg-kant, hoyde+bunn],
     [bredde+vegg, hoyde+bunn-vkant],
-    [bredde+avrunding, bunn+avrunding],
-    [bredde, bunn],
+    [bredde+vegg, bunn+avrunding],
+    [bredde-avrunding/4, bunn],
     [vegg+avrunding, bunn],
     [vegg, bunn+avrunding],
     [vegg, bunn],
@@ -36,6 +37,7 @@ skinne_p = [
 
 module plugghull(plugg_d = plugg_d, plugg_h=plugg_h) {
     cylinder(d=plugg_d, h=plugg_h, $fn=128);
+    echo (str("plugg: ", plugg_d, "x", h=plugg_d));
 }
 
 module skruehull(
@@ -69,16 +71,16 @@ module skinne(storrelse = skinne_p, hoyde = lengde) {
             }
         }
         if (bruk_plugger) {
-            translate([vegg*.9,vegg*.9,0]) {
+            translate([vegg,vegg,0]) {
                 plugghull();
             }
-            translate([vegg*.9,vegg*.9,hoyde-plugg_h]) {
+            translate([vegg,vegg*.9,hoyde-plugg_h]) {
                 plugghull();
             }
-            translate([bredde+vegg*1.1,vegg*.9,0]) {
+            translate([bredde+vegg,vegg,0]) {
                 plugghull();
             }
-            translate([bredde+vegg*1.1,vegg*.9,hoyde-plugg_h]) {
+            translate([bredde+vegg,vegg,hoyde-plugg_h]) {
                 plugghull();
             }
         }
