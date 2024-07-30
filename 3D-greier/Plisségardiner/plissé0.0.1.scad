@@ -8,11 +8,14 @@ bunn = 2 + (bruk_skruehull ? hullbrem_h : 0);
 hull_h = bunn;
 bredde = 24;
 hoyde = 20;
-lengde = 80;
+lengde = 160;
 vegg = 2;
 avrunding = vegg;
 kant = 1.5;
 vkant = kant*1.5;
+plugg_d = 1.8;
+plugg_h = 15;
+bruk_plugger = true;
 
 skinne_p = [
     [0,0],
@@ -31,6 +34,10 @@ skinne_p = [
     [0, hoyde],
 ];
 
+module plugghull(plugg_d = plugg_d, plugg_h=plugg_h) {
+    cylinder(d=plugg_d, h=plugg_h, $fn=128);
+}
+
 module skruehull(
     hull_d = hull_d,
     hull_h = hull_h, 
@@ -47,14 +54,6 @@ module skinne(storrelse = skinne_p, hoyde = lengde) {
     difference() {
         linear_extrude(lengde) {
             polygon(skinne_p);
-            /*
-            translate([tykkelse,tykkelse]) {
-                square([tykkelse,tykkelse]);
-            }
-            translate([bredde,tykkelse]) {
-                square([tykkelse,tykkelse]);
-            }
-            */
         }
         if (bruk_skruehull) {
             translate([bredde/2+vegg,hull_h,hull_dist]) {
@@ -67,6 +66,20 @@ module skinne(storrelse = skinne_p, hoyde = lengde) {
                 rotate([90,0,0]) {
                     skruehull();
                 }
+            }
+        }
+        if (bruk_plugger) {
+            translate([vegg*.9,vegg*.9,0]) {
+                plugghull();
+            }
+            translate([vegg*.9,vegg*.9,hoyde-plugg_h]) {
+                plugghull();
+            }
+            translate([bredde+vegg*1.1,vegg*.9,0]) {
+                plugghull();
+            }
+            translate([bredde+vegg*1.1,vegg*.9,hoyde-plugg_h]) {
+                plugghull();
             }
         }
     }
