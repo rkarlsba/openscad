@@ -5,7 +5,8 @@
 
 // Bloody OpenSCAD has no idea about what a global variable might be and
 // noone seems to care, but functions work.
-function pi() =  3.141592653589793;
+//function pi() = 3.141592653589793; // too few decimals!
+function pi() = 3.14159265358979323846264338327950288419716939937510;
 function e() = 2.718281828459045;
 
 // Colours - all in RGB, as to be passed to rgb()
@@ -64,6 +65,14 @@ module roundedsquare(size, radius) {
     }
 }
 
+module roundedcube(dim, r) {
+    linear_extrude(dim[2]) {
+        roundedsquare([dim[0], dim[1]], r);
+    }
+}
+
+/* gammel module roundedcube(size, radius) {{{
+ * Denne er avrunda overalt og er gir i tillegg feil størrelse ut
 module roundedcube(size, radius) {
     if (radius == 0) {
         cube(size);
@@ -88,6 +97,7 @@ module roundedcube(size, radius) {
         }
     }
 }
+}}} */
 
 // r[adius], h[eight], [rou]n[d]
 // roundedcylinder(r=10,h=30,n=.5,$fn=200);
