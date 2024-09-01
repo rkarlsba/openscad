@@ -1,8 +1,16 @@
+/*
 card = [100,150];
 finger_width = 3;
 finger_space = finger_width;
 finger_length = 7;
 edge_space = 9;
+*/
+
+card = [150,200];
+finger_width = 4;
+finger_space = finger_width;
+finger_length = 9;
+edge_space = 10;
 
 module teeth(upsidedown=false) {
     translate([0, upsidedown ? 0 : -finger_length]) {
