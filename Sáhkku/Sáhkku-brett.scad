@@ -14,7 +14,7 @@ mellomrom_v = 9;
 linjeantall = 15;
 rader = 3;
 krysstrek = 27;
-kryssvinkel = 56;
+kryssvinkel = 45;
 
 module linje(lengde, bredde=linjebredde) {
     translate([-bredde/2,0]) {
@@ -29,6 +29,23 @@ module kryss(strek = krysstrek, vinkel = kryssvinkel) {
     translate([-strek*sin(vinkel),0]) {
         rotate([0,0,-vinkel]) {
             linje(strek);
+        }
+    }
+}
+    
+module boks(strek = krysstrek/sqrt(2), vinkel = kryssvinkel) {
+    rotate([0,0,45]) {
+        linje(strek+linjebredde/2);
+        translate([strek,-linjebredde/2]) {
+            linje(strek+linjebredde);
+        }
+        translate([strek-linjebredde/2,0]) {
+            rotate([0,0,90]) {
+                linje(strek);
+                translate([strek,0]) {
+                    linje(strek);
+                }
+            }
         }
     }
 }
@@ -48,8 +65,14 @@ module sahkkubrett(
                 if (y == (linjelengde+mellomrom_v))  {
                     if (x == mellomrom_h * 3 || x == mellomrom_h * 11) 
                     {
-                        translate([krysstrek-15.8,linjelengde/2-7.54]) {
+                        translate([krysstrek*.354,linjelengde/2-8.54]) {
                             kryss();
+                            echo(str("x = ", x, " and y = ", y));
+                        }
+                    } else if (x == mellomrom_h * 7) 
+                    {
+                        translate([krysstrek-27,linjelengde/2-13.5]) {
+                            boks();
                             echo(str("x = ", x, " and y = ", y));
                         }
                     }
