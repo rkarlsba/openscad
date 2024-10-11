@@ -1,3 +1,5 @@
+use <ymse.scad>
+
 /* Under finner du parametre */
 
 /* Dette er til den postkortstørrelsen */
@@ -11,11 +13,11 @@ edge_space = 9;
 */
 
 /* Litt større */
-card = [150,200];
-finger_width = 4;
-finger_space = finger_width;
-finger_length = 9;
-edge_space = 10;
+card = [150,150];
+finger_width = 1;
+finger_space = 3;
+finger_length = 7;
+edge_space = 8;
 
 
 /* Herunder ligger koden - den trenger du ikke å endre på */
@@ -36,7 +38,7 @@ module teeth(upsidedown=false) {
 /* Tegne kort med tenner */
 module card() {
     difference() {
-        square(card);
+        roundedsquare(card,5);
         union() {
             teeth(true);
             translate([0,card[1]]) {
