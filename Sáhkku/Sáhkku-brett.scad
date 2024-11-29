@@ -5,16 +5,21 @@
  * 15 x 3 felter fordelt som 15 vertikale streker, 60mm høye
  * med 10mm mellom hver strek.
  */
- 
+
+notasjon = true;
 pi = 3.14159265;
 linjelengde = 60;
-linjebredde = 1.3;
+linjebredde = .3;
 mellomrom_h = 19;
 mellomrom_v = 9;
 linjeantall = 15;
 rader = 3;
 krysstrek = 27;
 kryssvinkel = 45;
+//font = "Big Caslon:style=Medium";
+//font = "Baskerville:style=Bold";
+// font = "Baskerville:style=SemiBold";
+font = "Baskerville:style=Regular";
 
 module linje(lengde, bredde=linjebredde) {
     translate([-bredde/2,0]) {
@@ -60,20 +65,56 @@ module sahkkubrett(
 {
     for (y = [0:(linjelengde+mellomrom_v):(linjelengde+mellomrom_v)*rader-1]) {
         for (x = [0:mellomrom_h:(linjeantall-1)*mellomrom_h]) {
+//            echo(str("x is ", x, " and y is ", y, " and linjelengde+mellomrom_v)*rader-1 is ", (linjelengde+mellomrom_v)*rader-1));
             translate([x,y]) {
                 linje(linjelengde);
                 if (y == (linjelengde+mellomrom_v))  {
-                    if (x == mellomrom_h * 3 || x == mellomrom_h * 11) 
-                    {
+                    if (x == mellomrom_h * 3 || x == mellomrom_h * 11) {
                         translate([krysstrek*.354,linjelengde/2-8.54]) {
                             kryss();
-                            echo(str("x = ", x, " and y = ", y));
                         }
-                    } else if (x == mellomrom_h * 7) 
-                    {
+                    } else if (x == mellomrom_h * 7) {
                         translate([krysstrek-27,linjelengde/2-13.5]) {
                             boks();
-                            echo(str("x = ", x, " and y = ", y));
+                        }
+                    }
+                } else if (notasjon) {
+                    if (y == 0) {
+                        translate([0,-20]) {
+                            text(chr(65+x/mellomrom_h), 
+                                font=font,
+                                halign="center",
+                                size = 9);
+                        }
+                    } else if (y == 2*(linjelengde+mellomrom_v)) {
+                        translate([0,linjelengde+20]) {
+                            rotate([0,0,180]) {
+                                text(chr(65+x/mellomrom_h), 
+                                    font=font,
+                                    halign="center",
+                                    size = 9);
+                            }
+                        }
+                    }
+                    if (x == 0) {
+                        translate([-mellomrom_h,linjelengde/2]) {
+                            text(chr(49+y/(linjelengde+mellomrom_v)), 
+                                font=font,
+                                halign="center",
+                                valign="center",
+                                size = 11);
+                            echo(str("x is ", x, " and y is ", y));
+                        }
+                    } else if (x == (linjeantall-1)*mellomrom_h) {
+                        translate([mellomrom_h,linjelengde/2]) {
+                            rotate([0,0,180]) {
+                                text(chr(49+y/(linjelengde+mellomrom_v)), 
+                                    font=font,
+                                    halign="center",
+                                    valign="center",
+                                    size = 11);
+                                echo(str("x is ", x, " and y is ", y));
+                            }
                         }
                     }
                 }
@@ -82,7 +123,7 @@ module sahkkubrett(
     }
 }
 
-translate([0,0]) {
+translate([60,50]) {
     sahkkubrett();
 }
 
