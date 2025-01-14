@@ -1,5 +1,6 @@
 .DS_Store
 *.stl
+*.sw[a-p]
 *.3mf
 tmp/
 wtf/
