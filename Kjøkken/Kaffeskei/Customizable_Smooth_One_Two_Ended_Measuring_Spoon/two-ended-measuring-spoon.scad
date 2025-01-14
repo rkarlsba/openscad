@@ -11,11 +11,11 @@ fn=preview?30:128;
 /* [Spoon] */
 spoon_shape = 0; // [0: flat (classic), 1: conical, 2: cylindrical, 3: cylindrical (short), 4: cylindrical (long), 5: spherical (experimental)]  
 
-volume_1=15;
+volume_1=30;
 unit_volume_1=1; // [1.0: ml, 16.387064: cubic inch (international inch), 28.4130625: imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
 
 // set to zero to get a single ended spoon
-volume_2=5;
+volume_2=0;
 unit_volume_2=1; // [1.0:ml, 16.387064:cubic inch (international inch), 28.4130625:imperial fluid ounce (Imp.fl.oz.), 29.5735295625: US fluid ounce (US fl.oz.), 17.758: tablespoon (UK), 14.7867647825: tablespoon (US), 4.439: teaspoon (UK), 4.928921595: teaspoon (US), 2.75: grams of coffee, 1.17: grams of sugar, 0.89: grams of salt ]
 
 function get_volume_1()= volume_1 * unit_volume_1 * adjust_volume_1;
@@ -24,10 +24,11 @@ function get_volume_2()= volume_2 * unit_volume_2 * adjust_volume_2;
 /* [Label] */
 
 //Hint: with orbitron font replace zero with letter O!
-label="ss        ts";
+label="Kaffe";
 label_thickness = 0.6;
-label_height = 6.5;
+label_height = 7.5;
 label_font="BlackRose.dxf"; //[orbitron.dxf,Letters.dxf,knewave.dxf,BlackRose.dxf,braille.dxf]
+label_font="Old Stamper:style=Regular";
 
 /* [Metrics] */
 
