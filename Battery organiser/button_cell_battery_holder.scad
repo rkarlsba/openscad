@@ -57,50 +57,56 @@ external_height = (battery_diameter_mm/2)*1.4;
 lateral_font_size = min(external_length/8, 2*external_height/3);
 front_font_size = min(column_width/6, external_height/3);
 
-difference()
-    {
-        for(i=[0:(nb_column-1)]) {
-            translate([i*(column_width-2.5),0,0]) make_column();
+difference() {
+    for(i=[0:(nb_column-1)]) {
+        translate([i*(column_width-2.5),0,0]) make_column();
+    }
+
+    translate([nb_column*(column_width-2.5)+2.1,external_length/2,external_height/2]) {
+        rotate([90,0,90]) {
+            linear_extrude(height = 1)  {
+                text(side_text,size=lateral_font_size,halign="center", valign="center");
+            }
         }
-        
-        translate([nb_column*(column_width-2.5)+2.1,external_length/2,external_height/2])
-          rotate([90,0,90])
-          linear_extrude(height = 1) 
-          text(side_text,size=lateral_font_size,halign="center", valign="center");
+    }
 }
 
 module make_column() {
 
-    difference()
-    {
-    cube([column_width,external_length,external_height]);
-       
-       for(i=[0:(slots-1)])
-       { 
-            translate([2.5,spacer+(i*(thickness + spacer)),1])
-            cube([battery_diameter_mm,thickness,battery_diameter_mm]);
-    
-           if (make_hole) {
-               translate([column_width/2,thickness/2+spacer+i*(spacer+thickness),0]) cylinder(h=2,r=1,$fn = 60);
-       }
-       }
-       
-       // Translate -1 on Y axis and make a cylinder of +2 on Y Axis, this is only to have a clean preview in OpenScad without having to render
-       translate([(column_width)/2, -1, external_height])
-       rotate([-90,0,0])
-       cylinder(h=external_length+2, r=(battery_diameter_mm/2)-2, $fn = 90);
-    
-      
-       translate([column_width/2,0.4,external_height/4])
-       rotate([90,0,0])
-       linear_extrude(height = 1) 
-       {
-            text(front_text,size=front_font_size,halign="center", valign="center");
-       }
+    difference() {
+        cube([column_width,external_length,external_height]);
+
+        for(i=[0:(slots-1)]) { 
+            translate([2.5,spacer+(i*(thickness + spacer)),1]) {
+                cube([battery_diameter_mm,thickness,battery_diameter_mm]);
+            }
+
+            if (make_hole) {
+                translate([column_width/2,thickness/2+spacer+i*(spacer+thickness),0]) cylinder(h=2,r=1,$fn = 60);
+            }
+        }
+
+        // Translate -1 on Y axis and make a cylinder of +2 on Y Axis, this is only to have a clean preview in OpenScad without having to render
+        translate([(column_width)/2, -1, external_height]) {
+            rotate([-90,0,0]) {
+                cylinder(h=external_length+2, r=(battery_diameter_mm/2)-2, $fn = 90);
+            }
+        }
+
+
+        translate([column_width/2,0.4,external_height/4]) {
+            rotate([90,0,0]) {
+                linear_extrude(height = 1) {
+                    text(front_text,size=front_font_size,halign="center", valign="center");
+                }
+            }
+        }
     }
-    
-    translate([2.25,0,external_height-0.55])
-    rotate([-90,0,0])
-    cylinder(h=external_length,r=0.5,$fn = 30);
+
+    translate([2.25,0,external_height-0.55]) {
+        rotate([-90,0,0]) {
+            cylinder(h=external_length,r=0.5,$fn = 30);
+        }
+    }
 
 }
