@@ -100,7 +100,6 @@ module sahkkubrett(
                             }
                         }
                     }
-                    // 
                     if (x == 0) {
                         translate([-mellomrom_h,linjelengde/2]) {
                             text(chr(49+y/(linjelengde+mellomrom_v)), 
@@ -112,6 +111,7 @@ module sahkkubrett(
                                 chr(49+y/(linjelengde+mellomrom_v))));
                             echo(str("¿ x is ", x, " and y is ", y));
                         }
+//                    } else if (x == (linjeantall-1)*mellomrom_h) {
                     } else if (x == (linjeantall-1)*mellomrom_h) {
                         translate([mellomrom_h,linjelengde/2]) {
                             rotate([0,0,180]) {
