@@ -5,7 +5,8 @@ mixing_tray_slot_width = mixing_tray_width+mixing_tray_gap*2;
 mixing_tray_slot_height = 80;
 mixing_tray_slot_gap = 20;
 epoxy_slot_width = 50;
-epoxy_slot_height = 40;
+epoxy_slot_length = mixing_tray_width;
+epoxy_slot_height = mixing_tray_slot_height;
 wall_thickness = 2;
 work_area = 60;
 rim_size = 2;
@@ -27,6 +28,20 @@ module skalk(inner_r, outer_r, thickness, angle=360) {
         }
     }
 }
+
+module room(size, wall_thickness, door_width=0, threshold_height=0) {
+   difference() {
+        cube(size);
+        translate([wall_thickness,wall_thickness]) {
+            cube([size[0]-wall_thickness*2,size[1]-wall_thickness*2,size[2]+bugfix]);
+        }
+        if (door_width > 0) {
+            translate([size[0]/2-door_width/2, -bugfix, threshold_height]) {
+                cube([door_width,wall_thickness+bugfix*2,size[2]-threshold_height+bugfix]);
+            }
+        }
+    }
+ }
 
 // Rimline
 module rimline(d,l) {
@@ -83,23 +98,22 @@ module rim(size, d) {
 
 // Tray
 module tray() {
+    // Tray
     cube(tray_size);
+    
+    // Rim
     translate([0,0,tray_thickness]) {
         rim(size=tray_size, d=rim_size);
         
     }
-    translate([0,tray_size[1]-rim_size-mixing_tray_slot_width,0]) {
-        difference() {
-            cube([mixing_tray_slot_width+wall_thickness,mixing_tray_slot_width+wall_thickness,mixing_tray_slot_height]);
-            translate([wall_thickness,wall_thickness]) {
-                cube([mixing_tray_slot_width-wall_thickness,mixing_tray_slot_width-wall_thickness,mixing_tray_slot_height+bugfix]);
-            }
-            translate([mixing_tray_slot_width/2-mixing_tray_slot_gap/2+wall_thickness/2,-bugfix,mixing_tray_height/2]) {
-                cube([mixing_tray_slot_gap,wall_thickness+bugfix*2,mixing_tray_slot_height-mixing_tray_height/2+bugfix]);
-            }
-        }
-    }
+    
     // Mixing trays
+    translate([0,tray_size[1]-rim_size-mixing_tray_slot_width,0]) {
+        room([mixing_tray_slot_width+wall_thickness,mixing_tray_slot_width+wall_thickness,mixing_tray_slot_height],
+        wall_thickness=wall_thickness,
+        door_width=mixing_tray_slot_gap,
+        threshold_height=mixing_tray_height/2);
+    }
 }
 
 tray();
