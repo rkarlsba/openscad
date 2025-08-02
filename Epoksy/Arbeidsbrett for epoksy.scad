@@ -1,20 +1,22 @@
 mixing_tray_width = 40;
 mixing_tray_gap = 1;
-mixing_tray_slot = mixing_tray_width+mixing_tray_gap*2;
+mixing_tray_slot_width = mixing_tray_width+mixing_tray_gap*2;
+mixing_tray_slot_height = 80;
+mixing_tray_slot_gap = 20;
 epoxy_slot_width = 50;
 epoxy_slot_height = 40;
 wall_thickness = 2;
 work_area = 60;
 rim_size = 2;
 tray_thickness = 2;
+bugfix = $preview ? .1 : 0;
 
 tray_size = [
     mixing_tray_width + mixing_tray_gap * 2 + wall_thickness * 3 + epoxy_slot_width + rim_size * 2,
-    (mixing_tray_slot > epoxy_slot_height ? mixing_tray_width : epoxy_slot_height) + work_area + wall_thickness * 2 + rim_size * 2,
+    (mixing_tray_slot_width > epoxy_slot_height ? mixing_tray_width : epoxy_slot_height) + work_area + wall_thickness * 2 + rim_size * 2,
     tray_thickness
 ];
 
-//echo(str("Tray width = ", tray_width, " and tray height = ", tray_height));
 echo(str("Tray size = ", tray_size));
 
 module skalk(inner_r, outer_r, thickness, angle=360) {
@@ -28,7 +30,7 @@ module skalk(inner_r, outer_r, thickness, angle=360) {
 // Rimline
 module rimline(d,l) {
     ds2 = d*sqrt(2);
-    fudge = .001;
+    fudge = .001; // For å fikse non-manifold-fuckups
     translate([0, d/2, 0]) {
         difference() {
             // Tegne pølse
@@ -80,14 +82,22 @@ module rim(size, d) {
 
 // Tray
 module tray() {
-    union() {
-        cube(tray_size);
-        translate([0,0,tray_thickness]) {
-            rim(size=tray_size, d=rim_size);
+    cube(tray_size);
+    translate([0,0,tray_thickness]) {
+        rim(size=tray_size, d=rim_size);
+        
+    }
+    translate([0,tray_size[1]-rim_size-mixing_tray_slot_width,0]) {
+        difference() {
+            cube([mixing_tray_slot_width+wall_thickness,mixing_tray_slot_width+wall_thickness,mixing_tray_slot_height]);
+            translate([wall_thickness,wall_thickness]) {
+                cube([mixing_tray_slot_width-wall_thickness,mixing_tray_slot_width-wall_thickness,mixing_tray_slot_height+bugfix]);
+            }
         }
     }
+    // Mixing trays
 }
 
-/// tray();
+tray();
 
-rim(tray_size, rim_size);
+// rim(tray_size, rim_size);
