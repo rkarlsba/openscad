@@ -59,3 +59,4 @@ difference() {
     inner_bottom = bottom_size - 2 * wall_thickness;
     inner_void(inner_top, inner_bottom);
 }
+

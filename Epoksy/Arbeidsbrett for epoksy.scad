@@ -8,6 +8,17 @@
 //
 // Licensed under Creative Commons BY-NC-SA v4.0 or later. Please see
 // https://creativecommons.org/licenses/by-nc-sa/4.0/ for details.
+//
+// This is specifically made for using the following:
+//   Spatula:   https://www.printables.com/model/1373150-55mm-model
+//   Tray:      https://www.printables.com/model/1373150-55mm-model
+//
+// Tanker om endringer:
+//
+// Jeg bør legge inn muligheter for å flytte rundt på rommene. Det kan jo være at spadene funker
+// best på venstre side, så blir det mer rom for arbeid. På den annen side, er jo ikke alle
+// høyrehendte, så da bør det jo være mulig å flytte dem rundt litt.
+
 
 // Parameters
 rim_size = 2;
@@ -38,9 +49,8 @@ work_area = 50;
 
 bugfix = $preview ? .1 : 0;
 
-// No idea why I had to decrease X by rim_size
 tray_size = [
-    wall_thickness * 4 + mixing_tray_slot_width + epoxy_slot_width + spade_slot_width - rim_size,
+    wall_thickness * 4 + mixing_tray_slot_width + epoxy_slot_width + spade_slot_width,
     work_area + global_slot_depth + rim_size + wall_thickness * 2,
     tray_thickness
 ];
@@ -143,7 +153,7 @@ module spade_slot() {
     translate([mixing_tray_slot_width+wall_thickness, 
         tray_size[1]-mixing_tray_slot_width-wall_thickness*2, 
     0]) {
-        room([spade_blade_width+wall_thickness*2,
+        room([spade_blade_width+wall_thickness*2+spade_tray_gap*2,
             mixing_tray_slot_width+wall_thickness*2,
             mixing_tray_slot_height],
             door_width=spade_shaft_width+spade_tray_gap*2);
@@ -152,7 +162,7 @@ module spade_slot() {
 
 // Spade slot
 module epoxy_slot(split = false) {
-    translate([mixing_tray_slot_width+spade_blade_width+wall_thickness*2,
+    translate([mixing_tray_slot_width+spade_blade_width+spade_tray_gap*2+wall_thickness*2,
         tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
     0]) {
         if (split) {
@@ -196,7 +206,7 @@ module main() {
         spade_slot();
 
         // Epoxy slot
-        epoxy_slot(split=false);
+        epoxy_slot(split=true);
 
         // Test, debug, blabla
         //testroom();
