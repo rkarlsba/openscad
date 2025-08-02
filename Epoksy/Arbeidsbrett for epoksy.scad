@@ -1,4 +1,5 @@
 mixing_tray_width = 40;
+mixing_tray_height = 8;
 mixing_tray_gap = 1;
 mixing_tray_slot_width = mixing_tray_width+mixing_tray_gap*2;
 mixing_tray_slot_height = 80;
@@ -92,6 +93,9 @@ module tray() {
             cube([mixing_tray_slot_width+wall_thickness,mixing_tray_slot_width+wall_thickness,mixing_tray_slot_height]);
             translate([wall_thickness,wall_thickness]) {
                 cube([mixing_tray_slot_width-wall_thickness,mixing_tray_slot_width-wall_thickness,mixing_tray_slot_height+bugfix]);
+            }
+            translate([mixing_tray_slot_width/2-mixing_tray_slot_gap/2+wall_thickness/2,-bugfix,mixing_tray_height/2]) {
+                cube([mixing_tray_slot_gap,wall_thickness+bugfix*2,mixing_tray_slot_height-mixing_tray_height/2+bugfix]);
             }
         }
     }
