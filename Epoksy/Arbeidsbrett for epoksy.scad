@@ -24,6 +24,8 @@
 rim_size = 2;
 tray_thickness = 2;
 wall_thickness = 1.5;
+righthanded = true;
+split_epoxy_slot = false;
 
 mixing_tray_width = 40;
 mixing_tray_height = 8;
@@ -31,6 +33,7 @@ mixing_tray_gap = 1;
 mixing_tray_slot_width = mixing_tray_width+mixing_tray_gap*2;
 mixing_tray_slot_height = 80;
 mixing_tray_slot_gap = 20;
+mixing_tray_slot_x = mixing_tray_slot_width+wall_thickness*2;
 
 global_slot_depth = mixing_tray_slot_width;
 
@@ -40,12 +43,13 @@ spade_length = 55;
 spade_outside_lenght = 10;
 spade_tray_gap = 1;
 spade_slot_width = spade_blade_width+spade_tray_gap*2;
+spade_slot_x = spade_blade_width+wall_thickness*2+spade_tray_gap*2;
 
 epoxy_slot_width = 50;
 epoxy_slot_length = mixing_tray_slot_width;
 epoxy_slot_height = mixing_tray_slot_height;
 
-work_area = 50;
+work_area = 80;
 
 bugfix = $preview ? .1 : 0;
 
@@ -137,48 +141,37 @@ module rim(size, d) {
 
 // Mixing tray slot
 module mixing_tray_slot() {
-    echo(str("mixing trays, where X is ", mixing_tray_slot_width+wall_thickness));
-    translate([0,tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
-       room([mixing_tray_slot_width+wall_thickness*2, 
-       mixing_tray_slot_width+wall_thickness*2,
-       mixing_tray_slot_height], 
-       wall_thickness=wall_thickness, 
-       door_width=mixing_tray_slot_gap, 
-       threshold_height=mixing_tray_height/2);
-    }
+   room([mixing_tray_slot_x, 
+   mixing_tray_slot_x,
+   mixing_tray_slot_height], 
+   wall_thickness=wall_thickness, 
+   door_width=mixing_tray_slot_gap, 
+   threshold_height=mixing_tray_height/2);
 }
 
 // Spade slot
 module spade_slot() {
-    translate([mixing_tray_slot_width+wall_thickness, 
-        tray_size[1]-mixing_tray_slot_width-wall_thickness*2, 
-    0]) {
-        room([spade_blade_width+wall_thickness*2+spade_tray_gap*2,
-            mixing_tray_slot_width+wall_thickness*2,
-            mixing_tray_slot_height],
-            door_width=spade_shaft_width+spade_tray_gap*2);
-    }
+    room([spade_slot_x,
+        mixing_tray_slot_x,
+        mixing_tray_slot_height],
+        door_width=spade_shaft_width+spade_tray_gap*2);
 }
 
 // Spade slot
 module epoxy_slot(split = false) {
-    translate([mixing_tray_slot_width+spade_blade_width+spade_tray_gap*2+wall_thickness*2,
-        tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
-    0]) {
-        if (split) {
+    if (split) {
+        room([(epoxy_slot_width+wall_thickness*3)/2, 
+            epoxy_slot_length+wall_thickness*2, 
+            epoxy_slot_height]);
+        translate([(epoxy_slot_width)/2+wall_thickness/2, 0, 0]) {
             room([(epoxy_slot_width+wall_thickness*3)/2, 
                 epoxy_slot_length+wall_thickness*2, 
                 epoxy_slot_height]);
-            translate([(epoxy_slot_width)/2+wall_thickness/2, 0, 0]) {
-                room([(epoxy_slot_width+wall_thickness*3)/2, 
-                    epoxy_slot_length+wall_thickness*2, 
-                    epoxy_slot_height]);
-            }
-        } else {
-            room([epoxy_slot_width+wall_thickness*2, 
-                epoxy_slot_length+wall_thickness*2, 
-                epoxy_slot_height]);
         }
+    } else {
+        room([epoxy_slot_width+wall_thickness*2, 
+            epoxy_slot_length+wall_thickness*2, 
+            epoxy_slot_height]);
     }
 }
 
@@ -199,15 +192,51 @@ module main() {
     translate([0, 0, tray_thickness]) {
         // Rim
         rim(size=tray_size, d=rim_size);        
-        // Mixing trays
-        mixing_tray_slot();
+
+        if (righthanded) {
+            // Spade gap
+            translate([0,tray_size[1]-mixing_tray_slot_width-wall_thickness*2, 0]) {
+                spade_slot();
+            }
+
+            // Epoxy slot
+            translate([
+                spade_blade_width+spade_tray_gap*2+wall_thickness,
+                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
+                epoxy_slot(split=split_epoxy_slot);
+            }
+
+            // Mixing tray slot
+            translate([
+                spade_slot_width + epoxy_slot_width + wall_thickness * 2,
+                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
+                0]) {
+                mixing_tray_slot();
+            }
+        } else {
+            // Mixing tray slot
+            translate([0,
+                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
+                0]) {
+                mixing_tray_slot();
+            }
+
+            // Epoxy slot
+            translate([
+                mixing_tray_slot_width+wall_thickness,
+                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
+                epoxy_slot(split=split_epoxy_slot);
+            }
+
+            // Spade slot
+            translate([
+                mixing_tray_slot_width+wall_thickness+epoxy_slot_width+wall_thickness,
+                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
+                0]) {
+                spade_slot();
+            }
+        }
         
-        // Spade gap
-        spade_slot();
-
-        // Epoxy slot
-        epoxy_slot(split=true);
-
         // Test, debug, blabla
         //testroom();
     }
