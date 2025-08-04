@@ -1,6 +1,6 @@
 // vim:ts=4:sw=4:sts=4:et:ai:fdm=marker
 //
-// Small epoxy station with room for your trays, spades and epoxy. It comes in two variants, one
+// Small epoxy station with room for your trays, spatulas and epoxy. It comes in two variants, one
 // with a single slot for epoxy (for double tubed) and one with separate slots for the resin and
 // hardener. If you miss something, feel free to change it, the code is all here.
 //
@@ -13,19 +13,22 @@
 //   Spatula:   https://www.printables.com/model/1373150-55mm-model
 //   Tray:      https://www.printables.com/model/1373150-55mm-model
 //
-// Tanker om endringer:
-//
-// Jeg bør legge inn muligheter for å flytte rundt på rommene. Det kan jo være at spadene funker
-// best på venstre side, så blir det mer rom for arbeid. På den annen side, er jo ikke alle
-// høyrehendte, så da bør det jo være mulig å flytte dem rundt litt.
+// TODO:
+//   - Add hinges to work area
+//   - Det som gjør at det skimrer i bunnen, er at det er høl der og at det må utvides med bugfix!
 
+
+// Comment these out if you're not using hinges - openscad can't conditionally include something
+include <BOLS2/std.scad>
+include <BOLS2/hinges.scad>
 
 // Parameters
+hinges = true;
 rim_size = 2;
 tray_thickness = 2;
 wall_thickness = 1.5;
 righthanded = true;
-split_epoxy_slot = false;
+split_epoxy_slot = true;
 
 mixing_tray_width = 40;
 mixing_tray_height = 8;
@@ -37,29 +40,36 @@ mixing_tray_slot_x = mixing_tray_slot_width+wall_thickness*2;
 
 global_slot_depth = mixing_tray_slot_width;
 
-spade_blade_width = 20;
-spade_shaft_width = 10;
-spade_length = 55;
-spade_outside_lenght = 10;
-spade_tray_gap = 1;
-spade_slot_width = spade_blade_width+spade_tray_gap*2;
-spade_slot_x = spade_blade_width+wall_thickness*2+spade_tray_gap*2;
+spatula_blade_width = 20;
+spatula_shaft_width = 10;
+spatula_length = 55;
+spatula_outside_lenght = 10;
+spatula_tray_gap = 1;
+spatula_slot_width = spatula_blade_width+spatula_tray_gap*2;
+spatula_slot_height = mixing_tray_slot_height;
+spatula_slot_x = spatula_blade_width+wall_thickness*2+spatula_tray_gap*2;
 
 epoxy_slot_width = 50;
 epoxy_slot_length = mixing_tray_slot_width;
 epoxy_slot_height = mixing_tray_slot_height;
 
-work_area = 80;
+work_area = 20;
+
+// Internals
+// assert(!hinges, "Hinges aren't supported (yet)");
+
+_work_area = hinges ? epoxy_slot_height : work_area;
+if (work_area != _work_area) {
+    echo(str("Work area overridden from ", work_area, " to ", _work_area, " because of hinges"));
+}
 
 bugfix = $preview ? .1 : 0;
 
 tray_size = [
-    wall_thickness * 4 + mixing_tray_slot_width + epoxy_slot_width + spade_slot_width,
-    work_area + global_slot_depth + rim_size + wall_thickness * 2,
+    wall_thickness * 4 + mixing_tray_slot_width + epoxy_slot_width + spatula_slot_width,
+    _work_area + global_slot_depth + rim_size + wall_thickness * 2,
     tray_thickness
 ];
-
-echo(str("Tray size = ", tray_size, " and composed of wall_thickness * 4 = ", wall_thickness * 3, ", mixing_tray_slot_width =  ", mixing_tray_slot_width, " epoxy_slot_width = ", epoxy_slot_width, " and spade_slot_width = ", spade_slot_width));
 
 module skalk(inner_r, outer_r, thickness, angle=360) {
     rotate_extrude(convexity = 10, angle=angle) {
@@ -71,7 +81,6 @@ module skalk(inner_r, outer_r, thickness, angle=360) {
 
 module room(ext_size, wall_thickness=wall_thickness, door_width=0, threshold_height=0) {
     int_size = ext_size - [wall_thickness*2-bugfix,wall_thickness*2-bugfix,-bugfix];
-    echo(str("ext_size is ", ext_size, " and int_size is ", int_size));
     difference() {
         cube(ext_size);
         translate([wall_thickness,wall_thickness]) {
@@ -120,7 +129,6 @@ module rimline(d,l) {
 
 // Rim
 module rim(size, d) {
-    echo(str("[1] size is ", size, " and d is ", d));
     rimline(d=d, l=size[0]);
     translate([size[0],0,0]) {
         rotate([0,0,90]) {
@@ -149,15 +157,16 @@ module mixing_tray_slot() {
    threshold_height=mixing_tray_height/2);
 }
 
-// Spade slot
-module spade_slot() {
-    room([spade_slot_x,
+// Spatula slot
+module spatula_slot() {
+    echo(str("Make spatula slot, ", spatula_slot_x, " x ", mixing_tray_slot_x, " x ", mixing_tray_slot_height));
+    room([spatula_slot_x,
         mixing_tray_slot_x,
         mixing_tray_slot_height],
-        door_width=spade_shaft_width+spade_tray_gap*2);
+        door_width=spatula_shaft_width+spatula_tray_gap*2);
 }
 
-// Spade slot
+// Spatula slot
 module epoxy_slot(split = false) {
     if (split) {
         room([(epoxy_slot_width+wall_thickness*3)/2, 
@@ -194,21 +203,21 @@ module main() {
         rim(size=tray_size, d=rim_size);        
 
         if (righthanded) {
-            // Spade gap
+            // Spatula gap
             translate([0,tray_size[1]-mixing_tray_slot_width-wall_thickness*2, 0]) {
-                spade_slot();
+                spatula_slot();
             }
 
             // Epoxy slot
             translate([
-                spade_blade_width+spade_tray_gap*2+wall_thickness,
+                spatula_blade_width+spatula_tray_gap*2+wall_thickness,
                 tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
                 epoxy_slot(split=split_epoxy_slot);
             }
 
             // Mixing tray slot
             translate([
-                spade_slot_width + epoxy_slot_width + wall_thickness * 2,
+                spatula_slot_width + epoxy_slot_width + wall_thickness * 2,
                 tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
                 0]) {
                 mixing_tray_slot();
@@ -228,14 +237,16 @@ module main() {
                 epoxy_slot(split=split_epoxy_slot);
             }
 
-            // Spade slot
+            // Spatula slot
             translate([
                 mixing_tray_slot_width+wall_thickness+epoxy_slot_width+wall_thickness,
                 tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
                 0]) {
-                spade_slot();
+                spatula_slot();
             }
         }
+        hinge_start = righthanded ? spatula_blade_width+spatula_tray_gap : 0;
+        
         
         // Test, debug, blabla
         //testroom();
