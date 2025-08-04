@@ -23,7 +23,8 @@ include <BOLS2/std.scad>
 include <BOLS2/hinges.scad>
 
 // Parameters
-hinges = true;
+test = false;
+hinges = false; // Not implemented
 rim_size = 2;
 tray_thickness = 2;
 wall_thickness = 1.5;
@@ -44,7 +45,10 @@ spatula_blade_width = 20;
 spatula_shaft_width = 10;
 spatula_length = 55;
 spatula_outside_lenght = 10;
+spatula_blade_length = 14;
+spatula_slot_depth = mixing_tray_slot_width;
 spatula_tray_gap = 1;
+spatula_tolerance = spatula_tray_gap/2;
 spatula_slot_width = spatula_blade_width+spatula_tray_gap*2;
 spatula_slot_height = mixing_tray_slot_height;
 spatula_slot_x = spatula_blade_width+wall_thickness*2+spatula_tray_gap*2;
@@ -53,10 +57,22 @@ epoxy_slot_width = 50;
 epoxy_slot_length = mixing_tray_slot_width;
 epoxy_slot_height = mixing_tray_slot_height;
 
-work_area = 20;
+wedge_blade_cut = 5;
+wedge_short_length = spatula_slot_depth-spatula_blade_length-spatula_tolerance;
+wedge_long_length = spatula_slot_depth-spatula_blade_length-wedge_blade_cut-spatula_tolerance;
+wedge_width = (spatula_slot_width-spatula_shaft_width-spatula_tolerance)/2;
+
+wedge = [
+    [0,0],
+    [wedge_long_length, 0],
+    [wedge_short_length, wedge_width],
+    [0,wedge_width]
+];
+
+work_area = 80;
 
 // Internals
-// assert(!hinges, "Hinges aren't supported (yet)");
+assert(!hinges, "Hinges aren't supported (yet)");
 
 _work_area = hinges ? epoxy_slot_height : work_area;
 if (work_area != _work_area) {
@@ -80,10 +96,10 @@ module skalk(inner_r, outer_r, thickness, angle=360) {
 }
 
 module room(ext_size, wall_thickness=wall_thickness, door_width=0, threshold_height=0) {
-    int_size = ext_size - [wall_thickness*2-bugfix,wall_thickness*2-bugfix,-bugfix];
+    int_size = ext_size - [wall_thickness*2-bugfix,wall_thickness*2-bugfix,-bugfix*2];
     difference() {
         cube(ext_size);
-        translate([wall_thickness,wall_thickness]) {
+        translate([wall_thickness,wall_thickness,-bugfix]) {
             cube(int_size);
         }
         if (door_width > 0) {
@@ -166,6 +182,38 @@ module spatula_slot() {
         door_width=spatula_shaft_width+spatula_tray_gap*2);
 }
 
+// Spatula wedge
+module spatula_wedge(top_tolerance=tolerance, test=test) {
+    wedge_height = 80-top_tolerance;
+    _wedge_height = test ? 10 : wedge_height;
+
+    linear_extrude(_wedge_height) {
+        polygon(wedge);
+    }
+}
+
+// Spatula slot with wedges
+module spatula_slot_with_wedges() {
+    room([spatula_slot_x,
+        mixing_tray_slot_x,
+        mixing_tray_slot_height],
+        door_width=spatula_shaft_width+spatula_tray_gap*2);
+    // Left wedge
+    translate([wedge_width+wall_thickness,0,0]) {
+        rotate([0,0,90]) {
+            spatula_wedge(top_tolerance=0);
+        }
+    }
+    // Right wedge
+    translate([-wedge_width+spatula_slot_x-wall_thickness,0,0]) {
+        rotate([0,0,90]) {
+            mirror([0,1,0]) 
+            spatula_wedge(top_tolerance=0);
+        }
+    }
+}
+
+
 // Spatula slot
 module epoxy_slot(split = false) {
     if (split) {
@@ -199,57 +247,60 @@ module main() {
     cube(tray_size);
     
     translate([0, 0, tray_thickness]) {
-        // Rim
-        rim(size=tray_size, d=rim_size);        
-
-        if (righthanded) {
-            // Spatula gap
-            translate([0,tray_size[1]-mixing_tray_slot_width-wall_thickness*2, 0]) {
-                spatula_slot();
-            }
-
-            // Epoxy slot
-            translate([
-                spatula_blade_width+spatula_tray_gap*2+wall_thickness,
-                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
-                epoxy_slot(split=split_epoxy_slot);
-            }
-
-            // Mixing tray slot
-            translate([
-                spatula_slot_width + epoxy_slot_width + wall_thickness * 2,
-                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
-                0]) {
-                mixing_tray_slot();
-            }
+        if (test) {
+            // Test, debug, blabla
+            testroom();
         } else {
-            // Mixing tray slot
-            translate([0,
-                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
-                0]) {
-                mixing_tray_slot();
-            }
+            // Rim
+            rim(size=tray_size, d=rim_size);        
 
-            // Epoxy slot
-            translate([
-                mixing_tray_slot_width+wall_thickness,
-                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
-                epoxy_slot(split=split_epoxy_slot);
-            }
+            if (righthanded) {
+                // Spatula gap
+                translate([0,tray_size[1]-mixing_tray_slot_width-wall_thickness*2, 0]) {
+                    //spatula_slot();
+                    spatula_slot_with_wedges();
+                }
 
-            // Spatula slot
-            translate([
-                mixing_tray_slot_width+wall_thickness+epoxy_slot_width+wall_thickness,
-                tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
-                0]) {
-                spatula_slot();
+                // Epoxy slot
+                translate([
+                    spatula_blade_width+spatula_tray_gap*2+wall_thickness,
+                    tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
+                    epoxy_slot(split=split_epoxy_slot);
+                }
+
+                // Mixing tray slot
+                translate([
+                    spatula_slot_width + epoxy_slot_width + wall_thickness * 2,
+                    tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
+                    0]) {
+                    mixing_tray_slot();
+                }
+            } else {
+                // Mixing tray slot
+                translate([0,
+                    tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
+                    0]) {
+                    mixing_tray_slot();
+                }
+
+                // Epoxy slot
+                translate([
+                    mixing_tray_slot_width+wall_thickness,
+                    tray_size[1]-mixing_tray_slot_width-wall_thickness*2,0]) {
+                    epoxy_slot(split=split_epoxy_slot);
+                }
+
+                // Spatula slot
+                translate([
+                    mixing_tray_slot_width+wall_thickness+epoxy_slot_width+wall_thickness,
+                    tray_size[1]-mixing_tray_slot_width-wall_thickness*2,
+                    0]) {
+                    //spatula_slot();
+                    spatula_slot_with_wedges();
+                }
             }
+            hinge_start = righthanded ? spatula_blade_width+spatula_tray_gap : 0;
         }
-        hinge_start = righthanded ? spatula_blade_width+spatula_tray_gap : 0;
-        
-        
-        // Test, debug, blabla
-        //testroom();
     }
 }
 
