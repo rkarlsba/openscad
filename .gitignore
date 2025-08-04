@@ -2,5 +2,6 @@
 *.stl
 *.sw[a-p]
 *.3mf
+*.wtf*
 tmp/
 wtf/
