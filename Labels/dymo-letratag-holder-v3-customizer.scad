@@ -32,6 +32,8 @@
  * 
  * Edited by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
  * - Code cleanup
+ * - Added a small bugfix to make previews look better.
+ * - Notch offset was hardcoded to 20mm, moved it to notch_x_off, set to 21mm.
  * - Just a tunable, but I extended the length by a couple of millimetres to
  *   allow for chinese copies that turned out to be longer.
  * - Just a tunable, but I changed the wall thickness (mat) from 1.2 to 2, since
@@ -45,23 +47,24 @@
  * 
  *****************************************************************************/
 
-$fn=250;
+$fn = 250;
 bugfix = $preview ? .1 : 0;
 
-dt1=0.01;
-dt2=dt1*2;
-prt_delta=0.4;
+dt1 = 0.01;
+dt2 = dt1*2;
+prt_delta = 0.4;
 
-b_x=57;
-b_y=17; // orig: 17mm
-b_z=23;
+b_x = 57;           // orig: 15mm
+b_y = 17;           // orig: 17mm
+b_z = 23;           // orig: 23mm
 
-notch_x=10;
-notch_z=9;
+notch_x = 10;
+notch_z = 9;
+notch_x_off = 21;   // orig: 20mm
 
-notch_dy=2;
-notch_dz=3;
-mat=2;
+notch_dy = 2;
+notch_dz = 3;
+mat = 2;            // orig: 1.2mm
 
 // How many do we need?
 anzahl=2;
@@ -117,7 +120,7 @@ module lower_part() {
             }
             union() {
                 // Vertical notch:
-                translate([21, -dt1, notch_z]) {
+                translate([notch_x_off, -dt1, notch_z]) {
                     color("red") {
                         cube([notch_dy+mat, b_y+2*mat+dt2, 20 ]);
                     }
