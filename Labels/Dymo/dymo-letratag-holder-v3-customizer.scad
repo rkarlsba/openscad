@@ -54,9 +54,9 @@
  * 
  *****************************************************************************/
 
-include <BOLS2/std.scad>
-include <BOLS2/strings.scad>
-include <BOLS2/hinges.scad>
+include <BOSL2/std.scad>
+include <BOSL2/strings.scad>
+include <BOSL2/hinges.scad>
 
 $fn = 250;
 bugfix = $preview ? .1 : 0;
@@ -83,9 +83,9 @@ notch_dz = 3;
 mat = 2;                // orig: 1.2mm
 
 // How many do we need?
-anzahl=1;
+anzahl=12;
 
-which_part = "top";     // Choose between "top", "btm" and "both"
+which_part = "both";     // Choose between "top", "btm" and "both"
 
 // Internals - KEEP OFF
 _notch_z_top = rounded_notch ? notch_z_top+notch_dy_top : notch_z_top;
@@ -197,7 +197,9 @@ if (_which_part == "btm" || _which_part == "bottom") {
     upper_part();
 } else if (_which_part == "both" || _which_part == "all") {
     lower_part();
-    translate([b_x+mat*2, 30, b_z_top+mat]) {
+    //translate([b_x+mat*2, 30, b_z_top+mat]) {
+    //translate([(b_x+mat*2)*2+10, 0, b_z_top+mat]) {
+    translate([-10, 0, b_z_top+mat]) {
         rotate([0,180,0]) {
             upper_part();
         }
