@@ -29,7 +29,7 @@ rim_size = 2;
 tray_thickness = 2;
 wall_thickness = 1.5;
 righthanded = true;
-split_epoxy_slot = true;
+split_epoxy_slot = false;
 
 mixing_tray_width = 40;
 mixing_tray_height = 8;

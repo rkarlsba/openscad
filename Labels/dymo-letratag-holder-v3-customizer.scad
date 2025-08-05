@@ -10,7 +10,7 @@
  * 
  * (Deutscher Text: Siehe unten...)
  * 
- * This is a customizable holder for DYMO's LetraTag label  cartridges
+ * This is a customizable holder for DYMO's LetraTag label cartridges
  * 
  * Enjoy, have fun remixing and let me know when you've made one, and what for!
  * 
@@ -29,8 +29,9 @@
  *
  * The following in English only (entschuldigung):
  * 
- * Edited by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
- * - Code cleanup
+ * Version 2 - 2025-08-05 by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
+ * - Code cleanup.
+ * - Removed commented out code.
  * - Added a small bugfix to make previews look better.
  * - Notch offset was hardcoded to 20mm, moved it to notch_x_off, set to 21mm.
  * - Just a tunable, but I extended the length by a couple of millimetres to
@@ -45,7 +46,8 @@
  *
  * TODO:
  * - That *15 down at the rounded notch code is a really ugly hack, but I
- *   coulnd't find out how to fix it the proper way. Sorry!
+ *   coulnd't find out how to fix it the proper way. If someone else could fix
+ *   that, thanks!
  * - Top cover coming (2025-08-04), but not finished.
  * - Hinges coming (2025-08-04), but
  *   https://github.com/BelfrySCAD/BOSL2/wiki/hinges.scad looks promising
@@ -83,11 +85,12 @@ mat = 2;                // orig: 1.2mm
 // How many do we need?
 anzahl=1;
 
-which_part = "all";     // Choose between "top", "btm" and "both"
+which_part = "top";     // Choose between "top", "btm" and "both"
 
 // Internals - KEEP OFF
 _notch_z_top = rounded_notch ? notch_z_top+notch_dy_top : notch_z_top;
 _notch_z_btm = rounded_notch ? notch_z_btm+notch_dy_btm : notch_z_btm;
+_which_part = downcase(which_part);
 
 module slope() {
     translate([0,b_y+2*mat, 0]) {
@@ -126,13 +129,6 @@ module lower_part() {
                             translate([-dt1, -dt1, -dt1]) {
                                 cube([20+dt2, b_y+2*mat+dt2, 20+dt2]);
                             }
-//                          translate([notch_x, -dt1, notch_z])
-//                              color("red")
-//                              cube([20, notch_dy_btm+mat, notch_dz]);
-//                          // Vertical notch:
-//                          translate([20, -dt1, notch_z])
-//                              color("red")
-//                              cube([notch_dy_btm+mat, notch_dz,20 ]);
                         }
                     }
                     slope();
@@ -151,10 +147,6 @@ module lower_part() {
                             }
                         }
                     }
-                    // Horizontal notch?
-//                  translate([notch_x, -dt1, notch_z])
-//                      color("red")
-//                      cube([20, notch_dy_btm+mat, notch_dz]);
                 }
             }
         }
@@ -199,8 +191,7 @@ module upper_part() {
     }
 }
 
-_which_part = downcase(which_part);
-if (_which_part == "btm" || which_part == "bottom") {
+if (_which_part == "btm" || _which_part == "bottom") {
     lower_part();
 } else if (_which_part == "top") {
     upper_part();
