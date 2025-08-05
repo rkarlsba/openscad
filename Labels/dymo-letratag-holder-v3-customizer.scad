@@ -193,5 +193,13 @@ module upper_part() {
     }
 }
 
-// lower_part();
-upper_part();
+lower_part();
+// translate([0,30,0]) {
+//     upper_part();
+// }
+
+translate([b_x+mat*2, 30, b_z_top+mat]) {
+    rotate([0,180,0]) {
+        upper_part();
+    }
+}
