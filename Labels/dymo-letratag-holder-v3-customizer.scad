@@ -52,6 +52,10 @@
  * 
  *****************************************************************************/
 
+include <BOLS2/std.scad>
+include <BOLS2/strings.scad>
+include <BOLS2/hinges.scad>
+
 $fn = 250;
 bugfix = $preview ? .1 : 0;
 
@@ -62,11 +66,11 @@ prt_delta = 0.4;
 b_x = 57;               // orig: 15mm
 b_y = 16;               // orig: 17mm
 b_z_btm = 23;           // orig: 23mm
-b_z_top = 31;
+b_z_top = 33;
 
 notch_x = 10;           // orig: 10mm
 notch_z_btm = 8;        // orig: 9mm
-notch_z_top = 25;
+notch_z_top = 26;
 notch_x_off_btm = 20.5; // orig: 20mm
 notch_x_off_top = 4.5;   // orig: 20mm
 rounded_notch = true;
@@ -78,6 +82,8 @@ mat = 2;                // orig: 1.2mm
 
 // How many do we need?
 anzahl=1;
+
+which_part = "all";     // Choose between "top", "btm" and "both"
 
 // Internals - KEEP OFF
 _notch_z_top = rounded_notch ? notch_z_top+notch_dy_top : notch_z_top;
@@ -193,13 +199,18 @@ module upper_part() {
     }
 }
 
-lower_part();
-// translate([0,30,0]) {
-//     upper_part();
-// }
-
-translate([b_x+mat*2, 30, b_z_top+mat]) {
-    rotate([0,180,0]) {
-        upper_part();
+_which_part = downcase(which_part);
+if (_which_part == "btm" || which_part == "bottom") {
+    lower_part();
+} else if (_which_part == "top") {
+    upper_part();
+} else if (_which_part == "both" || _which_part == "all") {
+    lower_part();
+    translate([b_x+mat*2, 30, b_z_top+mat]) {
+        rotate([0,180,0]) {
+            upper_part();
+        }
     }
+} else {
+    assert(false, "Set 'which_part' to on of \"top\", \"btm\" or \"both\"");
 }
