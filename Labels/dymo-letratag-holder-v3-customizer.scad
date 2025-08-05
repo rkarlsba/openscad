@@ -23,7 +23,6 @@
  * 
  * Konstruiert in OpenSCAD: viel Spaß beim Remixen!
  * 
- * 
  * License: CC-BY-NC-SA : oli@huf.org
  * 
  * Read all about it here: http://creativecommons.org/licenses/by-nc-sa/4.0/
@@ -41,6 +40,8 @@
  *   rather bad nightmares) how that'll be in PLA.
  * - Added rounded_notch (as an option), since the original flat bottom welcomed
  *   cracks too much. See under TODO for a diry hack in that code.
+ * - Changed notch_x_off to notch_x_off_btm and notch_x_off_top, depending on
+ *   which model it's for.
  *
  * TODO:
  * - That *15 down at the rounded notch code is a really ugly hack, but I
@@ -55,24 +56,32 @@ $fn = 250;
 bugfix = $preview ? .1 : 0;
 
 dt1 = 0.01;
-dt2 = dt1*2;
+dt2 = dt1 * 2;
 prt_delta = 0.4;
 
-b_x = 57;           // orig: 15mm
-b_y = 17;           // orig: 17mm
-b_z = 23;           // orig: 23mm
+b_x = 57;               // orig: 15mm
+b_y = 16;               // orig: 17mm
+b_z_btm = 23;           // orig: 23mm
+b_z_top = 31;
 
-notch_x = 10;
-notch_z = 9;
-notch_x_off = 21;   // orig: 20mm
+notch_x = 10;           // orig: 10mm
+notch_z_btm = 8;        // orig: 9mm
+notch_z_top = 25;
+notch_x_off_btm = 20.5; // orig: 20mm
+notch_x_off_top = 4.5;   // orig: 20mm
 rounded_notch = true;
 
-notch_dy = 2;
+notch_dy_top = 2.5;
+notch_dy_btm = 2;
 notch_dz = 3;
-mat = 2;            // orig: 1.2mm
+mat = 2;                // orig: 1.2mm
 
 // How many do we need?
-anzahl=6;
+anzahl=1;
+
+// Internals - KEEP OFF
+_notch_z_top = rounded_notch ? notch_z_top+notch_dy_top : notch_z_top;
+_notch_z_btm = rounded_notch ? notch_z_btm+notch_dy_btm : notch_z_btm;
 
 module slope() {
     translate([0,b_y+2*mat, 0]) {
@@ -97,72 +106,92 @@ module slope() {
     }
 }
 
-
 module lower_part() {
     for(i = [0:anzahl-1]) {
         translate([0, i*(b_y+mat), 0]) {
             difference() {
                 union() {
                     difference() {
-                        cube([b_x+mat*2, b_y+mat*2, b_z+mat]);
+                        cube([b_x+mat*2, b_y+mat*2, b_z_btm+mat]);
                         union() {
                             translate([mat, mat, mat+dt1]) {
-                                cube([b_x, b_y, b_z+bugfix]);
+                                cube([b_x, b_y, b_z_btm+bugfix]);
                             }
                             translate([-dt1, -dt1, -dt1]) {
                                 cube([20+dt2, b_y+2*mat+dt2, 20+dt2]);
                             }
-    //                      translate([notch_x, -dt1, notch_z])
-    //                          color("red")
-    //                          cube([20, notch_dy+mat, notch_dz]);
-    //                      // Vertical notch:
-    //                      translate([20, -dt1, notch_z])
-    //                          color("red")
-    //                          cube([notch_dy+mat, notch_dz,20 ]);
+//                          translate([notch_x, -dt1, notch_z])
+//                              color("red")
+//                              cube([20, notch_dy_btm+mat, notch_dz]);
+//                          // Vertical notch:
+//                          translate([20, -dt1, notch_z])
+//                              color("red")
+//                              cube([notch_dy_btm+mat, notch_dz,20 ]);
                         }
                     }
                     slope();
                 }
                 union() {
                     // Vertical notch:
-                    translate([notch_x_off, -dt1, notch_z]) {
+                    translate([notch_x_off_btm, -dt1, _notch_z_btm]) {
                         color("red") {
-                            cube([notch_dy+mat, b_y+2*mat+dt2, 20 ]);
+                            cube([notch_dy_btm+mat, b_y+2*mat+dt2, 20 ]);
                             if (rounded_notch) {
-                                translate([notch_dy,0,0]) {
+                                translate([(notch_dy_btm+mat)/2,0,0]) {
                                     rotate([-90,0,0]) {
-                                        cylinder(h=(mat+dt1*2)*15, r=notch_dy);
+                                        cylinder(h=(mat+dt1*2)*15, r=notch_dy_btm);
                                     }
                                 }
                             }
                         }
                     }
                     // Horizontal notch?
-    //              translate([notch_x, -dt1, notch_z])
-    //                  color("red")
-    //                  cube([20, notch_dy+mat, notch_dz]);
-                }
-            }
-            /*
-            translate([notch_x_off, -dt1, notch_z]) {
-                color("green") {
-                    //cube([notch_dy+mat, b_y+2*mat+dt2, 20 ]);
-                }
-            }
-            */
-        }
-    }
-    /*
-    translate([notch_x_off, -dt1, notch_z]) {
-        color("yellow") {
-            translate([notch_dy,0,0]) {
-                rotate([-90,0,0]) {
-                    cylinder(h=mat, r=notch_dy);
+//                  translate([notch_x, -dt1, notch_z])
+//                      color("red")
+//                      cube([20, notch_dy_btm+mat, notch_dz]);
                 }
             }
         }
     }
-    */
 }
 
-lower_part();
+module upper_part() {
+    for(i = [0:anzahl-1]) {
+        translate([0, i*(b_y+mat), 0]) {
+            difference() {
+                union() {
+                    difference() {
+                        cube([b_x+mat*2, b_y+mat*2, b_z_top+mat]);
+                        union() {
+                            translate([mat, mat, mat+dt1]) {
+                                cube([b_x, b_y, b_z_top+bugfix]);
+                            }
+                            translate([-dt1, -dt1, -dt1]) {
+                                cube([20+dt2, b_y+2*mat+dt2, 20+dt2]);
+                            }
+                        }
+                    }
+                    slope();
+                }
+                union() {
+                    // Vertical notch:
+                    translate([notch_x_off_top, -dt1, _notch_z_top]) {
+                        color("red") {
+                            cube([notch_dy_top+mat, b_y+2*mat+dt2, 20 ]);
+                            if (rounded_notch) {
+                                translate([(notch_dy_top+mat)/2,0,0]) {
+                                    rotate([-90,0,0]) {
+                                        cylinder(h=(mat+dt1*2)*15, d=notch_dy_top+mat);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// lower_part();
+upper_part();
