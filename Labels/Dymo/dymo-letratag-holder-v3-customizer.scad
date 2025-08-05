@@ -61,12 +61,18 @@ include <BOSL2/hinges.scad>
 $fn = 250;
 bugfix = $preview ? .1 : 0;
 
+// How many slots do we need?
+anzahl=1;
+
+// Hinges?
+hinges = true;
+
 dt1 = 0.01;
 dt2 = dt1 * 2;
 prt_delta = 0.4;
 
 b_x = 57;               // orig: 15mm
-b_y = 16;               // orig: 17mm
+b_y = 16.3;             // orig: 17mm
 b_z_btm = 23;           // orig: 23mm
 b_z_top = 33;
 
@@ -74,7 +80,7 @@ notch_x = 10;           // orig: 10mm
 notch_z_btm = 8;        // orig: 9mm
 notch_z_top = 26;
 notch_x_off_btm = 20.5; // orig: 20mm
-notch_x_off_top = 4.5;   // orig: 20mm
+notch_x_off_top = 4.5;  // orig: 20mm
 rounded_notch = true;
 
 notch_dy_top = 2.5;
@@ -82,15 +88,21 @@ notch_dy_btm = 2;
 notch_dz = 3;
 mat = 2;                // orig: 1.2mm
 
-// How many do we need?
-anzahl=12;
+hinge_seg = 3.6;        // Hinge segment length
+hinge_height = 7;       // Hinge height
+hinge_offset = 3;
+hinge_arm_height = 1;
+hinge_pin_dia = 2.05;
+hinge_clearance = 0.2;
 
-which_part = "both";     // Choose between "top", "btm" and "both"
+which_part = "btm";     // Choose between "top", "btm" and "both"
 
 // Internals - KEEP OFF
 _notch_z_top = rounded_notch ? notch_z_top+notch_dy_top : notch_z_top;
 _notch_z_btm = rounded_notch ? notch_z_btm+notch_dy_btm : notch_z_btm;
 _which_part = downcase(which_part);
+
+// assert(hinges && anzahl < 3, 
 
 module slope() {
     translate([0,b_y+2*mat, 0]) {
@@ -146,6 +158,25 @@ module lower_part() {
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+    if (hinges) {
+        // Hinges
+        case_width = (b_y+mat)*anzahl+mat;
+        hinge_width = case_width - 5;
+        segs = floor(hinge_width/hinge_seg);
+        echo(str("[1] segs = ", segs));
+        _segs = (segs % 2) ? segs : segs - 1;
+        echo(str("[2] _segs = ", _segs));
+        translate([mat/2,case_width,b_z_btm-hinge_height]) {
+            cuboid([mat/2,case_width,hinge_height], anchor=BOTTOM+LEFT+BACK) {
+                position(TOP+LEFT) {
+                    orient(anchor=LEFT) {
+                        knuckle_hinge(length=hinge_width, segs=_segs, offset=hinge_offset,
+                            arm_height=hinge_arm_height, pin_diam=hinge_pin_dia, clearance=hinge_clearance);
                     }
                 }
             }
