@@ -29,7 +29,7 @@
  *
  * The following in English only (entschuldigung):
  * 
- * Version 2 - 2025-08-05 by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
+ * Version 2.0 - 2025-08-05 by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
  * - Code cleanup.
  * - Removed commented out code.
  * - Added a small bugfix to make previews look better.
@@ -43,14 +43,13 @@
  *   cracks too much. See under TODO for a diry hack in that code.
  * - Changed notch_x_off to notch_x_off_btm and notch_x_off_top, depending on
  *   which model it's for.
+ * - Hinges added: https://github.com/BelfrySCAD/BOSL2/wiki/hinges.scad, but not
+ *   well tested.
  *
- * TODO:
+ * FIXME:
  * - That *15 down at the rounded notch code is a really ugly hack, but I
  *   coulnd't find out how to fix it the proper way. If someone else could fix
  *   that, thanks!
- * - Top cover coming (2025-08-04), but not finished.
- * - Hinges coming (2025-08-04), but
- *   https://github.com/BelfrySCAD/BOSL2/wiki/hinges.scad looks promising
  * 
  *****************************************************************************/
 
@@ -60,9 +59,6 @@ include <BOSL2/hinges.scad>
 
 $fn = 250;
 bugfix = $preview ? .1 : 0;
-
-// How many slots do we need?
-anzahl=1;
 
 // Hinges?
 hinges = true;
@@ -95,7 +91,11 @@ hinge_arm_height = 1;
 hinge_pin_dia = 2.05;
 hinge_clearance = 0.2;
 
-which_part = "btm";     // Choose between "top", "btm" and "both"
+// How many slots do we need?
+anzahl=3;
+
+// Choose between "top", "btm" and "both"
+which_part = "top";
 
 // Internals - KEEP OFF
 _notch_z_top = rounded_notch ? notch_z_top+notch_dy_top : notch_z_top;
@@ -171,7 +171,7 @@ module lower_part() {
         echo(str("[1] segs = ", segs));
         _segs = (segs % 2) ? segs : segs - 1;
         echo(str("[2] _segs = ", _segs));
-        translate([mat/2,case_width,b_z_btm-hinge_height]) {
+        translate([mat/2,case_width,b_z_btm-hinge_height+2]) {
             cuboid([mat/2,case_width,hinge_height], anchor=BOTTOM+LEFT+BACK) {
                 position(TOP+LEFT) {
                     orient(anchor=LEFT) {
@@ -215,6 +215,25 @@ module upper_part() {
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+    if (hinges) {
+        // Hinges
+        case_width = (b_y+mat)*anzahl+mat;
+        hinge_width = case_width - 5;
+        segs = floor(hinge_width/hinge_seg);
+        echo(str("[1] segs = ", segs));
+        _segs = (segs % 2) ? segs : segs - 1;
+        echo(str("[2] _segs = ", _segs));
+        translate([mat/2,case_width,b_z_top-hinge_height+2]) {
+            cuboid([mat/2,case_width,hinge_height], anchor=BOTTOM+LEFT+BACK) {
+                position(TOP+LEFT) {
+                    orient(anchor=LEFT) {
+                        knuckle_hinge(length=hinge_width, segs=_segs, offset=hinge_offset,
+                            arm_height=hinge_arm_height, pin_diam=hinge_pin_dia, inner=true, clearance=hinge_clearance);
                     }
                 }
             }
