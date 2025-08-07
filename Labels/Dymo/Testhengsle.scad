@@ -5,7 +5,6 @@ include <BOSL2/std.scad>
 include <BOSL2/hinges.scad>
 
 $fn = 64;
-test = false;
 pin_dia = 2.05;
 clearance = 0.2;
 arm_height = 1;
@@ -25,9 +24,6 @@ union() {
             }
         }
     }
-    if (test) {
-        cube([thickness,5,height]);
-    }
 }
 
 translate([20,0,height]) {
@@ -41,9 +37,6 @@ translate([20,0,height]) {
                             clearance=clearance);
                     }
                 }
-            }
-            if (test) {
-                cube([thickness,5,height]);
             }
         }
     }
