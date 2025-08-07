@@ -1,6 +1,15 @@
-// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+// vim:ts=4:sw=4:sts=4:et:ai:fdm=marker
 //
-// File: spatula-55mm.stl
+// Epoxy (or something) spatula for use with the epoxy organizer at
+// https://www.printables.com/model/1373207-epoxy-organizer. I found that the
+// original I used, was too fancy with the handle being thicker, gradually
+// thinning towards the front. This is all well, but if you try to stack such
+// things, it all becomes a sad tower.
+//
+// Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> in August 2025.
+//
+// Licensed under Creative Commons BY-NC-SA v4.0 or later. Please see
+// https://creativecommons.org/licenses/by-nc-sa/4.0/ for details.
 
 $fn = 100;
 
@@ -97,4 +106,5 @@ module spatula() {
         }
     }
 }
+
 spatula();
