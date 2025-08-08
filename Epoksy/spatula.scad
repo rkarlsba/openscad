@@ -21,7 +21,7 @@ module spatula() {
     font_spacing = 1.1;
 
     spatula_thickness = 3.9;
-    spatula_tip_thickness = 0.4;
+    spatula_tip_thickness = 0.4;    // Two layers should do
     spatula_blade_width = 20;
     spatula_blade_length = 12.4;
     spatula_shaft_width = 10;
@@ -34,9 +34,9 @@ module spatula() {
     spatula_logo_y = 9.5;
     spatula_logo_x = 12.4;
 
-    logo_enabled = true;        // Draw logo?
-    logo_type = "emboss";       // Choose between "cut", "emboss" or "deboss"
-    logo_boss_by = 0.4;         // Emboss or deboss by this amount. 
+    logo_enabled = true;            // Draw logo?
+    logo_type = "emboss";           // Choose between "cut", "emboss" or "deboss"
+    logo_boss_by = 0.4;             // Emboss or deboss by this amount. 
 
     module tapered_blade() {
         // Create a block of full spatula_thickness at base
