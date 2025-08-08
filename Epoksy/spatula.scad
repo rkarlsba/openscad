@@ -6,6 +6,11 @@
 // thinning towards the front. This is all well, but if you try to stack such
 // things, it all becomes a sad tower.
 //
+// This uses the KeaniaOne-Regular font, downloadable from
+// https://fonts.google.com/specimen/Keania+One, or just choose another font of
+// your liking. Please note that to use cut for logo, as in making holey text,
+// you'll needa stencil font.
+//
 // Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> in August 2025.
 //
 // Licensed under Creative Commons BY-NC-SA v4.0 or later. Please see
@@ -20,7 +25,7 @@ module spatula() {
     font_size = 6;
     font_spacing = 1.1;
 
-    spatula_thickness = 3.9;
+    spatula_thickness = 2.4;
     spatula_tip_thickness = 0.4;    // Two layers should do
     spatula_blade_width = 20;
     spatula_blade_length = 12.4;
@@ -34,9 +39,9 @@ module spatula() {
     spatula_logo_y = 9.5;
     spatula_logo_x = 12.4;
 
-    logo_enabled = true;            // Draw logo?
+    logo_enabled = false;           // Draw logo?
     logo_type = "emboss";           // Choose between "cut", "emboss" or "deboss"
-    logo_boss_by = 0.4;             // Emboss or deboss by this amount. 
+    logo_boss_by = 0.2;             // Emboss or deboss by this amount. 
 
     module tapered_blade() {
         // Create a block of full spatula_thickness at base
@@ -57,8 +62,10 @@ module spatula() {
     }
 
     // Internals
-    assert(logo_enabled && (logo_type == "cut" || logo_type == "emboss" || logo_type == "deboss"),
-        "We don't support that. RTFS!");
+    if (logo_enabled) {
+        assert(logo_type == "cut" || logo_type == "emboss" || logo_type == "deboss",
+            "We don't support that. RTFS!");
+    }
     _logo_boss_by = (logo_type == "cut") ? spatula_thickness : logo_boss_by;
 
     // Debug
