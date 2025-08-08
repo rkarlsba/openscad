@@ -23,7 +23,6 @@ module spatula() {
     spatula_thickness = 3.9;
     spatula_tip_thickness = 0.4;
     spatula_blade_width = 20;
-    //spatula_blade_length = 12.78;
     spatula_blade_length = 12.4;
     spatula_shaft_width = 10;
     spatula_shaft_length = 35;
@@ -31,9 +30,7 @@ module spatula() {
     spatula_blade_macick1 = 4;
     spatula_blade_macick2 = 43.6;
     spatula_length = 55;
-    //spatula_taper_angle = -14.0;
     spatula_taper_angle = -atan((spatula_thickness - spatula_tip_thickness) / spatula_blade_length);
-    //spatula_taper_angle = -atan((spatula_thickness - spatula_tip_thickness) / spatula_blade_length) * (180 / PI);
     spatula_logo_y = 9.5;
     spatula_logo_x = 12.4;
 
