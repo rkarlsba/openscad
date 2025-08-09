@@ -25,7 +25,7 @@ module spatula() {
     font_size = 6;
     font_spacing = 1.1;
 
-    spatula_thickness = 2.4;
+    spatula_thickness = 1.8;
     spatula_tip_thickness = 0.4;    // Two layers should do
     spatula_blade_width = 20;
     spatula_blade_length = 12.4;
@@ -39,9 +39,15 @@ module spatula() {
     spatula_logo_y = 9.5;
     spatula_logo_x = 12.4;
 
-    logo_enabled = false;           // Draw logo?
-    logo_type = "emboss";           // Choose between "cut", "emboss" or "deboss"
-    logo_boss_by = 0.2;             // Emboss or deboss by this amount. 
+    logo_enabled = true;                                    // Draw logo?
+    logo_type = "emboss";                                   // Choose between "cut", "emboss" or "deboss"
+    logo_boss_by = 0.2;                                     // Emboss or deboss by this amount. 
+    logo_source = "svg";                                    // "text" or "svg"
+    logo_svg_file = "bitraf-logo-textonly-stencil2.svg";    // Name of svg file
+    logo_svg_translate = [1,-1.3];
+    logo_svg_scale = [0.13,0.13];
+
+    logo_text = "Epoxy";
 
     module tapered_blade() {
         // Create a block of full spatula_thickness at base
@@ -64,7 +70,9 @@ module spatula() {
     // Internals
     if (logo_enabled) {
         assert(logo_type == "cut" || logo_type == "emboss" || logo_type == "deboss",
-            "We don't support that. RTFS!");
+            str("logo_type '", logo_type, "' not supported. RTFS!"));
+        assert(logo_source == "text" || logo_source == "svg",
+            str("Logo source '", logo_source, "' not supported. RTFS!"));
     }
     _logo_boss_by = (logo_type == "cut") ? spatula_thickness : logo_boss_by;
 
@@ -111,11 +119,17 @@ module spatula() {
         }
         if (logo_enabled && (logo_type == "cut" || logo_type == "deboss")) {
             translate([spatula_logo_x,spatula_logo_y,-bugfix+(spatula_thickness-_logo_boss_by)]) {
-                echo(str("logo_type = \"", logo_type, "\", spatula_thickness = ", spatula_thickness, ", logo_boss_by = ", logo_boss_by,
-                    " and _logo_boss_by = ", _logo_boss_by));
-                    linear_extrude(_logo_boss_by+bugfix*2) {
+                linear_extrude(_logo_boss_by+bugfix*2) {
                     rotate([0,0,90]) {
-                        text("Epoxy", font=font_face, size=font_size);
+                        if (logo_source == "text") {
+                            text(logo_text, font=font_face, size=font_size);
+                        } else {
+                            translate(logo_svg_translate) {
+                                scale(logo_svg_scale) { 
+                                    import(file=logo_svg_file);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -123,11 +137,17 @@ module spatula() {
     }
     if (logo_enabled && logo_type == "emboss") {
         translate([spatula_logo_x,spatula_logo_y,spatula_thickness]) {
-            echo(str("logo_type = \"", logo_type, "\", spatula_thickness = ", spatula_thickness, ", logo_boss_by = ", logo_boss_by,
-                " and _logo_boss_by = ", _logo_boss_by));
             linear_extrude(_logo_boss_by) {
                 rotate([0,0,90]) {
-                    text("Epoxy", font=font_face, size=font_size, spacing=font_spacing);
+                    if (logo_source == "text") {
+                        text(logo_text, font=font_face, size=font_size, spacing=font_spacing);
+                    } else {
+                        translate(logo_svg_translate) {
+                            scale(logo_svg_scale) { 
+                                import(file=logo_svg_file);
+                            }
+                        }
+                    }
                 }
             }
         }
