@@ -16,7 +16,7 @@ wall_thickness = 1;
 height = 8;
 top_size = 40;
 bottom_size = 35;
-extra_bottom_thickness = 1;
+extra_bottom_thickness = .5;
 bugfix = $preview ? .1 : 0;
 
 // Outer shell with absolute coordinates (origin at bottom corner)
