@@ -3,16 +3,26 @@ include <ymse.scad>
 fn = 11;
 antifuckup = .1;
 afu = $preview ? antifuckup : 0;
-testprint = 1;
+testprint = 0;
 
-psu = [100,165,45];
-psu_gap = 10;
+//psu = [100,165,45];
+psu = [113,215,51]; // S-480-24, 24V, 20A, 480W
+console = [111,65,57];
+max_height = console[2] == psu[2] ? console[2] : console[2] > psu[2] ? console[2] : psu[2];
+max_width = console[0] == psu[0] ? console[0] : console[0] > psu[0] ? console[0] : psu[0];
+psu_console_gap = 30;
+back_gap = 5;
+box_skip = 30;
+
+x_gap = 1;
+console_z_gap = 1;
+psu_z_gap = 20;
 wall = 3;
-x_outer = psu[0]+psu_gap*2+wall*2;
-y_outer = psu[2]+psu_gap*2+wall*2;
-x_inner = psu[0]+psu_gap*2;
-y_inner = psu[2]+psu_gap;
-depth = testprint ? 20 : psu[1]+80;
+x_outer = psu[0]+x_gap*2+wall*2;
+z_outer = psu[2]+psu_z_gap*2+wall*2;
+x_inner = psu[0]+x_gap*2;
+z_inner = psu[2]+psu_z_gap;
+depth = testprint ? 20 : psu[1]+console[1]+psu_console_gap+back_gap-box_skip;
 length = testprint ? 10 : 35;
 innerlength = 100;
 c14_length = 48;
@@ -27,12 +37,15 @@ term_clips_h = 14;
 // tolerance = .5;
 tolerance = .25;
 
+echo(str("psu is ", psu, ", console is ", console, " max_height is ",
+    max_height, " and max_width is ", max_width));
+
 module tube(length=length) {
     linear_extrude(length) {
         difference() {
-            square([x_outer,y_outer]);
+            square([x_outer,z_outer]);
             translate([wall,wall]) {
-                square([x_inner,y_inner]);
+                square([x_inner,z_inner]);
             }
         }
     }
@@ -54,29 +67,29 @@ module plate(dim,thickness,holesize) {
     }
 }
 
-module inner_frame(x=0, tolerance=tolerance, depth=depth) {
-    largest = y_inner > x_inner ? y_inner : x_inner;
+module outer_frame(x=0, tolerance=tolerance, depth=depth) {
+    largest = z_inner > x_inner ? z_inner : x_inner;
     tolerance_num=largest/(largest + tolerance);
     echo(largest, tolerance, tolerance_num);
     
-    translate([wall,wall,0]) {
-        rotate([0,270,0]) {
-            plate([depth,y_inner*tolerance_num], wall, 3);
+    // Bottom
+    color("yellow") plate([max_width+x_gap*2+wall*2,depth], wall, 3);
+
+    // Left
+    translate([0,0,wall]) {
+        rotate([90,0,90]) {
+            color("red") plate([depth,max_height+psu_z_gap], wall, 3);
         }
     }
-    translate([wall,wall*2,0]) {
-        rotate([90,0,0]) {
-            plate([(x_inner)*tolerance_num,depth], wall, 3);
+    // Right
+    translate([x_inner*tolerance_num+wall,0,wall]) {
+        rotate([90,0,90]) {
+            color("lightblue") plate([depth,max_height+psu_z_gap], wall, 3);
         }
     }
-    translate([wall,(y_inner+wall)*tolerance_num,0]) {
-        rotate([90,0,0]) {
-            plate([(x_inner)*tolerance_num,depth], wall, 3);
-        }
-    }
-    translate([x_inner*tolerance_num+wall,wall,0]) {
-        rotate([0,270,0])
-        plate([depth,y_inner*tolerance_num], wall, 3);
+    // Top
+    translate([0,0,max_height+psu_z_gap+wall]) {
+        color("pink") plate([max_width+x_gap*2+wall*2,depth], wall, 3);
     }
 }
 
@@ -94,7 +107,7 @@ module backplate() {
     translate([wall,wall,0]) {
         linear_extrude(wall) {
             difference() {
-                square([x_inner,y_inner]);
+                square([x_inner,z_inner]);
                 translate([c14_x,c14_y]) {
                     polygon(c14_hole);
                     translate([-4.5,c14_height/2]) {
@@ -109,44 +122,23 @@ module backplate() {
     }
 }
 
-module frontplate() {
-    translate([wall,wall,0]) {
-        difference() {
-            linear_extrude(wall) {
-                difference() {
-                    square([x_inner,y_inner]);
-                    translate([25-2,(y_inner-term_clips_h)/2]) {
-                        square([term_x+4,term_clips_h]);
-                    }
-                    translate([25,(y_inner-term_y)/2]) {
-                        square([term_x,term_y]);
-                    }
-                    translate([9,y_inner/3]) {
-                        circle(d=4.2, $fn=fn*2);
-                    }
-                    translate([9,y_inner/3*2]) {
-                        circle(d=4.2, $fn=fn*2);
-                    }
-                }
-            }
-        }
-    }
-}
-
 module draw_psu() {
-    
-    if ($preview) {
-        echo("preview");
-    } else {
-        echo("not preview");
-    }
-
     if ($preview) {
         color("Lime") {
             cube(psu);
         }
     } else {
-        echo("Not printing psu");
+        echo("Not preview, so not printing psu");
+    }
+}
+
+module draw_console() {
+    if ($preview) {
+        color("beige") {
+            cube(console);
+        }
+    } else {
+        echo("Not preview, so not printing psu");
     }
 }
 
@@ -155,11 +147,20 @@ module draw_psu() {
 //backplate();
 //tube();
 //translate([wall,60,0])
-inner_frame();
-translate([psu_gap+wall,psu[2]+wall*2,0]) 
-{
-    rotate([90,0,0]) 
-    {
-        draw_psu();
-    }
+
+//psu_front_x_gap = 1;
+//psu_front_z_gap = 1;
+largest_x = (console[0] > psu[0]) ? console[0] : psu[0];
+console_correction = (largest_x - console[0])/2;
+
+translate([x_gap+wall,console[1]+psu_console_gap,wall]) {
+    draw_psu();
+}
+
+translate([x_gap+wall+console_correction,0,wall]) {
+    draw_console();
+}
+
+translate([0,box_skip,0]) {
+    outer_frame();
 }
