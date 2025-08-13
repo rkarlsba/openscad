@@ -32,7 +32,7 @@ _console_grip = testprint ? testprint_depth : console_grip;
 back_gap = 20;
 console_gap = 30;
 
-hole_size = 3;
+holesize = (50/10);
 x_gap = 1;
 console_z_gap = 1;
 psu_z_gap = 20;
@@ -78,7 +78,7 @@ module plate(dim,thickness,holesize) {
             for (x=[holesize*2:holesize*2:dim[0]-holesize*2]) {
                 for (y=[holesize*2:holesize*2:dim[1]-holesize*2]) {
                     // echo("X is ", x, "Y is ", y);
-                    translate([x,y]) {
+                        translate([x,y]) {
                         circle(d=holesize, $fn=16);
                     }
                 }
@@ -94,23 +94,22 @@ module outer_frame(x=0, tolerance=tolerance, depth=depth) {
     
     // Bottom
     color("yellow") {
-        plate([max_width+x_gap*2+wall*2,depth], wall, hole_size);
+        plate([max_width+x_gap*2+wall*2,depth], wall, holesize);
     }
 
     // Left
-    translate([0,0,wall]) {
+    translate([0,0+_console_grip,wall]) {
         rotate([90,0,90]) {
             color("red") {
-                plate([depth,max_height+psu_z_gap], wall, hole_size);
+                plate([depth-_console_grip,max_height+psu_z_gap], wall, holesize);
             }
         }
     }
     // Right
-    translate([x_inner*tolerance_num+wall,0,wall]) {
+    translate([x_inner*tolerance_num+wall,0+_console_grip,wall]) {
         rotate([90,0,90]) {
             color("lightblue") {
-                plate([depth,max_height+psu_z_gap], wall,
-                hole_size);
+                plate([depth-_console_grip,max_height+psu_z_gap], wall, holesize);
             }
         }
     }
@@ -118,16 +117,16 @@ module outer_frame(x=0, tolerance=tolerance, depth=depth) {
     translate([0,0,max_height+psu_z_gap+wall]) {
         if (takover) {
             color("pink") {
-                plate([max_width+x_gap*2+wall*2,depth], wall, hole_size);
+                plate([max_width+x_gap*2+wall*2,depth], wall, holesize);
             }
         }
     }
 
     // Grab left
-    translate([wall,0,wall]) {
+    translate([0,0,wall]) {
         rotate([90,0,90]) {
             color("red") {
-                plate([_console_grip,max_height+psu_z_gap], (max_width-min_width)-tolerance, hole_size);
+                cube([_console_grip,max_height+psu_z_gap, (max_width-min_width)-tolerance+wall]);
             }
         }
     }
@@ -135,7 +134,8 @@ module outer_frame(x=0, tolerance=tolerance, depth=depth) {
     translate([x_inner*tolerance_num+wall-(max_width-min_width)+tolerance*2,0,wall]) {
         rotate([90,0,90]) {
             color("lightblue") {
-                plate([_console_grip,max_height+psu_z_gap], (max_width-min_width), hole_size);
+                cube([_console_grip,max_height+psu_z_gap, (max_width-min_width)-tolerance+wall]);
+                // plate([_console_grip,max_height+psu_z_gap], (max_width-min_width), holesize);
             }
         }
     }
@@ -202,8 +202,7 @@ module draw_console() {
 
 //psu_front_x_gap = 1;
 //psu_front_z_gap = 1;
-largest_x = (console[0] > psu[0]) ? console[0] : psu[0];
-console_correction = (largest_x - console[0])/2;
+console_correction = (max_width - console[0])/2;
 
 translate([x_gap+wall,console[1]+psu_console_gap,wall]) {
     draw_psu();
