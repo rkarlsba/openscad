@@ -13,14 +13,20 @@
 
 include <ymse.scad>
 
+// Power supplies from https://www.aliexpress.com/item/1005005553964246.html or
+// similar. Measurements are relative to the PSU lying flat, viewed facing the
+// contacts.
+psu_s_250_12 = [100,165,45];        // S-250-12, 12V, 21A, 252W
+psu_s_480_24 = [113,215,51];        // S-480-24, 24V, 20A, 480W
+
+// Settings
 fn = 64;
-antifuckup = .1;
-afu = $preview ? antifuckup : 0;
+use_bugfix = .1;                    // Not currently in use
+bugfix = $preview ? use_bugfix : 0; // Not currently in use
 testprint = 0;
 takover = 1;
 
-//psu = [100,165,45];
-psu = [113,215,51]; // S-480-24, 24V, 20A, 480W
+psu = psu_s_480_24;
 console = [111,65,57];
 max_height = console[2] == psu[2] ? console[2] : console[2] > psu[2] ? console[2] : psu[2];
 min_height = console[2] == psu[2] ? console[2] : console[2] < psu[2] ? console[2] : psu[2];
