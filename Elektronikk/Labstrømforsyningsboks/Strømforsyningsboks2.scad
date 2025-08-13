@@ -1,19 +1,38 @@
+/*
+ * vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+ *
+ * Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> some time in 2023 Fixed up and worked further on in August 2025 by the same guy. 
+ *
+ * Please note that if you have set 3D Rendering backend to CGAL, the rendering
+ * of a large box will take a long time, as in possibly hours. Just don't do it.
+ * Upgrade to something recent, even though it's not "stable" and change that
+ * setting to "Manifold". It'll speed up rendering by an order of magnitude (or
+ * three). I'm not kidding.
+ *
+ */
+
 include <ymse.scad>
 
-fn = 11;
+fn = 32;
 antifuckup = .1;
 afu = $preview ? antifuckup : 0;
 testprint = 0;
+takover = 1;
 
 //psu = [100,165,45];
 psu = [113,215,51]; // S-480-24, 24V, 20A, 480W
 console = [111,65,57];
 max_height = console[2] == psu[2] ? console[2] : console[2] > psu[2] ? console[2] : psu[2];
+min_height = console[2] == psu[2] ? console[2] : console[2] < psu[2] ? console[2] : psu[2];
 max_width = console[0] == psu[0] ? console[0] : console[0] > psu[0] ? console[0] : psu[0];
+min_width = console[0] == psu[0] ? console[0] : console[0] < psu[0] ? console[0] : psu[0];
 psu_console_gap = 30;
-back_gap = 5;
-box_skip = 30;
+console_grip = 30;
+_console_grip = testprint ? testprint_depth : console_grip;
+back_gap = 20;
+console_gap = 30;
 
+hole_size = 3;
 x_gap = 1;
 console_z_gap = 1;
 psu_z_gap = 20;
@@ -22,7 +41,8 @@ x_outer = psu[0]+x_gap*2+wall*2;
 z_outer = psu[2]+psu_z_gap*2+wall*2;
 x_inner = psu[0]+x_gap*2;
 z_inner = psu[2]+psu_z_gap;
-depth = testprint ? 20 : psu[1]+console[1]+psu_console_gap+back_gap-box_skip;
+testprint_depth = 20;
+depth = testprint ? testprint_depth : psu[1]+console[1]+psu_console_gap+back_gap-console_gap;
 length = testprint ? 10 : 35;
 innerlength = 100;
 c14_length = 48;
@@ -73,23 +93,51 @@ module outer_frame(x=0, tolerance=tolerance, depth=depth) {
     echo(largest, tolerance, tolerance_num);
     
     // Bottom
-    color("yellow") plate([max_width+x_gap*2+wall*2,depth], wall, 3);
+    color("yellow") {
+        plate([max_width+x_gap*2+wall*2,depth], wall, hole_size);
+    }
 
     // Left
     translate([0,0,wall]) {
         rotate([90,0,90]) {
-            color("red") plate([depth,max_height+psu_z_gap], wall, 3);
+            color("red") {
+                plate([depth,max_height+psu_z_gap], wall, hole_size);
+            }
         }
     }
     // Right
     translate([x_inner*tolerance_num+wall,0,wall]) {
         rotate([90,0,90]) {
-            color("lightblue") plate([depth,max_height+psu_z_gap], wall, 3);
+            color("lightblue") {
+                plate([depth,max_height+psu_z_gap], wall,
+                hole_size);
+            }
         }
     }
     // Top
     translate([0,0,max_height+psu_z_gap+wall]) {
-        color("pink") plate([max_width+x_gap*2+wall*2,depth], wall, 3);
+        if (takover) {
+            color("pink") {
+                plate([max_width+x_gap*2+wall*2,depth], wall, hole_size);
+            }
+        }
+    }
+
+    // Grab left
+    translate([wall,0,wall]) {
+        rotate([90,0,90]) {
+            color("red") {
+                plate([_console_grip,max_height+psu_z_gap], (max_width-min_width)-tolerance, hole_size);
+            }
+        }
+    }
+    // Grab right
+    translate([x_inner*tolerance_num+wall-(max_width-min_width)+tolerance*2,0,wall]) {
+        rotate([90,0,90]) {
+            color("lightblue") {
+                plate([_console_grip,max_height+psu_z_gap], (max_width-min_width), hole_size);
+            }
+        }
     }
 }
 
@@ -104,17 +152,22 @@ module backplate() {
     ];
 
 
-    translate([wall,wall,0]) {
-        linear_extrude(wall) {
-            difference() {
-                square([x_inner,z_inner]);
-                translate([c14_x,c14_y]) {
-                    polygon(c14_hole);
-                    translate([-4.5,c14_height/2]) {
-                        circle(d=3.5, $fn=fn);
-                    }
-                    translate([c14_length+4.5,c14_height/2]) {
-                        circle(d=3.5, $fn=fn);
+    color("darkorange") {
+        translate([wall,depth,wall]) {
+            rotate([90,0,0]) {
+                linear_extrude(wall) {
+                    difference() {
+                        // square([x_inner,z_inner]);
+                        square([x_inner,max_height+psu_z_gap]);
+                        translate([c14_x,c14_y]) {
+                            polygon(c14_hole);
+                            translate([-4.5,c14_height/2]) {
+                                circle(d=3.5, $fn=fn);
+                            }
+                            translate([c14_length+4.5,c14_height/2]) {
+                                circle(d=3.5, $fn=fn);
+                            }
+                        }
                     }
                 }
             }
@@ -144,7 +197,6 @@ module draw_console() {
 
 //frontplate();
 //tube();
-//backplate();
 //tube();
 //translate([wall,60,0])
 
@@ -161,6 +213,8 @@ translate([x_gap+wall+console_correction,0,wall]) {
     draw_console();
 }
 
-translate([0,box_skip,0]) {
+translate([0,console_gap,0]) {
     outer_frame();
+    backplate();
 }
+
