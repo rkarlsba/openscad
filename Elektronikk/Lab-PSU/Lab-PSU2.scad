@@ -13,7 +13,7 @@
 
 include <ymse.scad>
 
-fn = 32;
+fn = 64;
 antifuckup = .1;
 afu = $preview ? antifuckup : 0;
 testprint = 0;
@@ -76,10 +76,11 @@ module plate(dim,thickness,holesize) {
         difference() {
             square(dim);
             for (x=[holesize*2:holesize*2:dim[0]-holesize*2]) {
+                shift = x % (holesize*2);
                 for (y=[holesize*2:holesize*2:dim[1]-holesize*2]) {
-                    // echo("X is ", x, "Y is ", y);
-                        translate([x,y]) {
-                        circle(d=holesize, $fn=16);
+                    echo(str("X is ", x, ", Y is ", y, " and shift is ", shift));
+                    translate([x,y+shift/2]) {
+                        circle(d=holesize, $fn=fn);
                     }
                 }
             }
