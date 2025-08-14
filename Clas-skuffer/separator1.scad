@@ -1,3 +1,13 @@
+// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+//
+// Test
+//
+// Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> in August 2025.
+//
+// Licensed under Creative Commons BY-NC-SA v4.0 or later. Please see
+// https://creativecommons.org/licenses/by-nc-sa/4.0/ for details.
+//
+
 //include <ymse.scad>
 
 $fn = 32;
@@ -11,8 +21,7 @@ chamfer = 1;
 use_chamfer = 0;
 
 if (use_chamfer) {
-    hull() 
-    {
+    hull() {
         linear_extrude(.5)  {
             translate([r1,r1,r1]) circle (r1);
             translate([x-r1,r1,r1]) circle (r1);
@@ -29,7 +38,7 @@ if (use_chamfer) {
         }
     }
 } else {
-    scale([1,1,.75])  {
+    scale([1,1,.75]) {
         hull() {
             my_z = 1/r1;
             translate([r1,r1,my_z]) scale([1,1,my_z]) sphere (r1);
