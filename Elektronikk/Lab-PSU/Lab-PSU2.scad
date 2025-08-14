@@ -12,6 +12,7 @@
  */
 
 include <ymse.scad>
+include <catchnhole/catchnhole.scad>
 
 // Power supplies from https://www.aliexpress.com/item/1005005553964246.html or
 // similar. Measurements are relative to the PSU lying flat, viewed facing the
@@ -19,15 +20,17 @@ include <ymse.scad>
 psu_s_250_12 = [100,165,45];        // S-250-12, 12V, 21A, 252W
 psu_s_480_24 = [113,215,51];        // S-480-24, 24V, 20A, 480W
 
-// Settings
+// Settings - booleans are set to true/false or 1/0, same thing.
 fn = 64;
 use_bugfix = .1;                    // Not currently in use
 bugfix = $preview ? use_bugfix : 0; // Not currently in use
 testprint = 0;
 takover = 1;
+onlyblock = 1;
 
 psu = psu_s_480_24;
 console = [111,65,57];
+block = [111,30,19.5];
 max_height = console[2] == psu[2] ? console[2] : console[2] > psu[2] ? console[2] : psu[2];
 min_height = console[2] == psu[2] ? console[2] : console[2] < psu[2] ? console[2] : psu[2];
 max_width = console[0] == psu[0] ? console[0] : console[0] > psu[0] ? console[0] : psu[0];
@@ -39,6 +42,10 @@ back_gap = 20;
 console_gap = 30;
 
 holesize = (50/10);
+screwholesize = 3.9;
+screwlength = 16;
+block_nut_depth = 10;
+nut_height = 3;
 x_gap = 1;
 console_z_gap = 1;
 psu_z_gap = 20;
@@ -84,7 +91,7 @@ module plate(dim,thickness,holesize) {
             for (x=[holesize*2:holesize*2:dim[0]-holesize*2]) {
                 shift = x % (holesize*2);
                 for (y=[holesize*2:holesize*2:dim[1]-holesize*2]) {
-                    echo(str("X is ", x, ", Y is ", y, " and shift is ", shift));
+                    // echo(str("X is ", x, ", Y is ", y, " and shift is ", shift));
                     translate([x,y+shift/2]) {
                         circle(d=holesize, $fn=fn);
                     }
@@ -202,6 +209,36 @@ module draw_console() {
     }
 }
 
+module draw_block(ignorepreview = false, uptonut = false) {
+    block_height = uptonut ? block_nut_depth : block[2];
+    if (ignorepreview) {
+        color("greenyellow") {
+            rotate([0,0,90])
+            difference() {
+                cube([block[1],block[0],block_height]);
+                translate([holesize*4,holesize*11,block[2]-screwlength]) {
+                    cylinder(d=screwholesize, h=screwlength+bugfix, $fn=fn);
+                    translate([0,0,4]) {
+                        nutcatch_sidecut("M4", height_clearance = tolerance, width_clearance = tolerance);
+                    }
+                }
+            }
+        }
+    } else if ($preview) {
+        color("darkgoldenrod") {
+            difference() {
+                cube(block);
+                echo(str("translate([", block[0]/2, ", ", block[1]/2, ", ", block[2]-screwlength, "]"));
+                translate([block[0]/2,holesize*4,block[2]-screwlength]) {
+                    cylinder(d=holesize, h=screwlength+bugfix, $fn=fn);
+                }
+            }
+        }
+    } else {
+        echo("Not preview, so not printing psu");
+    }
+}
+
 //frontplate();
 //tube();
 //tube();
@@ -211,16 +248,23 @@ module draw_console() {
 //psu_front_z_gap = 1;
 console_correction = (max_width - console[0])/2;
 
-translate([x_gap+wall,console[1]+psu_console_gap,wall]) {
-    draw_psu();
-}
+if (onlyblock) {
+    draw_block(ignorepreview = true, uptonut = false);
+} else {
+    translate([x_gap+wall,console[1]+psu_console_gap,wall]) {
+        draw_psu();
+    }
 
-translate([x_gap+wall+console_correction,0,wall]) {
-    draw_console();
-}
+    translate([x_gap+wall+console_correction,0,wall]) {
+        draw_console();
+    }
 
-translate([0,console_gap,0]) {
-    outer_frame();
-    backplate();
-}
+    translate([x_gap+wall+console_correction,console_grip,wall+console[2]]) {
+        draw_block();
+    }
 
+    translate([0,console_gap,0]) {
+        outer_frame();
+        backplate();
+    }
+}
