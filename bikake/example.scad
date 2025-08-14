@@ -9,6 +9,8 @@
 
 include <honeycomb.scad>
 
-linear_extrude(10) {
-	honeycomb(105, 80, 12, 3);
+height =7;
+
+linear_extrude(height) {
+	honeycomb(105, 80, 12, 2.5);
 }
