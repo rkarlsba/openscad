@@ -15,13 +15,16 @@
 
 $fn = 32;
 
-default_debug = false;
+default_debug = true;
 
 default_x = 50.5;
 default_y = 34;
 default_z = 1.5;
 default_r1 = 2;
 default_r2 = 2;
+
+between_gap = 46;
+side_gap = 3;
 
 // If use_chamfer, then chamfer the separators instead of rounding them off.
 // Basically, I doubt you'll see much difference unless you round off those
@@ -80,25 +83,25 @@ module separator_wall(x = default_x, y = default_y, z = default_z,
                 translate([r1, r1, 0])
                 {
                     scale([1, 1, my_z]) {
-                        sphere (r1);
+                        sphere(r=r1);
                     }
                 }
                 translate([x-r1, r1, 0])
                 {
                     scale([1, 1, my_z]) {
-                        sphere (r1);
+                        sphere(r=r1);
                     }
                 }
                 translate([r2, y-r2, 0])
                 {
                     scale([1, 1, my_z]) {
-                        sphere (r2);
+                        sphere(r=r2);
                     }
                 }
                 translate([x-r2, y-r2, 0])
                 {
                     scale([1, 1, my_z]) {
-                        sphere (r2);
+                        sphere(r=r2);
                     }
                 }
             }
@@ -106,10 +109,18 @@ module separator_wall(x = default_x, y = default_y, z = default_z,
     }
 }
 
-// translate([default_z,0,0])
-{
-// rotate([0,270,0])
-{
-    separator_wall();
-}
+union() {
+    translate([default_z/2,0,0]) {
+        rotate([90,0,0]) {
+            separator_wall();
+        }
+    }
+    translate([side_gap,0,0]) {
+        cube([default_x-side_gap*2,between_gap/2,default_z]);
+    }
+    translate([0,between_gap/2,0]) {
+        rotate([90,0,0]) {
+            separator_wall();
+        }
+    }
 }
