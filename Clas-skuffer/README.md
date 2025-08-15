@@ -1,0 +1,1 @@
+Separator walls for drawers in the Clas Ohlson parts cabinet / organizer cabinet, part no 31-2376, 31-2375 and others. Parametric, your own choice of colour and far cheaper than getting them from Clas Ohlson (currently about €5.50 for 15 pcs), like all the other stuff we make :D
