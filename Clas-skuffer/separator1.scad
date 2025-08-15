@@ -7,8 +7,8 @@
 //
 // Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> in August 2025.
 //
-// Licensed under Creative Commons BY-NC-SA v4.0 or later. Please see
-// https://creativecommons.org/licenses/by-nc-sa/4.0/ for details.
+// Licensed under Creative Commons BY v4.0 or later. Please see
+// https://creativecommons.org/licenses/by/4.0/ for details.
 //
 
 $fn = 32;
