@@ -15,6 +15,8 @@
 
 $fn = 32;
 
+default_debug = false;
+
 default_x = 50.5;
 default_y = 34;
 default_z = 1.5;
@@ -30,9 +32,12 @@ chamfer_size = 1;
 module separator_wall(x = default_x, y = default_y, z = default_z,
                       r1 = default_r1, r2 = default_r2,
                       use_chamfer = use_chamfer,
-                      chamfer_size = chamfer_size) {
+                      chamfer_size = chamfer_size,
+                      debug = default_debug) {
     if (use_chamfer) {
-        echo(str("Using chamfer, r1 = ", r1, ", r2 = ", r2));
+        if (debug) {
+            echo(str("Using chamfer, r1 = ", r1, ", r2 = ", r2));
+        }
         hull() {
             linear_extrude(.5)  {
                 translate([r1, r1, r1]) {
@@ -66,26 +71,32 @@ module separator_wall(x = default_x, y = default_y, z = default_z,
             }
         }
     } else {
-        echo(str("Rounding off, r1 = ", r1, ", r2 = ", r2));
-        scale([1, 1, .75]) {
+        scale([1, 1, .5]) {
             hull() {
-                my_z = 1/r1;
-                translate([r1, r1, my_z]) {
+                my_z = default_z/2;
+                if (debug) {
+                    echo(str("Rounding off, r1 = ", r1, ", r2 = ", r2, " and my_z is ", my_z));
+                }
+                translate([r1, r1, 0])
+                {
                     scale([1, 1, my_z]) {
                         sphere (r1);
                     }
                 }
-                translate([x-r1, r1, my_z]) {
+                translate([x-r1, r1, 0])
+                {
                     scale([1, 1, my_z]) {
                         sphere (r1);
                     }
                 }
-                translate([r2, y-r2, my_z]) {
+                translate([r2, y-r2, 0])
+                {
                     scale([1, 1, my_z]) {
                         sphere (r2);
                     }
                 }
-                translate([x-r2, y-r2, my_z]) {
+                translate([x-r2, y-r2, 0])
+                {
                     scale([1, 1, my_z]) {
                         sphere (r2);
                     }
@@ -95,5 +106,10 @@ module separator_wall(x = default_x, y = default_y, z = default_z,
     }
 }
 
-separator_wall();
-
+// translate([default_z,0,0])
+{
+// rotate([0,270,0])
+{
+    separator_wall();
+}
+}
