@@ -1,4 +1,4 @@
-// vim:ts=2:sw=2:sws=2:et:ai:fdm=marker
+// vim:ts=2:sw=2:sts=2:et:ai:si:fdm=marker
 
 w_divider_color = "CadetBlue";
 h_divider_color = "CornflowerBlue";

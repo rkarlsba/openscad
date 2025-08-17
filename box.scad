@@ -1,4 +1,4 @@
-// vim:ts=2:sw=2:sts=2:et:ai
+// vim:ts=2:sw=2:sts=2:et:ai:si:fdm=marker
 
 w_divider_color = "CadetBlue";
 h_divider_color = "CornflowerBlue";
@@ -16,10 +16,12 @@ module box(
   finger_margin, // (default = 2 * thickness)
   inner = false,
   open = false,
+  open_bottom = false,
   inset = 0,
   dividers = [ 0, 0 ],
   divpercent = 0,
   holes = [],
+  bottom_holes = [],
   hole_dia = 0,
   ears = 0,
   robust_ears = false,
@@ -48,6 +50,7 @@ module box(
   fm = (finger_margin == undef) ? thickness * 2 : finger_margin;
   fw = (finger_width == undef) ? thickness * 2 : finger_width;
   keep_top = !open;
+  keep_bottom = !open_bottom;
   kc = kerf / 2;
   ears_radius = ears;
   ears_width = 3;
@@ -55,6 +58,8 @@ module box(
   perf_walls = (perf_walls || perf_all);
   perf_floor = (perf_floor || perf_all);
   perf_top = (perf_top || perf_all);
+
+  echo (w);
 
   // Kerf compensation modifier
   module compkerf() {
@@ -124,7 +129,11 @@ module box(
 
   module bottom() {
     cut_bottom()
-      panel2d(w, d);
+      difference() {
+        panel2d(w, d);
+        for (i = [ 0 : len(bottom_holes)-1 ])
+          hole([w-bottom_holes[i][0], bottom_holes[i][1]]);
+      }
   }
 
   module ears_outer(is_front) {
@@ -320,15 +329,14 @@ module box(
       compkerf()
         right();
     y1 = h + kc * 2 + e + ears_radius + spacing;
-    x4 = 0;
-    translate([x4,y1])
-      compkerf()
-        bottom();
+
+    if (keep_bottom) {
+      x4 = 0;
+      translate([x4,y1]) compkerf() bottom();
+    }
     if (keep_top) {
       x5 = w + 2 * kc + e + spacing;
-      translate([x5,y1])
-        compkerf()
-          top();
+      translate([x5,y1]) compkerf() top();
     }
     x6 = w + 2 * kc + (keep_top ? w+e : 0) + e + spacing + ((robust_ears && !double_doors) ? t : 0);
     translate([x6,y1])
