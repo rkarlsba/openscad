@@ -26,7 +26,10 @@ use_bugfix = .1;                    // Not currently in use
 bugfix = $preview ? use_bugfix : 0; // Not currently in use
 testprint = 0;
 takover = 1;
-onlyblock = 1;
+
+// The onlys
+onlyblock = 0;
+onlyback = 1;
 
 psu = psu_s_480_24;
 console = [111,65,57];
@@ -155,7 +158,7 @@ module outer_frame(x=0, tolerance=tolerance, depth=depth) {
     }
 }
 
-module backplate() {
+module backplate(test=false, holes=true) {
     c14_hole = [
         [0,0], 
         [0, c14_height], 
@@ -166,20 +169,28 @@ module backplate() {
     ];
 
 
+    _wall = test ? 0 : wall;
+    _depth = test ? 0 : depth;
+    _max_height = test ? max_height/2 : max_height;
+    _x_inner = test ? x_inner * .6 : x_inner;
+    _rotate = test ? [0,0,0] : [90,0,0];
+
     color("darkorange") {
-        translate([wall,depth,wall]) {
-            rotate([90,0,0]) {
+        translate([_wall,_depth,_wall]) {
+            rotate(_rotate) {
                 linear_extrude(wall) {
                     difference() {
                         // square([x_inner,z_inner]);
-                        square([x_inner,max_height+psu_z_gap]);
+                        square([_x_inner,_max_height+psu_z_gap]);
                         translate([c14_x,c14_y]) {
                             polygon(c14_hole);
-                            translate([-4.5,c14_height/2]) {
-                                circle(d=3.5, $fn=fn);
-                            }
-                            translate([c14_length+4.5,c14_height/2]) {
-                                circle(d=3.5, $fn=fn);
+                            if (holes) {
+                                translate([-4.5,c14_height/2]) {
+                                    circle(d=3.5, $fn=fn);
+                                }
+                                translate([c14_length+4.5,c14_height/2]) {
+                                    circle(d=3.5, $fn=fn);
+                                }
                             }
                         }
                     }
@@ -250,6 +261,8 @@ console_correction = (max_width - console[0])/2;
 
 if (onlyblock) {
     draw_block(ignorepreview = true, uptonut = false);
+} else if (onlyback) {
+    backplate(test=true, holes=false);
 } else {
     translate([x_gap+wall,console[1]+psu_console_gap,wall]) {
         draw_psu();
