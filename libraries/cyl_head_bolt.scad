@@ -23,7 +23,7 @@ include <data-metric_cyl_head_bolts.scad>; // database
 /* Constants */
 
 e = 0.01; // epsilon for SCAD artifact removal
-2e= 0.02; // adds a tiny overlap to subtrahends
+twoe= 0.02; // adds a tiny overlap to subtrahends
 
 // =============================
 // -- through hole for screws --
