@@ -10,19 +10,20 @@ mellomstor_presskanne_id = 82;
 Slack=1.5;
 
 // Inner Top Diameter
-Top_Inside_Diameter=lita_presskanne_id-Slack;
+// Top_Inside_Diameter=lita_presskanne_id-Slack;
+Top_Inside_Diameter=120;
 
 // Total Height
-Height=Top_Inside_Diameter*.9;
+Height=Top_Inside_Diameter;
 
 // Top Ledge Width
 Ledge=4;
 
 // Tube Height
-Tube_Height=23;
+Tube_Height=45;
 
 // Tube Outside Diameter
-Tube_Outside_Diameter=18;
+Tube_Outside_Diameter=22;
 
 // Tube Bottom Cut Angle
 Tube_Cut_Angle=30;
@@ -31,7 +32,8 @@ Tube_Cut_Angle=30;
 Wall_Thickness=1;
 
 /* [Hidden] */
-$fn = $preview ? 32 : 128;
+// $fn = $preview ? 32 : 128;
+$fn = 512;
 Top_Height = Height - Tube_Height;
 Top_Outside_Diameter = Top_Inside_Diameter + Wall_Thickness*2;
 Ledge_Multiplicator = 2.6;
