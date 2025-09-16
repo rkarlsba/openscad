@@ -61,12 +61,14 @@ testprint_depth = 20;
 depth = testprint ? testprint_depth : psu[1]+console[1]+psu_console_gap+back_gap-console_gap;
 length = testprint ? 10 : 35;
 innerlength = 100;
-c14_length = 48;
-c14_height = 27.5;
-c14_roundings = 3/2;
-c14_cuttings = 6;
-c14_x = 10+wall;
-c14_y = 5+wall;
+
+c14_model = 1; // Either 0 or 1
+c14_length = [48,40];
+c14_height = [27.5,28.5];
+c14_roundings = [3/2,3/2];
+c14_cuttings = [6,6];
+c14_x = [10+wall,10+wall];
+c14_y = [5+wall,5+wall];
 term_x = 71.2;
 term_y = 39.5;
 term_clips_h = 14;
@@ -158,14 +160,14 @@ module outer_frame(x=0, tolerance=tolerance, depth=depth) {
     }
 }
 
-module backplate(test=false, holes=true) {
+module backplate(test=false, holes=true, c14_model = c14_model) {
     c14_hole = [
         [0,0], 
-        [0, c14_height], 
-        [c14_length-c14_cuttings, c14_height],
-        [c14_length, c14_height-c14_cuttings],
-        [c14_length, c14_cuttings],
-        [c14_length-c14_cuttings, 0]
+        [0, c14_height[c14_model]], 
+        [c14_length[c14_model]-c14_cuttings[c14_model], c14_height[c14_model]],
+        [c14_length[c14_model], c14_height[c14_model]-c14_cuttings[c14_model]],
+        [c14_length[c14_model], c14_cuttings[c14_model]],
+        [c14_length[c14_model]-c14_cuttings[c14_model], 0]
     ];
 
 
@@ -182,13 +184,13 @@ module backplate(test=false, holes=true) {
                     difference() {
                         // square([x_inner,z_inner]);
                         square([_x_inner,_max_height+psu_z_gap]);
-                        translate([c14_x,c14_y]) {
+                        translate([c14_x[c14_model],c14_y[c14_model]]) {
                             polygon(c14_hole);
                             if (holes) {
-                                translate([-4.5,c14_height/2]) {
+                                translate([-4.5,c14_height[c14_model]/2]) {
                                     circle(d=3.5, $fn=fn);
                                 }
-                                translate([c14_length+4.5,c14_height/2]) {
+                                translate([c14_length[c14_model]+4.5,c14_height[c14_model]/2]) {
                                     circle(d=3.5, $fn=fn);
                                 }
                             }
@@ -262,7 +264,7 @@ console_correction = (max_width - console[0])/2;
 if (onlyblock) {
     draw_block(ignorepreview = true, uptonut = false);
 } else if (onlyback) {
-    backplate(test=true, holes=false);
+    backplate(test=true, holes=false, c14_model);
 } else {
     translate([x_gap+wall,console[1]+psu_console_gap,wall]) {
         draw_psu();
