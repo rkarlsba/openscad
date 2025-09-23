@@ -12,7 +12,7 @@
  */
 
 include <ymse.scad>
-include <catchnhole/catchnhole.scad>
+// include <catchnhole/catchnhole.scad>
 // include <nuts_and_bolts_v1.95.scad>
 // include <threads_2.5.scad>
 include <nutsnbolts/cyl_head_bolt.scad>;
@@ -31,14 +31,18 @@ use_bugfix = .1;                    // Not currently in use
 bugfix = $preview ? use_bugfix : 0; // Not currently in use
 testprint = 0;
 takover = 1;
+debug = false;
 
 // The onlys
-onlyblock = 0;
+onlyblock = 1;
 onlyback = 0;
 
+// Blocktype is either 0 or 1
+blocktype = 1;
+nutcatch_depth = [0,12];
 psu = psu_s_480_24;
 console = [111,65,57];
-block = [111,30,19.5];
+block = [[111,30,19.5],[111,20,19.5]];
 max_height = console[2] == psu[2] ? console[2] : console[2] > psu[2] ? console[2] : psu[2];
 min_height = console[2] == psu[2] ? console[2] : console[2] < psu[2] ? console[2] : psu[2];
 max_width = console[0] == psu[0] ? console[0] : console[0] > psu[0] ? console[0] : psu[0];
@@ -83,8 +87,14 @@ term_clips_h = 14;
 // tolerance = .5;
 tolerance = .25;
 
-echo(str("psu is ", psu, ", console is ", console, " max_height is ",
+debprint(str("psu is ", psu, ", console is ", console, " max_height is ",
     max_height, " and max_width is ", max_width));
+
+module debprint(s) {
+    if (debug) {
+        echo(s);
+    }
+}
 
 module tube(length=length) {
     linear_extrude(length) {
@@ -98,6 +108,7 @@ module tube(length=length) {
 }
 
 module plate(dim,thickness,holesize,type) {
+    debprint(str("plate(", dim, ", ", thickness, ", ", holesize, ", ", type, ")"));
     linear_extrude(thickness) {
         difference() {
             square(dim);
@@ -107,12 +118,12 @@ module plate(dim,thickness,holesize,type) {
                 y_ge = (type == "top" || type == "bottom") ? 170 : 140;
                 for (y=[holesize*2:holesize*2:dim[1]-holesize*2]) {
                     if (y <= y_le || y >= y_ge) {
-                        echo(str(type, dim, " X is ", x, ", Y is ", y, " and shift is ", shift, ". Punching!"));
+                        // echo(str(type, dim, " X is ", x, ", Y is ", y, " and shift is ", shift, ". Punching!"));
                         translate([x,y+shift/2]) {
                             circle(d=holesize, $fn=fn);
                         }
                     } else {
-                        echo(str(type, dim, " X is ", x, ", Y is ", y, " and shift is ", shift, ". Ignoring!"));
+                        // echo(str(type, dim, " X is ", x, ", Y is ", y, " and shift is ", shift, ". Ignoring!"));
                     }
                 }
             }
@@ -252,16 +263,29 @@ module draw_console() {
 }
 
 module draw_block(ignorepreview = false, uptonut = false) {
-    block_height = uptonut ? block_nut_depth : block[2];
+    block_height = uptonut ? block_nut_depth : block[blocktype][2];
     if (ignorepreview) {
         color("greenyellow") {
-            rotate([0,0,90])
-            difference() {
-                cube([block[1],block[0],block_height]);
-                translate([holesize*4,holesize*11,block[2]-screwlength]) {
-                    cylinder(d=screwholesize, h=screwlength+bugfix, $fn=fn);
-                    translate([0,0,4]) {
-                        nutcatch_sidecut("M4", height_clearance = tolerance, width_clearance = tolerance);
+            rotate([0,0,90]) {
+                difference() {
+                    cube([block[blocktype][1],block[blocktype][0],block_height]);
+                    debprint(str("blocktype is ", blocktype, " and block[blocktype] is ", block[blocktype]));
+                    translate([block[blocktype][1]-10,holesize*11,block[blocktype][2]-screwlength]) {
+                        cylinder(d=screwholesize, h=screwlength+bugfix, $fn=fn);
+                        translate([0,0,4]) {
+                            // module nutcatch_sidecut (options, kind = "hexagon", height_clearance = 0, width_clearance = 0, length = A_LOT) {
+                            // nutcatch_sidecut("M4", height_clearance = tolerance, width_clearance = tolerance);
+
+                            // name   = "M3",  // name of screw family (i.e. M3, M4, ...)
+                            // l      = 50.0,  // length of slot
+                            // clk    =  0.0,  // key width clearance
+                            // clh    =  0.0,  // height clearance
+                            // clsl   =  0.1)  // slot width clearance
+                            nutcatch_sidecut(name = "M4", l = nutcatch_depth[blocktype], clk = tolerance, clh = tolerance, clsl = tolerance);
+                            debprint("=================================================================================================================");
+                            debprint(str("tolerance is ", tolerance));
+                            debprint("=================================================================================================================");
+                        }
                     }
                 }
             }
@@ -269,9 +293,9 @@ module draw_block(ignorepreview = false, uptonut = false) {
     } else if ($preview) {
         color("darkgoldenrod") {
             difference() {
-                cube(block);
-                echo(str("translate([", block[0]/2, ", ", block[1]/2, ", ", block[2]-screwlength, "]"));
-                translate([block[0]/2,holesize*4,block[2]-screwlength]) {
+                cube(block[blocktype]);
+                echo(str("translate([", block[blocktype][0]/2, ", ", block[blocktype][1]/2, ", ", block[blocktype][2]-screwlength, "]"));
+                translate([block[blocktype][0]/2,holesize*4,block[blocktype][2]-screwlength]) {
                     cylinder(d=holesize, h=screwlength+bugfix, $fn=fn);
                 }
             }
