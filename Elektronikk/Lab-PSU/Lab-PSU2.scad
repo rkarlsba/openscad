@@ -12,10 +12,10 @@
  */
 
 include <ymse.scad>
-// include <catchnhole/catchnhole.scad>
+include <catchnhole/catchnhole.scad>
 // include <nuts_and_bolts_v1.95.scad>
 // include <threads_2.5.scad>
-include <nutsnbolts/cyl_head_bolt.scad>;
+// include <nutsnbolts/cyl_head_bolt.scad>;
 include <nutsnbolts/materials.scad>;
 
 // Power supplies from https://www.aliexpress.com/item/1005005553964246.html or
@@ -31,7 +31,7 @@ use_bugfix = .1;                    // Not currently in use
 bugfix = $preview ? use_bugfix : 0; // Not currently in use
 testprint = 0;
 takover = 1;
-debug = false;
+debug = 1;
 
 // The onlys
 onlyblock = 1;
@@ -39,10 +39,10 @@ onlyback = 0;
 
 // Blocktype is either 0 or 1
 blocktype = 1;
-nutcatch_depth = [0,12];
+nutcatch_depth = [0,10];
 psu = psu_s_480_24;
 console = [111,65,57];
-block = [[111,30,19.5],[111,20,19.5]];
+block = [[111,30,19.5],[111,20,76.5]];
 max_height = console[2] == psu[2] ? console[2] : console[2] > psu[2] ? console[2] : psu[2];
 min_height = console[2] == psu[2] ? console[2] : console[2] < psu[2] ? console[2] : psu[2];
 max_width = console[0] == psu[0] ? console[0] : console[0] > psu[0] ? console[0] : psu[0];
@@ -274,16 +274,16 @@ module draw_block(ignorepreview = false, uptonut = false) {
                         cylinder(d=screwholesize, h=screwlength+bugfix, $fn=fn);
                         translate([0,0,4]) {
                             // module nutcatch_sidecut (options, kind = "hexagon", height_clearance = 0, width_clearance = 0, length = A_LOT) {
-                            // nutcatch_sidecut("M4", height_clearance = tolerance, width_clearance = tolerance);
+                            nutcatch_sidecut("M4", height_clearance = tolerance, width_clearance = tolerance);
 
                             // name   = "M3",  // name of screw family (i.e. M3, M4, ...)
                             // l      = 50.0,  // length of slot
                             // clk    =  0.0,  // key width clearance
                             // clh    =  0.0,  // height clearance
                             // clsl   =  0.1)  // slot width clearance
-                            nutcatch_sidecut(name = "M4", l = nutcatch_depth[blocktype], clk = tolerance, clh = tolerance, clsl = tolerance);
+                            // nutcatch_sidecut(name = "M4", l = nutcatch_depth[blocktype], clk = tolerance, clh = tolerance, clsl = tolerance);
                             debprint("=================================================================================================================");
-                            debprint(str("tolerance is ", tolerance));
+                            debprint(str("tolerance is ", tolerance, " and nutcatch_depth[", blocktype, "] is ", nutcatch_depth[blocktype]));
                             debprint("=================================================================================================================");
                         }
                     }
