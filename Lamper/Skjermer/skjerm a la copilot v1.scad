@@ -2,8 +2,8 @@
 // Spiral Belly Lampshade (polyhedron) for E14 — hollow shell (no vase mode)
 // - Axisymmetric belly for Ø80 bulb clearance
 // - Single‑lobe helical bulge with tunable height envelope & end caps
-// - Spider seat with annular-ring spokes (solid overlaps; no protrusion)
-// - Pattern switch: "solid", "slots", or "ribbons" (open spiral bands)
+// - Pattern: "solid", "slots", "ribbons" (open spiral bands)
+// - Spider seat with ORIGINAL straight spokes, shifted 5mm inward (flush with seat)
 //
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
@@ -62,17 +62,17 @@ mount_seat_od        = 44.0;  // seat OD (must exceed nut OD)
 mount_seat_th        = 3.0;   // seat thickness
 mount_at_top         = false; // false: bottom seat; true: top seat (pendant)
 
-// Spider geometry — annular-ring spokes
+// Tie ring (overlaps shell interior) + inner skirt (up the inner wall)
 ring_width           = 8.0;   // tie-in ring width (radial thickness)
 tie_overlap_r        = 1.2;   // mm: tie ring outer intrudes into shell inner wall by this
 tie_skirt_h          = 10.0;  // mm: inner skirt height overlapping shell interior
 
+// ORIGINAL spokes (straight rectangular bars), shifted inward
 spoke_count          = 4;     // number of spokes
-spoke_arc_fraction   = 0.35;  // fraction of each segment kept as solid (0.2..0.5)
-spoke_seat_overlap   = 0.6;   // mm: spokes extend inward past seat OD/2 by this
-spoke_ring_overlap   = 0.8;   // mm: spokes extend outward past tie-ring inner radius by this
-spoke_z_bite         = 0.6;   // mm: spokes start below seat to avoid coplanar
-spoke_to_skirt       = true;  // run spokes tall enough to intersect the skirt
+spoke_width          = 7.0;   // spoke bar width (tangential)
+spoke_inset          = 5.0;   // mm: move the inner start 5mm closer to center (overlaps seat better)
+spoke_outer_overlap  = 0.6;   // mm: extend past tie-ring inner radius by this
+// Note: spokes sit FLUSH on the seat (no below-seat bite): z=0 .. mount_seat_th
 
 // Bulb & clearance (sphere Ø80 mm)
 bulb_diameter        = 80.0;
@@ -239,76 +239,56 @@ module shell_poly() {
 }
 
 ///////////////////////////
-// Spider mount (seat + tie ring + annular-ring spokes)
+// Spider mount (seat + tie ring + ORIGINAL straight spokes)
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     end_t = at_top ? 1 : 0;
 
-    // Everything derived once in a single let() scope (no re-assignments)
+    // Single let-scope: no reassignments → no 'undef' surprises
     let(
-        // Shell inner radius at the end (axisymmetric; lobe is zero)
+        // Shell inner radius at the end (axisymmetric; lobe = 0 at ends)
         r_in_end       = R_belly(end_t) - wall_thickness,
 
-        // Tie ring with positive overlap into the shell (never protrudes outside)
+        // Tie ring with positive overlap into the shell
         r_ring_o       = r_in_end + tie_overlap_r,
         r_ring_i_raw   = r_ring_o - ring_width,
         r_ring_i       = max(mount_seat_od/2 + 1.0, r_ring_i_raw),
 
-        // Spoke ring: overlaps seat inward and tie-ring outward; bounded below tie-ring OUTER radius
-        r_spoke_i      = max(0.1, mount_seat_od/2 - spoke_seat_overlap),
-        r_spoke_o_raw  = r_ring_i + spoke_ring_overlap,
-        r_spoke_o_min  = r_spoke_i + 1.0,            // ensure non-degenerate ring
-        r_spoke_o_cap  = r_ring_o - 0.3,             // keep inside shell wall (no outward protrusion)
-        r_spoke_o      = min(r_spoke_o_cap, max(r_spoke_o_min, r_spoke_o_raw)),
-
-        // Vertical sizing
-        spoke_h        = mount_seat_th + (spoke_to_skirt ? (tie_skirt_h + EPS) : 0),
-
-        // Windows to carve spokes out of the annular ring
-        rm             = (r_spoke_i + r_spoke_o)/2,
-        seg_len        = 2*PI*rm / max(1,spoke_count),
-        window_w       = seg_len * (1 - clamp01(spoke_arc_fraction))
+        // ORIGINAL spokes:
+        // inner start is seat_OD/2 shifted INWARD by spoke_inset (so they bite the seat),
+        // outer end reaches slightly INTO the tie ring inner radius for a solid union.
+        r_spoke_inner  = max(0.1, mount_seat_od/2 - spoke_inset),
+        r_spoke_outer  = r_ring_i + spoke_outer_overlap,
+        span_len       = max(0.1, r_spoke_outer - r_spoke_inner)
     )
     translate([0,0,z_mount]) difference() {
         union() {
-            // Seat
+            // Seat disc
             cylinder(h=mount_seat_th, r=mount_seat_od/2, center=false);
 
-            // Tie ring (overlaps shell interior)
+            // Tie ring (positive overlap into shell)
             difference() {
                 cylinder(h=mount_seat_th + EPS, r=r_ring_o, center=false);
                 cylinder(h=mount_seat_th + 2*EPS, r=r_ring_i, center=false);
             }
 
-            // Inner skirt above the seat
+            // Inner skirt above the seat (overlaps shell interior up the wall)
             translate([0,0,mount_seat_th - EPS])
                 difference() {
                     cylinder(h=tie_skirt_h + 2*EPS, r=r_ring_o, center=false);
                     cylinder(h=tie_skirt_h + 3*EPS, r=r_ring_i, center=false);
                 }
 
-            // Annular spoke ring with windows cut out (solid overlaps both seat & ring)
-            translate([0,0,-spoke_z_bite])
-                difference() {
-                    // Solid annular ring
-                    difference() {
-                        cylinder(h=spoke_h + spoke_z_bite + EPS, r=r_spoke_o, center=false);
-                        cylinder(h=spoke_h + spoke_z_bite + 2*EPS, r=r_spoke_i, center=false);
-                    }
-                    // Cut evenly spaced windows
-                    for (s=[0:spoke_count-1]) {
-                        rotate([0,0, s*360/spoke_count]) {
-                            translate([rm, 0, 0])  // at mid radius
-                                cube([ (r_spoke_o - r_spoke_i) + 2,  // radial overshoot
-                                       window_w,                      // tangential opening
-                                       spoke_h + spoke_z_bite + 4 ],  // tall cut
-                                     center=true);
-                        }
-                    }
-                }
+            // --- ORIGINAL straight spokes (FLUSH on seat; no below-seat bite) ---
+            for (s=[0:spoke_count-1]) {
+                rotate([0,0, s*360/spoke_count])
+                    translate([r_spoke_inner, -spoke_width/2, 0])     // start on seat plane z=0
+                        cube([span_len, spoke_width, mount_seat_th],   // exactly seat thickness height
+                             center=false);
+            }
         }
         // Through-hole for E14 spigot (+ clearance)
-        cylinder(h=mount_seat_th + tie_skirt_h + spoke_h + 2.0,
+        cylinder(h=mount_seat_th + tie_skirt_h + 0.6,
                  r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
 }
@@ -348,24 +328,19 @@ end_t_diag        = mount_at_top ? 1 : 0;
 r_in_end_diag     = R_belly(end_t_diag) - wall_thickness;
 r_ring_o_diag     = r_in_end_diag + tie_overlap_r;
 r_ring_i_diag     = max(mount_seat_od/2 + 1.0, r_ring_o_diag - ring_width);
-r_spoke_i_diag    = max(0.1, mount_seat_od/2 - spoke_seat_overlap);
-r_spoke_o_raw_d   = r_ring_i_diag + spoke_ring_overlap;
-r_spoke_o_min_d   = r_spoke_i_diag + 1.0;
-r_spoke_o_cap_d   = r_ring_o_diag - 0.3;
-r_spoke_o_diag    = min(r_spoke_o_cap_d, max(r_spoke_o_min_d, r_spoke_o_raw_d));
-rm_diag           = (r_spoke_i_diag + r_spoke_o_diag)/2;
-seg_len_diag      = 2*PI*rm_diag / max(1,spoke_count);
-window_w_diag     = seg_len_diag * (1 - clamp01(spoke_arc_fraction));
+r_spoke_inner_d   = max(0.1, mount_seat_od/2 - spoke_inset);
+r_spoke_outer_d   = r_ring_i_diag + spoke_outer_overlap;
+span_len_d        = max(0.1, r_spoke_outer_d - r_spoke_inner_d);
 
 echo(str("Spider diag: r_in_end=", r_in_end_diag,
          "  ring_i=", r_ring_i_diag,
          "  ring_o=", r_ring_o_diag,
-         "  spoke_i=", r_spoke_i_diag,
-         "  spoke_o=", r_spoke_o_diag,
-         "  rm=", rm_diag,
-         "  window_w=", window_w_diag));
+         "  spoke_inner=", r_spoke_inner_d,
+         "  spoke_outer=", r_spoke_outer_d,
+         "  span_len=", span_len_d));
 
 ///////////////////////////
 // Go
 ///////////////////////////
 lampshade();
+
