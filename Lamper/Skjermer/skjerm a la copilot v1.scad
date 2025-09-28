@@ -55,6 +55,12 @@ nz                 = FAST_PREVIEW ? 140 : 240;   // vertical rings (height)
 $fn = 48;
 
 ///////////////////////////
+// Guards
+///////////////////////////
+assert(na >= 3, "na (angular segments) must be ≥ 3");
+assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
+
+///////////////////////////
 // Helpers
 ///////////////////////////
 function clamp01(x) = x < 0 ? 0 : (x > 1 ? 1 : x);
@@ -133,38 +139,55 @@ points  = concat(pts_out, pts_in);
 ///////////////////////////
 // Faces: outer surface (CCW outward), inner surface (reverse), edge rings
 ///////////////////////////
-faces_outer = concat(
-    [ for (i=[0:nz-1], j=[0:na-1]) 
-        let(a=idx_out(i,j), b=idx_out(i,(j+1)%na), c=idx_out(i+1,(j+1)%na), d=idx_out(i+1,j))
-        [ [a,b,c], [a,c,d] ]
-    ]
-);
+// --- Faces: outer surface (CCW outward) ---
+faces_outer = [
+  for (i=[0:nz-1], j=[0:na-1])
+  let(
+    a = idx_out(i,   j),
+    b = idx_out(i,   (j+1) % na),
+    c = idx_out(i+1, (j+1) % na),
+    d = idx_out(i+1, j)
+  )
+  for (tri = [[a,b,c], [a,c,d]]) tri
+];
 
-faces_inner = concat(
-    [ for (i=[0:nz-1], j=[0:na-1])
-        // reverse winding vs outer
-        let(a=idx_in(i,j), b=idx_in(i+1,j), c=idx_in(i+1,(j+1)%na), d=idx_in(i,(j+1)%na))
-        [ [a,b,c], [a,c,d] ]
-    ]
-);
+// --- Faces: inner surface (reverse winding vs outer) ---
+faces_inner = [
+  for (i=[0:nz-1], j=[0:na-1])
+  let(
+    a = idx_in(i,   j),
+    b = idx_in(i+1, j),
+    c = idx_in(i+1, (j+1) % na),
+    d = idx_in(i,   (j+1) % na)
+  )
+  for (tri = [[a,b,c], [a,c,d]]) tri
+];
 
-// Bottom edge faces: connect outer(0,*) to inner(0,*) along thickness
-faces_bottom = concat(
-    [ for (j=[0:na-1])
-        let(a=idx_out(0,j), b=idx_out(0,(j+1)%na), c=idx_in(0,(j+1)%na), d=idx_in(0,j))
-        [ [a,b,c], [a,c,d] ]
-    ]
-);
+// --- Bottom edge faces: connect outer(0,*) → inner(0,*) across thickness ---
+faces_bottom = [
+  for (j=[0:na-1])
+  let(
+    a = idx_out(0, j),
+    b = idx_out(0, (j+1) % na),
+    c = idx_in(0, (j+1) % na),
+    d = idx_in(0, j)
+  )
+  for (tri = [[a,b,c], [a,c,d]]) tri
+];
 
-// Top edge faces: connect outer(nz,*) to inner(nz,*)
-faces_top = concat(
-    [ for (j=[0:na-1])
-        // flip winding so normals point outward
-        let(a=idx_out(nz,j), b=idx_in(nz,j), c=idx_in(nz,(j+1)%na), d=idx_out(nz,(j+1)%na))
-        [ [a,b,c], [a,c,d] ]
-    ]
-);
+// --- Top edge faces: connect outer(nz,*) → inner(nz,*) across thickness ---
+faces_top = [
+  for (j=[0:na-1])
+  let(
+    a = idx_out(nz, j),
+    b = idx_in(nz,  j),
+    c = idx_in(nz,  (j+1) % na),
+    d = idx_out(nz, (j+1) % na)
+  )
+  for (tri = [[a,b,c], [a,c,d]]) tri
+];
 
+// Merge all faces into one flat list of triangles
 faces = concat(faces_outer, faces_inner, faces_bottom, faces_top);
 
 ///////////////////////////
@@ -179,7 +202,7 @@ module shell_poly() {
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     // At ends the lobe amplitude is tiny; use belly baseline
-    end_t   = at_top ? 1 : 0;
+    end_t    = at_top ? 1 : 0;
     r_in_end = R_belly(end_t) - wall_thickness;
 
     translate([0,0,z_mount]) difference() {
