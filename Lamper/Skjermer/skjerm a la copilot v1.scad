@@ -246,6 +246,25 @@ module shell_poly() {
 }
 
 ///////////////////////////
+// Helper modules for spokes (GLOBAL to avoid parser errors)
+///////////////////////////
+module spoke_bar_rect(r0, r1, w, h) {
+    translate([r0, -w/2, 0]) cube([max(0.2, r1 - r0), w, h], center=false);
+}
+
+module spoke_bar_obround(r0, r1, w, h) {
+    // Obround = center plank shortened by w + end caps (cylinders)
+    len = max(0, (r1 - r0) - w);
+    union() {
+        if (len > 0)
+            translate([r0 + w/2, -w/2, 0]) cube([len, w, h], center=false);
+        // End caps
+        translate([r0 + w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
+        translate([r1 - w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
+    }
+}
+
+///////////////////////////
 // Spider mount (seat + tie ring + ORIGINAL straight spokes) — preview-safe & nicer from below
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
@@ -292,24 +311,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
                     cylinder(h=skirt_h + 0.03, r=r_ring_i, center=false);
                 }
 
-            // --- SPOKES ---
-            // Helper: rectangular bar (final render) and obround bar (preview) for nicer underside look
-            module spoke_bar_rect(r0, r1, w, h) {
-                translate([r0, -w/2, 0]) cube([max(0.2, r1 - r0), w, h], center=false);
-            }
-            module spoke_bar_obround(r0, r1, w, h) {
-                // Obround = center plank shortened by w + end caps (cylinders)
-                len = max(0, (r1 - r0) - w);
-                union() {
-                    if (len > 0)
-                        translate([r0 + w/2, -w/2, 0]) cube([len, w, h], center=false);
-                    // End caps
-                    translate([r0 + w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
-                    translate([r1 - w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
-                }
-            }
-
-            // Place N spokes; in preview use obround (nicer), in F6 use rectangular (original)
+            // SPOKES: obround in preview (nicer), rectangular in final render
             for (s=[0:spoke_count-1]) {
                 rotate([0,0, s*360/spoke_count]) {
                     if ($preview)
@@ -320,8 +322,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
             }
         }
 
-        // --- SUBTRACT: through-hole for E14 spigot (+ clearance) ---
-        // Start slightly below (preview) and cut taller so it never ends coplanar
+        // SUBTRACT: through-hole for E14 spigot (+ clearance) — start lower & taller in preview
         translate([0,0, -previewfix])
             cylinder(h=hole_h, r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
