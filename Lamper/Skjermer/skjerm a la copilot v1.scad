@@ -2,7 +2,7 @@
 // Spiral Belly Lampshade (polyhedron) for E14 — hollow shell (no vase mode)
 // - Axisymmetric belly for bulb clearance
 // - Single-lobe helical bulge with tunable height envelope & end caps
-// - Robust spider seat with positive overlaps (manifold-safe)
+// - Spider seat rebuilt with strong, positive overlaps (manifold-safe)
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
 //
@@ -31,12 +31,12 @@ max_mid_diameter     = 205;     // OUTER diameter at mid at the lobe crest
 bulge_turns          = 2.0;     // revolutions from bottom → top
 left_handed          = false;   // true to reverse direction
 mid_position         = 0.50;    // where belly & lobe peak (0..1)
-lobe_width           = 0.35;    // Gaussian width of lobe along Z
+lobe_width           = 0.45;    // broader = visible over more height
 lobe_power           = 2.2;     // 1=very soft; 2..3=crisper lobe (cos^power, clamped ≥0)
 
 // Height envelope control for the lobe (visibility along height)
-lobe_env_mix         = 0.45;    // 0.0 = flat (visible across height), 1.0 = Gaussian (focused at mid)
-end_cap              = 0.05;    // fraction of height at each end where lobe → 0 (keeps ends circular)
+lobe_env_mix         = 0.25;    // 0.0 = flat (visible across height), 1.0 = Gaussian (focused at mid)
+end_cap              = 0.04;    // fraction of height at each end where lobe → 0 (keeps ends circular)
 
 // E14 mount (measure your hardware)
 e14_hole_diameter    = 29.0;    // through-hole for E14 spigot (28–30 mm typical)
@@ -48,12 +48,12 @@ spoke_width          = 6.0;     // strut width
 ring_width           = 6.0;     // tie-in ring width (radial)
 mount_at_top         = false;   // false: bottom seat; true: top seat (pendant)
 
-// Robust union with shell (avoid gaps/coplanars)
-tie_overlap_r        = 0.5;     // mm: expand tie ring outer radius into shell inner wall
-tie_skirt_h          = 5.0;     // mm: inner skirt height overlapping shell interior
-spoke_overlap_r      = 0.6;     // mm: how far spokes push into the tie ring
-spoke_z_bite         = 0.2;     // mm: spokes start slightly below seat (negative z) to avoid coplanar
-spoke_to_skirt       = true;    // true: spokes run tall to intersect skirt as well
+// Robust overlaps (avoid gaps/coplanars)
+tie_overlap_r        = 0.8;     // mm: expand tie ring outer radius into shell inner wall
+tie_skirt_h          = 7.0;     // mm: inner skirt height overlapping shell interior
+spoke_overlap_r      = 1.0;     // mm: spokes extend past ring outer radius
+spoke_z_bite         = 0.5;     // mm: spokes start below seat (avoid coplanar)
+spoke_to_skirt       = true;    // true: spokes run tall to intersect skirt too
 
 // Bulb & clearance (sphere Ø80 mm)
 bulb_diameter        = 80.0;
@@ -61,19 +61,20 @@ bulb_clearance       = 3.0;     // radial
 auto_clearance       = true;    // auto-raise belly to ensure bulb clearance
 
 // Top opening: fit Ø60 bulb + fingers
-top_inner_min_diam   = 85.0;    // required top INNER diameter
+top_inner_min_diam   = 90.0;    // required top INNER diameter (raise if you want even easier handling)
 
 // Quality (poly count)
 na                   = FAST_PREVIEW ? 96  : 160;   // angular segments
 nz                   = FAST_PREVIEW ? 140 : 240;   // vertical rings
 
-$fn = 64; // for cylinders (seat, ring), unrelated to the mesh resolution
+$fn = 64; // for cylinders (seat, ring)
 
 ///////////////////////////
-// Guards
+// Guards & constants
 ///////////////////////////
 assert(na >= 3, "na (angular segments) must be ≥ 3");
 assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
+EPS = 0.05; // tiny fudge for boolean robustness
 
 ///////////////////////////
 // Helpers
@@ -130,9 +131,7 @@ function R_belly(t) =
 function phi_deg(t) = twist_sign * (bulge_turns * 360 * t);
 
 // Lobe amplitude envelope along height:
-// - gaussian around mid
-// - flat (constant 1)
-// Blend between them with lobe_env_mix, then apply end caps.
+// blend of flat (1) and Gaussian, then end caps taper it to zero at both ends
 function lobe_envelope(t) =
     let(g = gaussian(t, mid_position, sigma_from_width(lobe_width)))
     end_taper(t) * mix(1, g, clamp01(lobe_env_mix));
@@ -223,24 +222,28 @@ faces = concat(faces_outer, faces_inner, faces_bottom, faces_top);
 // Shell as a single polyhedron
 ///////////////////////////
 module shell_poly() {
-    polyhedron(points=points, faces=faces, convexity=10);
+    polyhedron(points=points, faces=faces, convexity=12);
 }
 
 ///////////////////////////
-// Spider mount (seat + ring + struts) — with solid overlaps
+// Spider mount (seat + ring + struts) — strong, positive overlaps
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     // Ends are axisymmetric; use belly baseline for a clean, circular tie
     end_t     = at_top ? 1 : 0;
-    r_in_end  = R_belly(end_t) - wall_thickness;      // inner radius of shell at that end
+    r_in_end  = R_belly(end_t) - wall_thickness;  // inner radius of shell at that end
 
-    // Ring outer radius expanded to ensure overlap; inner radius set by ring_width
+    // Tie ring: outer radius intrudes into shell; inner radius keeps ring_width
     r_ring_o  = r_in_end + tie_overlap_r;
-    r_ring_i  = max(mount_seat_od/2 + 0.2, r_ring_o - ring_width);
+    r_ring_i_target = r_ring_o - ring_width;
+    // Maintain at least 1 mm radial room between seat and ring
+    r_ring_i  = max(mount_seat_od/2 + 1.0, r_ring_i_target);
 
-    // Spokes overlap: extend into ring and up into skirt (optional)
-    spoke_h   = mount_seat_th + (spoke_to_skirt ? tie_skirt_h : 0);
-    span_len  = max(0.1, (r_ring_i + spoke_overlap_r) - mount_seat_od/2);
+    // Spokes: run from seat OD/2 out to beyond ring OUTER radius by spoke_overlap_r
+    spoke_inner_r = mount_seat_od/2;
+    spoke_outer_r = r_ring_o + spoke_overlap_r;
+    span_len      = max(0.1, spoke_outer_r - spoke_inner_r);
+    spoke_h       = mount_seat_th + (spoke_to_skirt ? tie_skirt_h : 0);
 
     translate([0,0,z_mount]) difference() {
         union() {
@@ -249,43 +252,46 @@ module spider_mount_at_z(z_mount, at_top=false) {
 
             // Tie ring at seat level (positively overlapping the shell)
             difference() {
-                cylinder(h=mount_seat_th, r=r_ring_o, center=false);
-                cylinder(h=mount_seat_th + 0.1, r=r_ring_i, center=false);
+                cylinder(h=mount_seat_th + EPS, r=r_ring_o, center=false);
+                cylinder(h=mount_seat_th + 2*EPS, r=r_ring_i, center=false);
             }
 
-            // Inner skirt above the seat
-            translate([0,0,mount_seat_th])
+            // Inner skirt above the seat (overlaps shell interior up the wall)
+            translate([0,0,mount_seat_th - EPS])
                 difference() {
-                    cylinder(h=tie_skirt_h, r=r_ring_o, center=false);
-                    cylinder(h=tie_skirt_h + 0.1, r=r_ring_i, center=false);
+                    cylinder(h=tie_skirt_h + 2*EPS, r=r_ring_o, center=false);
+                    cylinder(h=tie_skirt_h + 3*EPS, r=r_ring_i, center=false);
                 }
 
-            // Struts: extend slightly below seat (spoke_z_bite) and into ring/skirt
+            // Struts: extend slightly below seat and into ring & skirt
             for (s=[0:spoke_count-1]) {
                 rotate([0,0, s*360/spoke_count])
-                    translate([mount_seat_od/2, -spoke_width/2, -spoke_z_bite])
-                        cube([span_len, spoke_width, spoke_h + spoke_z_bite], center=false);
+                    translate([spoke_inner_r, -spoke_width/2, -spoke_z_bite])
+                        cube([span_len, spoke_width, spoke_h + spoke_z_bite + EPS], center=false);
             }
         }
         // Through-hole for E14 spigot (+ clearance)
-        cylinder(h=mount_seat_th + tie_skirt_h + 0.6,
+        cylinder(h=mount_seat_th + tie_skirt_h + 0.8,  // taller than all local solids
                  r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
 }
 
 ///////////////////////////
-// Assembly
+// Assembly (with render() barriers for CGAL robustness)
 ///////////////////////////
 module lampshade() {
-    shell_poly();
+    // Force meshing of the shell before boolean unions
+    shell_mesh = render(convexity=12) shell_poly();
 
-    if (!mount_at_top) {
-        // Seat at bottom (z=0)
-        spider_mount_at_z(0, at_top=false);
-    } else {
-        // Seat at top (just below the top plane)
-        spider_mount_at_z(H - mount_seat_th - tie_skirt_h, at_top=true);
-    }
+    // Force meshing of the spider as well
+    spider_mesh = render(convexity=8)
+        ( mount_at_top
+            ? translate([0,0,H - mount_seat_th - tie_skirt_h]) spider_mount_at_z(0, at_top=true)
+            : spider_mount_at_z(0, at_top=false)
+        );
+
+    // Final union
+    union() { shell_mesh; spider_mesh; }
 }
 
 // Diagnostics
@@ -294,6 +300,10 @@ echo(str("Axis mid outer radius (after auto_clearance) = ", axis_mid_r));
 echo(str("Required outer mid radius for bulb+clearance = ", required_rad_outer));
 echo(str("Top outer radius used = ", Ro2));
 echo(str("Top inner min required = ", top_inner_min_diam/2));
+echo(str("Spider: r_in_end=", (R_belly(mount_at_top ? 1 : 0) - wall_thickness),
+         " r_ring_o=", (R_belly(mount_at_top ? 1 : 0) - wall_thickness + tie_overlap_r),
+         " span_len=", span_len ));
+
 assert(axis_mid_r >= required_rad_outer,
   "Axis mid too small for Ø80 bulb + clearance. Increase axis_mid_diameter or enable auto_clearance.");
 
