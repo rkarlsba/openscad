@@ -4,7 +4,8 @@
 // - Single‑lobe helical bulge with tunable height envelope & end caps
 // - Pattern: "solid", "slots", "ribbons" (open spiral bands)
 // - Spider seat with ORIGINAL straight spokes, shifted 5mm inward (flush with seat)
-// - Preview fix: adds a tiny extra to difference() cutters so preview looks sane
+// - Preview fix: tiny boosts to difference() heights so preview (F5) looks clean;
+//   final render (F6) remains exact.
 //
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
@@ -13,12 +14,12 @@
 ///////////////////////////
 // Quick preview & debug
 ///////////////////////////
-FAST_PREVIEW     = true;     // true = faster; false = smoother
+FAST_PREVIEW     = true;     // true = faster; false = smoother (higher na/nz)
 SHOW_SHELL_ONLY  = false;    // render shell only (debug)
 SHOW_SPIDER_ONLY = false;    // render spider only (debug)
 
-// Preview fix for coplanar difference artifacts
-previewfix        = $preview ? 0.2 : 0;  // mm
+// Preview fix for coplanar difference artifacts (F5 only; is 0 in F6)
+previewfix = $preview ? 0.2 : 0;  // mm
 
 ///////////////////////////
 // Pattern mode
@@ -76,7 +77,7 @@ spoke_count          = 4;     // number of spokes
 spoke_width          = 7.0;   // spoke bar width (tangential)
 spoke_inset          = 5.0;   // mm: move the inner start 5mm closer to center (overlaps seat better)
 spoke_outer_overlap  = 0.6;   // mm: extend past tie-ring inner radius by this
-// Note: spokes sit FLUSH on the seat (z = 0 → mount_seat_th)
+// Note: spokes sit FLUSH on the seat (z = 0 → mount_seat_th). In preview they get tiny height boost.
 
 // Bulb & clearance (sphere Ø80 mm)
 bulb_diameter        = 80.0;
@@ -254,7 +255,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
         // Shell inner radius at end (axisymmetric; lobe→0 at ends)
         r_in_end       = R_belly(end_t) - wall_thickness,
 
-        // Tie ring (positive overlap into shell; never protrudes outside)
+        // Tie ring (positive overlap into the shell; never protrudes outside)
         r_ring_o       = r_in_end + tie_overlap_r,
         r_ring_i_raw   = r_ring_o - ring_width,
         r_ring_i       = max(mount_seat_od/2 + 1.0, r_ring_i_raw),
@@ -292,7 +293,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
                 }
 
             // --- SPOKES ---
-            // Helper: rectangular bar (final render) and obround bar (preview)
+            // Helper: rectangular bar (final render) and obround bar (preview) for nicer underside look
             module spoke_bar_rect(r0, r1, w, h) {
                 translate([r0, -w/2, 0]) cube([max(0.2, r1 - r0), w, h], center=false);
             }
@@ -325,6 +326,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
             cylinder(h=hole_h, r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
 }
+
 ///////////////////////////
 // Assembly
 ///////////////////////////
