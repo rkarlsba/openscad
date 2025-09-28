@@ -4,6 +4,7 @@
 // - Single‑lobe helical bulge with tunable height envelope & end caps
 // - Pattern: "solid", "slots", "ribbons" (open spiral bands)
 // - Spider seat with ORIGINAL straight spokes, shifted 5mm inward (flush with seat)
+// - Preview fix: adds a tiny extra to difference() cutters so preview looks sane
 //
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
@@ -15,6 +16,9 @@
 FAST_PREVIEW     = true;     // true = faster; false = smoother
 SHOW_SHELL_ONLY  = false;    // render shell only (debug)
 SHOW_SPIDER_ONLY = false;    // render spider only (debug)
+
+// Preview fix for coplanar difference artifacts
+previewfix        = $preview ? 0.2 : 0;  // mm
 
 ///////////////////////////
 // Pattern mode
@@ -72,7 +76,7 @@ spoke_count          = 4;     // number of spokes
 spoke_width          = 7.0;   // spoke bar width (tangential)
 spoke_inset          = 5.0;   // mm: move the inner start 5mm closer to center (overlaps seat better)
 spoke_outer_overlap  = 0.6;   // mm: extend past tie-ring inner radius by this
-// Note: spokes sit FLUSH on the seat (no below-seat bite): z=0 .. mount_seat_th
+// Note: spokes sit FLUSH on the seat (z = 0 → mount_seat_th)
 
 // Bulb & clearance (sphere Ø80 mm)
 bulb_diameter        = 80.0;
@@ -209,7 +213,7 @@ module shell_poly_raw() {
 }
 
 ///////////////////////////
-// Helical cutters (for "slots" and "ribbons")
+// Helical cutters (for "slots" and "ribbons") — PREVIEW-FIXED
 ///////////////////////////
 Rcut = max(max_mid_r, Ro0, Ro2) + 6; // radial reach of cutters
 twist_total = bulge_turns * 360 * (left_handed ? -1 : 1);
@@ -219,10 +223,11 @@ module helical_cutters() {
     if (h_cut > 0) {
         for (k=[0:slot_count-1]) {
             rotate([0,0, k*360/slot_count]) {
-                translate([0,0, slot_z_margin])
-                    linear_extrude(height=h_cut, twist=twist_total, slices=nz, convexity=10)
+                // start slightly lower and cut slightly taller in preview to avoid coplanar
+                translate([0,0, slot_z_margin - previewfix])
+                    linear_extrude(height=h_cut + 2*previewfix, twist=twist_total, slices=nz, convexity=10)
                         translate([0, -slot_width/2])
-                            square([Rcut, slot_width], center=false);
+                            square([Rcut + previewfix, slot_width], center=false);
             }
         }
     }
@@ -232,6 +237,7 @@ module shell_poly() {
     if (pattern == "solid") {
         shell_poly_raw();
     } else if (pattern == "slots" || pattern == "ribbons") {
+        // Preview fix applied via enlarged cutters
         difference() { shell_poly_raw(); helical_cutters(); }
     } else {
         shell_poly_raw();
@@ -239,60 +245,86 @@ module shell_poly() {
 }
 
 ///////////////////////////
-// Spider mount (seat + tie ring + ORIGINAL straight spokes)
+// Spider mount (seat + tie ring + ORIGINAL straight spokes) — preview-safe & nicer from below
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     end_t = at_top ? 1 : 0;
 
-    // Single let-scope: no reassignments → no 'undef' surprises
     let(
-        // Shell inner radius at the end (axisymmetric; lobe = 0 at ends)
+        // Shell inner radius at end (axisymmetric; lobe→0 at ends)
         r_in_end       = R_belly(end_t) - wall_thickness,
 
-        // Tie ring with positive overlap into the shell
+        // Tie ring (positive overlap into shell; never protrudes outside)
         r_ring_o       = r_in_end + tie_overlap_r,
         r_ring_i_raw   = r_ring_o - ring_width,
         r_ring_i       = max(mount_seat_od/2 + 1.0, r_ring_i_raw),
 
-        // ORIGINAL spokes:
-        // inner start is seat_OD/2 shifted INWARD by spoke_inset (so they bite the seat),
-        // outer end reaches slightly INTO the tie ring inner radius for a solid union.
+        // ORIGINAL straight spokes, shifted inward by spoke_inset
         r_spoke_inner  = max(0.1, mount_seat_od/2 - spoke_inset),
         r_spoke_outer  = r_ring_i + spoke_outer_overlap,
-        span_len       = max(0.1, r_spoke_outer - r_spoke_inner)
+        span_len       = max(0.2, r_spoke_outer - r_spoke_inner),
+
+        // Preview-only tiny height boosts to avoid coplanar z-fighting in underside view
+        seat_h         = mount_seat_th + previewfix,
+        ring_h         = mount_seat_th + previewfix,
+        skirt_h        = tie_skirt_h   + previewfix,
+        hole_h         = mount_seat_th + tie_skirt_h + 0.8 + 2*previewfix
     )
     translate([0,0,z_mount]) difference() {
-        union() {
-            // Seat disc
-            cylinder(h=mount_seat_th, r=mount_seat_od/2, center=false);
 
-            // Tie ring (positive overlap into shell)
+        // --- UNION: seat + tie ring + skirt + spokes ---
+        union() {
+
+            // Seat (sits on z=0; a hair taller in preview)
+            cylinder(h=seat_h, r=mount_seat_od/2, center=false);
+
+            // Tie ring (same base; inner subtraction a hair taller → no coplanar)
             difference() {
-                cylinder(h=mount_seat_th + EPS, r=r_ring_o, center=false);
-                cylinder(h=mount_seat_th + 2*EPS, r=r_ring_i, center=false);
+                cylinder(h=ring_h,         r=r_ring_o, center=false);
+                cylinder(h=ring_h + 0.02,  r=r_ring_i, center=false);
             }
 
-            // Inner skirt above the seat (overlaps shell interior up the wall)
-            translate([0,0,mount_seat_th - EPS])
+            // Inner skirt (overlaps inside shell; starts just above seat)
+            translate([0,0,mount_seat_th - 0.01])
                 difference() {
-                    cylinder(h=tie_skirt_h + 2*EPS, r=r_ring_o, center=false);
-                    cylinder(h=tie_skirt_h + 3*EPS, r=r_ring_i, center=false);
+                    cylinder(h=skirt_h + 0.02, r=r_ring_o, center=false);
+                    cylinder(h=skirt_h + 0.03, r=r_ring_i, center=false);
                 }
 
-            // --- ORIGINAL straight spokes (FLUSH on seat; no below-seat bite) ---
+            // --- SPOKES ---
+            // Helper: rectangular bar (final render) and obround bar (preview)
+            module spoke_bar_rect(r0, r1, w, h) {
+                translate([r0, -w/2, 0]) cube([max(0.2, r1 - r0), w, h], center=false);
+            }
+            module spoke_bar_obround(r0, r1, w, h) {
+                // Obround = center plank shortened by w + end caps (cylinders)
+                len = max(0, (r1 - r0) - w);
+                union() {
+                    if (len > 0)
+                        translate([r0 + w/2, -w/2, 0]) cube([len, w, h], center=false);
+                    // End caps
+                    translate([r0 + w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
+                    translate([r1 - w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
+                }
+            }
+
+            // Place N spokes; in preview use obround (nicer), in F6 use rectangular (original)
             for (s=[0:spoke_count-1]) {
-                rotate([0,0, s*360/spoke_count])
-                    translate([r_spoke_inner, -spoke_width/2, 0])     // start on seat plane z=0
-                        cube([span_len, spoke_width, mount_seat_th],   // exactly seat thickness height
-                             center=false);
+                rotate([0,0, s*360/spoke_count]) {
+                    if ($preview)
+                        spoke_bar_obround(r_spoke_inner, r_spoke_outer, spoke_width, seat_h);
+                    else
+                        spoke_bar_rect   (r_spoke_inner, r_spoke_outer, spoke_width, mount_seat_th);
+                }
             }
         }
-        // Through-hole for E14 spigot (+ clearance)
-        cylinder(h=mount_seat_th + tie_skirt_h + 0.6,
-                 r=(e14_hole_diameter + seat_clearance)/2, center=false);
+
+        // --- SUBTRACT: through-hole for E14 spigot (+ clearance) ---
+        // Start slightly below (preview) and cut taller so it never ends coplanar
+        translate([0,0, -previewfix])
+            cylinder(h=hole_h, r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
 }
-
 ///////////////////////////
 // Assembly
 ///////////////////////////
@@ -343,4 +375,3 @@ echo(str("Spider diag: r_in_end=", r_in_end_diag,
 // Go
 ///////////////////////////
 lampshade();
-
