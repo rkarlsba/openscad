@@ -2,8 +2,8 @@
 // Spiral Belly Lampshade (polyhedron) for E14 — hollow shell (no vase mode)
 // - Axisymmetric belly for Ø80 bulb clearance
 // - Single‑lobe helical bulge with tunable height envelope & end caps
-// - Spider seat with *annular-ring spokes* (overlap both seat and tie ring; no protrusion)
-// - Pattern switch: "solid" (default), "slots", or "ribbons" (as in the screenshot)
+// - Spider seat with annular-ring spokes (solid overlaps; no protrusion)
+// - Pattern switch: "solid", "slots", or "ribbons" (open spiral bands)
 //
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
@@ -21,7 +21,7 @@ SHOW_SPIDER_ONLY = false;    // render spider only (debug)
 ///////////////////////////
 // "solid"   = closed shell (helical bulge only)
 // "slots"   = helical slots through the shell
-// "ribbons" = helical ribbons (open bands), similar to the image you sent
+// "ribbons" = helical ribbons (open bands)
 pattern = "solid";
 
 // Helical cut parameters (for "slots" or "ribbons")
@@ -62,15 +62,15 @@ mount_seat_od        = 44.0;  // seat OD (must exceed nut OD)
 mount_seat_th        = 3.0;   // seat thickness
 mount_at_top         = false; // false: bottom seat; true: top seat (pendant)
 
-// Spider geometry — *annular-ring spokes* (robust, never protrude outside)
+// Spider geometry — annular-ring spokes
 ring_width           = 8.0;   // tie-in ring width (radial thickness)
 tie_overlap_r        = 1.2;   // mm: tie ring outer intrudes into shell inner wall by this
 tie_skirt_h          = 10.0;  // mm: inner skirt height overlapping shell interior
 
 spoke_count          = 4;     // number of spokes
-spoke_arc_fraction   = 0.35;  // fraction of each 360/N segment kept as *solid* (0.2..0.5 works well)
-spoke_seat_overlap   = 0.6;   // mm: spokes extend this much *inside* seat OD to overlap the seat
-spoke_ring_overlap   = 0.4;   // mm: spokes extend this much *outside* tie ring inner radius to overlap the ring
+spoke_arc_fraction   = 0.35;  // fraction of each segment kept as solid (0.2..0.5)
+spoke_seat_overlap   = 0.6;   // mm: spokes extend inward past seat OD/2 by this
+spoke_ring_overlap   = 0.8;   // mm: spokes extend outward past tie-ring inner radius by this
 spoke_z_bite         = 0.6;   // mm: spokes start below seat to avoid coplanar
 spoke_to_skirt       = true;  // run spokes tall enough to intersect the skirt
 
@@ -93,7 +93,7 @@ $fn = 64; // for cylinders (seat, ring)
 ///////////////////////////
 assert(na >= 3, "na (angular segments) must be ≥ 3");
 assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
-EPS = 0.05; // tiny fudge for boolean robustness
+EPS = 0.05;
 PI  = 3.141592653589793;
 
 ///////////////////////////
@@ -113,7 +113,7 @@ function end_taper(t) =
 ///////////////////////////
 // Derived & checks
 ///////////////////////////
-H  = height_mm;
+H   = height_mm;
 Ro0 = base_diameter/2;
 
 // Enforce minimum top inner diameter by raising top outer if needed
@@ -232,41 +232,46 @@ module shell_poly() {
     if (pattern == "solid") {
         shell_poly_raw();
     } else if (pattern == "slots" || pattern == "ribbons") {
-        // both modes use helical cutters; "ribbons" usually wants fewer, wider cuts
-        difference() {
-            shell_poly_raw();
-            helical_cutters();
-        }
+        difference() { shell_poly_raw(); helical_cutters(); }
     } else {
-        // fallback
         shell_poly_raw();
     }
 }
 
 ///////////////////////////
-// Spider mount (seat + tie ring + *annular-ring spokes*)
-// Spokes are a ring between r_spoke_i .. r_spoke_o, with windows cut out
+// Spider mount (seat + tie ring + annular-ring spokes)
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
-    end_t     = at_top ? 1 : 0;
-    r_in_end  = R_belly(end_t) - wall_thickness;  // inner radius of shell at that end
+    end_t = at_top ? 1 : 0;
 
-    // Tie ring dimensions (positive overlap into shell interior)
-    r_ring_o  = r_in_end + tie_overlap_r;
-    r_ring_i  = r_ring_o - ring_width;
-    // Ensure at least 1 mm gap from seat to ring inner wall for material
-    r_ring_i  = max(mount_seat_od/2 + 1.0, r_ring_i);
+    // Everything derived once in a single let() scope (no re-assignments)
+    let(
+        // Shell inner radius at the end (axisymmetric; lobe is zero)
+        r_in_end       = R_belly(end_t) - wall_thickness,
 
-    // Spoke ring dimensions: it *overlaps the seat inward* and *overlaps the tie ring outward*
-    r_spoke_i = max(0.1, mount_seat_od/2 - spoke_seat_overlap);
-    r_spoke_o = max(r_spoke_i + 1.0, r_ring_i + spoke_ring_overlap);
+        // Tie ring with positive overlap into the shell (never protrudes outside)
+        r_ring_o       = r_in_end + tie_overlap_r,
+        r_ring_i_raw   = r_ring_o - ring_width,
+        r_ring_i       = max(mount_seat_od/2 + 1.0, r_ring_i_raw),
 
-    // Height of spokes: from below seat up into the skirt if enabled
-    spoke_h   = mount_seat_th + (spoke_to_skirt ? (tie_skirt_h + EPS) : 0);
+        // Spoke ring: overlaps seat inward and tie-ring outward; bounded below tie-ring OUTER radius
+        r_spoke_i      = max(0.1, mount_seat_od/2 - spoke_seat_overlap),
+        r_spoke_o_raw  = r_ring_i + spoke_ring_overlap,
+        r_spoke_o_min  = r_spoke_i + 1.0,            // ensure non-degenerate ring
+        r_spoke_o_cap  = r_ring_o - 0.3,             // keep inside shell wall (no outward protrusion)
+        r_spoke_o      = min(r_spoke_o_cap, max(r_spoke_o_min, r_spoke_o_raw)),
 
+        // Vertical sizing
+        spoke_h        = mount_seat_th + (spoke_to_skirt ? (tie_skirt_h + EPS) : 0),
+
+        // Windows to carve spokes out of the annular ring
+        rm             = (r_spoke_i + r_spoke_o)/2,
+        seg_len        = 2*PI*rm / max(1,spoke_count),
+        window_w       = seg_len * (1 - clamp01(spoke_arc_fraction))
+    )
     translate([0,0,z_mount]) difference() {
         union() {
-            // Seat disc
+            // Seat
             cylinder(h=mount_seat_th, r=mount_seat_od/2, center=false);
 
             // Tie ring (overlaps shell interior)
@@ -282,28 +287,21 @@ module spider_mount_at_z(z_mount, at_top=false) {
                     cylinder(h=tie_skirt_h + 3*EPS, r=r_ring_i, center=false);
                 }
 
-            // --- Spokes as an annular ring with windows removed ---
-            // Start with a solid annular ring (spoke volume)
+            // Annular spoke ring with windows cut out (solid overlaps both seat & ring)
             translate([0,0,-spoke_z_bite])
                 difference() {
-                    // Solid ring volume
+                    // Solid annular ring
                     difference() {
                         cylinder(h=spoke_h + spoke_z_bite + EPS, r=r_spoke_o, center=false);
                         cylinder(h=spoke_h + spoke_z_bite + 2*EPS, r=r_spoke_i, center=false);
                     }
-                    // Cut windows to leave spoke_count evenly spaced spokes
-                    rm = (r_spoke_i + r_spoke_o)/2;
-                    seg_len = 2*PI*rm / max(1,spoke_count);
-                    // solid fraction per segment -> window width = (1 - solid_fraction) * segment length
-                    window_w = seg_len * (1 - clamp01(spoke_arc_fraction));
-
+                    // Cut evenly spaced windows
                     for (s=[0:spoke_count-1]) {
                         rotate([0,0, s*360/spoke_count]) {
-                            // place a tangential box at the mid radius to carve the opening
-                            translate([rm, 0, 0])  // move to mid radius
-                                cube([ (r_spoke_o - r_spoke_i) + 2,  // radial length (overshoot)
-                                       window_w,                      // tangential width
-                                       spoke_h + spoke_z_bite + 4 ],  // tall cut (overshoot)
+                            translate([rm, 0, 0])  // at mid radius
+                                cube([ (r_spoke_o - r_spoke_i) + 2,  // radial overshoot
+                                       window_w,                      // tangential opening
+                                       spoke_h + spoke_z_bite + 4 ],  // tall cut
                                      center=true);
                         }
                     }
@@ -351,7 +349,10 @@ r_in_end_diag     = R_belly(end_t_diag) - wall_thickness;
 r_ring_o_diag     = r_in_end_diag + tie_overlap_r;
 r_ring_i_diag     = max(mount_seat_od/2 + 1.0, r_ring_o_diag - ring_width);
 r_spoke_i_diag    = max(0.1, mount_seat_od/2 - spoke_seat_overlap);
-r_spoke_o_diag    = max(r_spoke_i_diag + 1.0, r_ring_i_diag + spoke_ring_overlap);
+r_spoke_o_raw_d   = r_ring_i_diag + spoke_ring_overlap;
+r_spoke_o_min_d   = r_spoke_i_diag + 1.0;
+r_spoke_o_cap_d   = r_ring_o_diag - 0.3;
+r_spoke_o_diag    = min(r_spoke_o_cap_d, max(r_spoke_o_min_d, r_spoke_o_raw_d));
 rm_diag           = (r_spoke_i_diag + r_spoke_o_diag)/2;
 seg_len_diag      = 2*PI*rm_diag / max(1,spoke_count);
 window_w_diag     = seg_len_diag * (1 - clamp01(spoke_arc_fraction));
@@ -368,4 +369,3 @@ echo(str("Spider diag: r_in_end=", r_in_end_diag,
 // Go
 ///////////////////////////
 lampshade();
-
