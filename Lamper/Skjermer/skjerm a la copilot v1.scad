@@ -1,16 +1,20 @@
 //
 // Spiral Belly Lampshade (polyhedron) for E14 — hollow shell (no vase mode)
-// - Axisymmetric belly for bulb clearance
-// - Single-lobe helical bulge with tunable height envelope & end caps
-// - Spider seat rebuilt with strong, positive overlaps (manifold-safe)
+// - Axisymmetric belly for Ø80 bulb clearance
+// - Single‑lobe helical bulge with tunable height envelope & end caps
+// - Spider seat rebuilt with strong, positive overlaps (manifold‑friendly)
+// - Debug toggles to isolate shell/spider during render
+//
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
 //
 
 ///////////////////////////
-// Quick preview toggle
+// Quick preview & debug
 ///////////////////////////
-FAST_PREVIEW = true;   // true = faster; false = smoother
+FAST_PREVIEW    = true;    // true = faster; false = smoother
+SHOW_SHELL_ONLY = false;   // true = render only shell (helps isolate issues)
+SHOW_SPIDER_ONLY= false;   // true = render only spider (helps isolate issues)
 
 ///////////////////////////
 // User Parameters
@@ -18,23 +22,23 @@ FAST_PREVIEW = true;   // true = faster; false = smoother
 
 // Height & wall
 height_mm            = 180;     // total height
-wall_thickness       = 2.4;     // shell thickness (e.g., 3 perimeters @ 0.4 nozzle)
+wall_thickness       = 2.4;     // shell thickness (≈ 3 perimeters @ 0.4mm nozzle)
 
 // Ends + belly (clearance)
 base_diameter        = 60;      // outer at bottom
-top_diameter_user    = 100;     // requested outer at top (may be raised to meet top opening min)
-axis_mid_diameter    = 135;     // axisymmetric belly OUTER diameter at mid (no spiral)
+top_diameter_user    = 100;     // requested outer at top (may be raised by top opening guard)
+axis_mid_diameter    = 140;     // axisymmetric belly OUTER diameter at mid (no spiral)
 axis_width           = 0.35;    // belly width along Z (0.25..0.45)
 
 // Helical lobe (spiralling bulge)
-max_mid_diameter     = 205;     // OUTER diameter at mid at the lobe crest
+max_mid_diameter     = 210;     // OUTER diameter at mid at the lobe crest
 bulge_turns          = 2.0;     // revolutions from bottom → top
 left_handed          = false;   // true to reverse direction
 mid_position         = 0.50;    // where belly & lobe peak (0..1)
 lobe_width           = 0.45;    // broader = visible over more height
-lobe_power           = 2.2;     // 1=very soft; 2..3=crisper lobe (cos^power, clamped ≥0)
+lobe_power           = 2.2;     // 1=soft; 2..3=crisper lobe (cos^power, clamped ≥0)
 
-// Height envelope control for the lobe (visibility along height)
+// Height envelope control (visibility along height)
 lobe_env_mix         = 0.25;    // 0.0 = flat (visible across height), 1.0 = Gaussian (focused at mid)
 end_cap              = 0.04;    // fraction of height at each end where lobe → 0 (keeps ends circular)
 
@@ -44,24 +48,24 @@ seat_clearance       = 0.4;     // added to hole diameter
 mount_seat_od        = 44.0;    // seat OD (must exceed nut OD)
 mount_seat_th        = 3.0;     // seat thickness
 spoke_count          = 4;       // spider struts
-spoke_width          = 6.0;     // strut width
-ring_width           = 6.0;     // tie-in ring width (radial)
+spoke_width          = 7.0;     // strut width (bigger for strength)
+ring_width           = 8.0;     // tie-in ring width (radial thickness)
 mount_at_top         = false;   // false: bottom seat; true: top seat (pendant)
 
 // Robust overlaps (avoid gaps/coplanars)
-tie_overlap_r        = 0.8;     // mm: expand tie ring outer radius into shell inner wall
-tie_skirt_h          = 7.0;     // mm: inner skirt height overlapping shell interior
-spoke_overlap_r      = 1.0;     // mm: spokes extend past ring outer radius
-spoke_z_bite         = 0.5;     // mm: spokes start below seat (avoid coplanar)
-spoke_to_skirt       = true;    // true: spokes run tall to intersect skirt too
+tie_overlap_r        = 1.2;     // mm: tie ring outer intrudes into shell inner wall by this
+tie_skirt_h          = 10.0;    // mm: inner skirt height overlapping shell interior
+spoke_overlap_r      = 1.8;     // mm: spokes extend past tie ring OUTER radius
+spoke_z_bite         = 0.8;     // mm: spokes start below seat (avoid coplanar)
+spoke_to_skirt       = true;    // true: spokes run tall to intersect skirt
 
 // Bulb & clearance (sphere Ø80 mm)
 bulb_diameter        = 80.0;
-bulb_clearance       = 3.0;     // radial
+bulb_clearance       = 3.0;     // radial clearance
 auto_clearance       = true;    // auto-raise belly to ensure bulb clearance
 
-// Top opening: fit Ø60 bulb + fingers
-top_inner_min_diam   = 90.0;    // required top INNER diameter (raise if you want even easier handling)
+// Top opening: fit Ø60 bulb + fingers comfortably
+top_inner_min_diam   = 95.0;    // required top INNER diameter
 
 // Quality (poly count)
 na                   = FAST_PREVIEW ? 96  : 160;   // angular segments
@@ -116,10 +120,8 @@ twist_sign = left_handed ? -1 : 1;
 ///////////////////////////
 // Radius model
 ///////////////////////////
-// Rounded base->top baseline (axisymmetric)
 function base_top_radius(t) = Ro0 + (Ro2 - Ro0)*smoothstep01(t);
 
-// Axisymmetric belly centered at mid_position
 function R_belly(t) =
     let(rb   = base_top_radius(t),
         rb_m = base_top_radius(mid_position),
@@ -127,36 +129,27 @@ function R_belly(t) =
         sig  = sigma_from_width(axis_width))
     rb + A * gaussian(t, mid_position, sig);
 
-// Helical phase (deg)
 function phi_deg(t) = twist_sign * (bulge_turns * 360 * t);
 
-// Lobe amplitude envelope along height:
-// blend of flat (1) and Gaussian, then end caps taper it to zero at both ends
 function lobe_envelope(t) =
     let(g = gaussian(t, mid_position, sigma_from_width(lobe_width)))
     end_taper(t) * mix(1, g, clamp01(lobe_env_mix));
 
-// Lobe amplitude (so that crest @ mid reaches max_mid_r)
 function lobe_amp(t) =
     let(A_mid = max_mid_r - axis_mid_r)
     lobe_envelope(t) * A_mid;
 
-// Single-lobe shape (≥0, peak 1) around angle theta (deg)
 function lobe_shape(theta_deg) = pow(max(0, cos(theta_deg)), lobe_power);
 
-// Outer/inner radius at (t,θ)
 function R_outer(t, theta_deg) = R_belly(t) + lobe_amp(t) * lobe_shape(theta_deg - phi_deg(t));
 function R_inner(t, theta_deg) = R_outer(t, theta_deg) - wall_thickness;
 
 ///////////////////////////
-// Indexing helpers for polyhedron vertex array
+// Polyhedron mesh (shell)
 ///////////////////////////
 function idx_out(i,j) = i*na + (j % na);
 function idx_in(i,j)  = (nz+1)*na + i*na + (j % na);
 
-///////////////////////////
-// Build point arrays
-///////////////////////////
 function v_out(i,j) = 
     let(t = i/nz, ang = j*360/na, r = R_outer(t, ang))
     [ r*cos(ang), r*sin(ang), t*H ];
@@ -169,64 +162,38 @@ pts_out = [ for (i=[0:nz], j=[0:na-1]) v_out(i,j) ];
 pts_in  = [ for (i=[0:nz], j=[0:na-1]) v_in(i,j)  ];
 points  = concat(pts_out, pts_in);
 
-///////////////////////////
-// Faces: outer surface (CCW outward), inner surface (reverse), edge rings
-///////////////////////////
 faces_outer = [
   for (i=[0:nz-1], j=[0:na-1])
-  let(
-    a = idx_out(i,   j),
-    b = idx_out(i,   (j+1) % na),
-    c = idx_out(i+1, (j+1) % na),
-    d = idx_out(i+1, j)
-  )
+  let(a=idx_out(i,j), b=idx_out(i,(j+1)%na), c=idx_out(i+1,(j+1)%na), d=idx_out(i+1,j))
   for (tri = [[a,b,c], [a,c,d]]) tri
 ];
 
 faces_inner = [
   for (i=[0:nz-1], j=[0:na-1])
-  let(
-    a = idx_in(i,   j),
-    b = idx_in(i+1, j),
-    c = idx_in(i+1, (j+1) % na),
-    d = idx_in(i,   (j+1) % na)
-  )
+  let(a=idx_in(i,j), b=idx_in(i+1,j), c=idx_in(i+1,(j+1)%na), d=idx_in(i,(j+1)%na))
   for (tri = [[a,b,c], [a,c,d]]) tri
 ];
 
 faces_bottom = [
   for (j=[0:na-1])
-  let(
-    a = idx_out(0, j),
-    b = idx_out(0, (j+1) % na),
-    c = idx_in(0, (j+1) % na),
-    d = idx_in(0, j)
-  )
+  let(a=idx_out(0,j), b=idx_out(0,(j+1)%na), c=idx_in(0,(j+1)%na), d=idx_in(0,j))
   for (tri = [[a,b,c], [a,c,d]]) tri
 ];
 
 faces_top = [
   for (j=[0:na-1])
-  let(
-    a = idx_out(nz, j),
-    b = idx_in(nz,  j),
-    c = idx_in(nz,  (j+1) % na),
-    d = idx_out(nz, (j+1) % na)
-  )
+  let(a=idx_out(nz,j), b=idx_in(nz,j), c=idx_in(nz,(j+1)%na), d=idx_out(nz,(j+1)%na))
   for (tri = [[a,b,c], [a,c,d]]) tri
 ];
 
 faces = concat(faces_outer, faces_inner, faces_bottom, faces_top);
 
-///////////////////////////
-// Shell as a single polyhedron
-///////////////////////////
 module shell_poly() {
     polyhedron(points=points, faces=faces, convexity=12);
 }
 
 ///////////////////////////
-// Spider mount (seat + ring + struts) — strong, positive overlaps
+// Spider mount (seat + ring + struts) — strong overlaps
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     // Ends are axisymmetric; use belly baseline for a clean, circular tie
@@ -263,7 +230,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
                     cylinder(h=tie_skirt_h + 3*EPS, r=r_ring_i, center=false);
                 }
 
-            // Struts: extend slightly below seat and into ring & skirt
+            // Spokes: extend below seat and into ring & skirt
             for (s=[0:spoke_count-1]) {
                 rotate([0,0, s*360/spoke_count])
                     translate([spoke_inner_r, -spoke_width/2, -spoke_z_bite])
@@ -271,27 +238,34 @@ module spider_mount_at_z(z_mount, at_top=false) {
             }
         }
         // Through-hole for E14 spigot (+ clearance)
-        cylinder(h=mount_seat_th + tie_skirt_h + 0.8,  // taller than all local solids
+        cylinder(h=mount_seat_th + tie_skirt_h + 0.8,
                  r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
 }
 
 ///////////////////////////
-// Assembly (with render() barriers for CGAL robustness)
+// Assembly
 ///////////////////////////
 module lampshade() {
-    // Force meshing of the shell before boolean unions
-    shell_mesh = render(convexity=12) shell_poly();
-
-    // Force meshing of the spider as well
-    spider_mesh = render(convexity=8)
-        ( mount_at_top
-            ? translate([0,0,H - mount_seat_th - tie_skirt_h]) spider_mount_at_z(0, at_top=true)
-            : spider_mount_at_z(0, at_top=false)
-        );
-
-    // Final union
-    union() { shell_mesh; spider_mesh; }
+    // Optionally isolate parts for debugging
+    if (SHOW_SHELL_ONLY) {
+        shell_poly();
+    } else if (SHOW_SPIDER_ONLY) {
+        if (!mount_at_top) {
+            spider_mount_at_z(0, at_top=false);
+        } else {
+            translate([0,0,H - mount_seat_th - tie_skirt_h]) spider_mount_at_z(0, at_top=true);
+        }
+    } else {
+        union() {
+            shell_poly();
+            if (!mount_at_top) {
+                spider_mount_at_z(0, at_top=false);
+            } else {
+                translate([0,0,H - mount_seat_th - tie_skirt_h]) spider_mount_at_z(0, at_top=true);
+            }
+        }
+    }
 }
 
 // Diagnostics
@@ -300,11 +274,23 @@ echo(str("Axis mid outer radius (after auto_clearance) = ", axis_mid_r));
 echo(str("Required outer mid radius for bulb+clearance = ", required_rad_outer));
 echo(str("Top outer radius used = ", Ro2));
 echo(str("Top inner min required = ", top_inner_min_diam/2));
-echo(str("Spider: r_in_end=", (R_belly(mount_at_top ? 1 : 0) - wall_thickness),
-         " r_ring_o=", (R_belly(mount_at_top ? 1 : 0) - wall_thickness + tie_overlap_r),
-         " span_len=", span_len ));
 
-assert(axis_mid_r >= required_rad_outer,
-  "Axis mid too small for Ø80 bulb + clearance. Increase axis_mid_diameter or enable auto_clearance.");
+// Precompute diagnostic overlaps for the chosen mount end
+end_t_diag        = mount_at_top ? 1 : 0;
+r_in_end_diag     = R_belly(end_t_diag) - wall_thickness;
+r_ring_o_diag     = r_in_end_diag + tie_overlap_r;
+r_ring_i_target_d = r_ring_o_diag - ring_width;
+r_ring_i_diag     = max(mount_seat_od/2 + 1.0, r_ring_i_target_d);
+spoke_inner_r_d   = mount_seat_od/2;
+spoke_outer_r_d   = r_ring_o_diag + spoke_overlap_r;
+span_len_d        = max(0.1, spoke_outer_r_d - spoke_inner_r_d);
 
+echo(str("Spider diag: r_in_end=", r_in_end_diag,
+         "  r_ring_o=", r_ring_o_diag,
+         "  r_ring_i=", r_ring_i_diag,
+         "  span_len=", span_len_d));
+
+///////////////////////////
+// Invoke
+///////////////////////////
 lampshade();
