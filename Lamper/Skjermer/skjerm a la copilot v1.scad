@@ -1,8 +1,8 @@
 //
 // Spiral Belly Lampshade (polyhedron) for E14 — hollow shell (no vase mode)
-// - Axisymmetric belly for Ø80 bulb clearance
+// - Axisymmetric belly for Ø80 bulb clearance (now end-capped so tips aren't inflated)
 // - Single‑lobe helical bulge with tunable height envelope & end caps
-// - Pattern: "solid", "slots", "ribbons" (open spiral bands)
+// - Pattern: "solid", "slots" (slits via difference), "ribbons" (bands via intersection)
 // - Spider seat with ORIGINAL straight spokes, shifted 5mm inward (flush with seat)
 // - Preview fix: tiny boosts to difference() heights so preview (F5) looks clean;
 //   final render (F6) remains exact.
@@ -25,13 +25,14 @@ previewfix = $preview ? 0.2 : 0;  // mm
 // Pattern mode
 ///////////////////////////
 // "solid"   = closed shell (helical bulge only)
-// "slots"   = helical slots through the shell
-// "ribbons" = helical ribbons (open bands)
+// "slots"   = helical slots through the shell (difference: remove narrow bands)
+// "ribbons" = helical ribbons (intersection: keep wide bands)
 pattern = "solid";
 
 // Helical cut parameters (for "slots" or "ribbons")
 slot_count       = 2;        // 1..3
-slot_width       = 16.0;     // mm (tangential width of each helical cut)
+slot_width       = 12.0;     // mm (tangential width of each helical *slot* removal band)
+ribbon_width     = 18.0;     // mm (tangential width of each helical *ribbon* kept band)
 slot_z_margin    = 12.0;     // mm kept solid at bottom/top to preserve strength
 
 ///////////////////////////
@@ -47,6 +48,7 @@ base_diameter        = 60;    // outer at bottom
 top_diameter_user    = 100;   // requested outer at top (may be raised by top opening guard)
 axis_mid_diameter    = 140;   // axisymmetric belly OUTER diameter at mid (no spiral)
 axis_width           = 0.35;  // belly width along Z (0.25..0.45)
+belly_end_cap        = 0.10;  // fraction of height at each end where belly tapers to 0 (fixes tip inflation)
 
 // Helical lobe (spiralling bulge)
 max_mid_diameter     = 210;   // OUTER diameter at mid at the lobe crest
@@ -99,7 +101,6 @@ $fn = 64; // for cylinders (seat, ring)
 assert(na >= 3, "na (angular segments) must be ≥ 3");
 assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
 EPS = 0.05;
-PI  = 3.141592653589793;
 
 ///////////////////////////
 // Helpers
@@ -114,6 +115,11 @@ function sigma_from_width(w) = max(0.05, w);
 function end_taper(t) =
     (t < end_cap) ? smoothstep01(t/end_cap) :
     (t > 1 - end_cap) ? smoothstep01((1 - t)/end_cap) : 1;
+
+// Belly end cap (so axisymmetric belly adds 0 at both ends)
+function end_taper_belly(t) =
+    (t < belly_end_cap) ? smoothstep01(t/belly_end_cap) :
+    (t > 1 - belly_end_cap) ? smoothstep01((1 - t)/belly_end_cap) : 1;
 
 ///////////////////////////
 // Derived & checks
@@ -143,12 +149,13 @@ twist_sign = left_handed ? -1 : 1;
 ///////////////////////////
 function base_top_radius(t) = Ro0 + (Ro2 - Ro0)*smoothstep01(t);
 
+// Belly with end-cap so it doesn't inflate top/bottom tips
 function R_belly(t) =
     let(rb   = base_top_radius(t),
         rb_m = base_top_radius(mid_position),
         A    = axis_mid_r - rb_m,
         sig  = sigma_from_width(axis_width))
-    rb + A * gaussian(t, mid_position, sig);
+    rb + end_taper_belly(t) * (A * gaussian(t, mid_position, sig));
 
 function phi_deg(t) = twist_sign * (bulge_turns * 360 * t);
 
@@ -214,21 +221,39 @@ module shell_poly_raw() {
 }
 
 ///////////////////////////
-// Helical cutters (for "slots" and "ribbons") — PREVIEW-FIXED
+// Helical cutters / keepers — PREVIEW-FIXED
 ///////////////////////////
-Rcut = max(max_mid_r, Ro0, Ro2) + 6; // radial reach of cutters
+Rcut        = max(max_mid_r, Ro0, Ro2) + 6; // radial reach of cutters
 twist_total = bulge_turns * 360 * (left_handed ? -1 : 1);
 
-module helical_cutters() {
+// Narrow *removal* bands for "slots"
+module helical_slot_cutters() {
     h_cut = max(0, H - 2*slot_z_margin);
     if (h_cut > 0) {
         for (k=[0:slot_count-1]) {
             rotate([0,0, k*360/slot_count]) {
-                // start slightly lower and cut slightly taller in preview to avoid coplanar
+                // Start a bit lower & taller in preview so no coplanars
                 translate([0,0, slot_z_margin - previewfix])
-                    linear_extrude(height=h_cut + 2*previewfix, twist=twist_total, slices=nz, convexity=10)
+                    linear_extrude(height=h_cut + 2*previewfix,
+                                   twist=twist_total, slices=nz, convexity=10)
                         translate([0, -slot_width/2])
                             square([Rcut + previewfix, slot_width], center=false);
+            }
+        }
+    }
+}
+
+// Wide *keep* bands for "ribbons"
+module helical_ribbon_keepers() {
+    h_keep = max(0, H - 2*slot_z_margin);
+    if (h_keep > 0) {
+        for (k=[0:slot_count-1]) {
+            rotate([0,0, k*360/slot_count]) {
+                translate([0,0, slot_z_margin - previewfix])
+                    linear_extrude(height=h_keep + 2*previewfix,
+                                   twist=twist_total, slices=nz, convexity=10)
+                        translate([0, -ribbon_width/2])
+                            square([Rcut + previewfix, ribbon_width], center=false);
             }
         }
     }
@@ -237,9 +262,18 @@ module helical_cutters() {
 module shell_poly() {
     if (pattern == "solid") {
         shell_poly_raw();
-    } else if (pattern == "slots" || pattern == "ribbons") {
-        // Preview fix applied via enlarged cutters
-        difference() { shell_poly_raw(); helical_cutters(); }
+    } else if (pattern == "slots") {
+        // Remove narrow helical bands (shell remains continuous)
+        difference() {
+            shell_poly_raw();
+            helical_slot_cutters();
+        }
+    } else if (pattern == "ribbons") {
+        // Keep only wide helical bands (intersection), leaving solid collars top/bottom
+        intersection() {
+            shell_poly_raw();
+            helical_ribbon_keepers();
+        }
     } else {
         shell_poly_raw();
     }
@@ -356,8 +390,14 @@ module lampshade() {
 echo(str("Vertices: ", len(points), "  Faces: ", len(faces)));
 echo(str("Axis mid outer radius (after auto_clearance) = ", axis_mid_r));
 echo(str("Required outer mid radius for bulb+clearance = ", required_rad_outer));
-echo(str("Top outer radius used = ", Ro2));
+echo(str("Top outer radius used (guarded) = ", Ro2));
 echo(str("Top inner min required = ", top_inner_min_diam/2));
+
+// Report the actual modeled top radii (belly is end-capped, lobe=0 at tips)
+top_outer_from_model = R_belly(1);
+top_inner_from_model = top_outer_from_model - wall_thickness;
+echo(str("Computed top OUTER radius = ", top_outer_from_model,
+         "  (should match Ro2) ; top INNER radius = ", top_inner_from_model));
 
 end_t_diag        = mount_at_top ? 1 : 0;
 r_in_end_diag     = R_belly(end_t_diag) - wall_thickness;
