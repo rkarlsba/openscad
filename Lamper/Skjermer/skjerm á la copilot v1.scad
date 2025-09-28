@@ -1,139 +1,150 @@
 //
-// Spiral Lampshade for E14 lampholder
-// - 180mm tall
-// - Bulges in the middle, narrows at the top
-// - Continuous helical twist
-// - Mounts directly on E14 with a retaining ring
+// True-Helix Spiral Lampshade for E14
+// - 180 mm tall
+// - Smooth bulge in the middle, narrower at top (C1-like smooth radius)
+// - Real helical spiral (lofted by hulling rotated thin rings)
+// - Mounts on an E14 lampholder with retaining ring
 //
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
 //
 
 ///////////////////////////
+// Quick preview toggle
+///////////////////////////
+FAST_PREVIEW = false;     // true = faster render (coarser); false = smooth final
+
+///////////////////////////
 // User Parameters
 ///////////////////////////
 
-// Overall shape
-height_mm         = 180;      // total height of the shade (Z)
-base_diameter     = 140;      // diameter at the very bottom (outer)
-mid_diameter      = 180;      // diameter at the mid-height (outer) -> bulge
-top_diameter      = 110;      // diameter at the top (outer) -> narrower than base
-wall_thickness    = 2.4;      // nominal wall thickness
-turns             = 1.75;     // total turns from bottom to top (positive = CCW when viewed from top)
+// Overall size
+height_mm         = 180;     // total height
+base_diameter     = 140;     // outer diameter at bottom
+mid_diameter      = 180;     // outer diameter at bulge peak
+top_diameter      = 110;     // outer diameter at top
+wall_thickness    = 2.4;     // nominal shell thickness
 
-// Mounting to E14 ring (measure yours!)
-// Typical E14 retaining ring OD is ~35–40 mm; the through-hole must pass the threaded spigot.
-// Set the center hole so it passes over the threaded section; the nut clamps the "seat".
-e14_hole_diameter = 29;       // Ø of through hole for E14 spigot (measure; 28–30 mm common)
-mount_seat_od     = 44;       // flat clamping "seat" outer diameter (should be > ring nut OD)
-mount_seat_th     = 3;        // thickness of the clamping seat
-base_ring_th      = 3;        // thickness of the base ring around the seat
+// Spiral
+turns             = 2.0;     // total helical turns from bottom to top
+left_handed       = false;   // true = reverse twist direction
+
+// Bulge shaping
+mid_position      = 0.50;    // where the bulge peaks (0..1)
+bulge_width       = 0.34;    // bulge width as fraction of height (Gaussian sigma approx.)
+// Tip: smaller = tighter bulge; larger = broader bulge
+
+// E14 mounting (measure your holder!)
+e14_hole_diameter = 29.0;    // through-hole for E14 threaded spigot (28–30 mm typical)
+seat_clearance    = 0.4;     // extra clearance on the E14 hole
+mount_seat_od     = 44.0;    // clamping "seat" outer diameter (should exceed nut OD)
+mount_seat_th     = 3.0;     // thickness of seat disk
+base_ring_th      = 3.0;     // thickness of base ring (ties seat to the shade)
 
 // Geometry quality
-$fn               = 160;      // circular smoothness
-slices_total      = 720;      // vertical slicing for the twist (increase for smoother twist)
+$fn               = FAST_PREVIEW ? 80 : 160;        // circular smoothness
+slices_total      = FAST_PREVIEW ? 140 : 300;       // how many vertical “steps” the helix uses
+slice_thickness   = height_mm / slices_total;       // thickness of each thin ring (Z)
 
-// Handedness & fine control
-left_handed       = false;    // true = reverse the spiral direction
-mid_position      = 0.50;     // where the bulge peaks (0..1). 0.5 = middle.
-
-// Clearances
-seat_hole_extra   = 0.4;      // extra clearance on the E14 hole for fit (add to diameter)
+// Safety check
+assert(base_diameter/2 > wall_thickness + 1, "Base dia too small for chosen wall thickness.");
+assert(mid_diameter/2  > wall_thickness + 1, "Mid dia too small for chosen wall thickness.");
+assert(top_diameter/2  > wall_thickness + 1, "Top dia too small for chosen wall thickness.");
 
 ///////////////////////////
-// Derived Parameters (do not edit unless needed)
+// Derived values
 ///////////////////////////
+Ro0 = base_diameter/2;
+RoM = mid_diameter/2;
+Ro2 = top_diameter/2;
+twist_deg_total = (left_handed ? -1 : 1)*(turns*360);
 
-Ro0 = base_diameter/2;     // outer radius at base
-Ro1 = mid_diameter/2;      // outer radius at mid
-Ro2 = top_diameter/2;      // outer radius at top
+H_shell = height_mm - base_ring_th;
+z0      = base_ring_th;   // start of the helical shell above the base ring
 
-// Make sure the inner radii remain positive
-assert(Ro0 > wall_thickness + 1, "Base diameter too small for the chosen wall thickness.");
-assert(Ro1 > wall_thickness + 1, "Mid diameter too small for the chosen wall thickness.");
-assert(Ro2 > wall_thickness + 1, "Top diameter too small for the chosen wall thickness.");
-
-Ri0 = Ro0 - wall_thickness;  // inner radius at base
-Ri1 = Ro1 - wall_thickness;  // inner radius at mid
-Ri2 = Ro2 - wall_thickness;  // inner radius at top
-
-twist_deg = (left_handed ? -1 : 1) * (turns * 360);
-
-// Split height at the bulge location (can bias if you want the max bulge above/below mid)
-h1 = height_mm * clamp01(mid_position);
-h2 = height_mm - h1;
-
-// A helper to clamp 0..1
+///////////////////////////
+// Helpers
+///////////////////////////
 function clamp01(x) = x < 0 ? 0 : (x > 1 ? 1 : x);
+function smoothstep01(t) = let(tt = clamp01(t)) tt*tt*(3 - 2*tt); // cubic smoothstep
+
+// Smooth base→top interpolation (without bulge), eased for rounded transition
+function base_top_radius(t) = Ro0 + (Ro2 - Ro0)*smoothstep01(t);
+
+// Gaussian bump centered at mid_position, scaled so that R(mid)=RoM exactly
+function sigma_from_width(w) = max(0.05, w);  // keep numeric stability
+function gaussian(t, mu, sigma) = exp(-0.5*pow((t - mu)/sigma, 2));
+
+// Compute outer radius at fraction t of height, with an exact mid-radius target
+function outer_radius(t) =
+    let( rb   = base_top_radius(t),
+         rb_m = base_top_radius(mid_position),
+         A    = RoM - rb_m, // amplitude needed to hit mid radius exactly
+         sig  = sigma_from_width(bulge_width) )
+    rb + A * gaussian(t, mid_position, sig);
+
+// Inner radius (must remain positive!)
+function inner_radius(t) = outer_radius(t) - wall_thickness;
+
+// Angle of rotation (deg) at fraction t
+function phi_deg(t) = twist_deg_total * t;
 
 ///////////////////////////
-// Main Assembly
+// Primitive: one thin ring slice at (t)
 ///////////////////////////
+module ring_slice_at(t, z_offset=0) {
+    r_out = outer_radius(t);
+    r_in  = inner_radius(t);
+    // guard
+    if (r_in <= 1)
+        echo("Warning: inner radius negative/too small at t=", t, " -> r_in=", r_in);
 
-module spiral_lampshade() {
-    // Base: mounting seat + base ring
-    base_mount_and_ring();
-
-    // Shade body, lifted above the base ring thickness so the bottom stays open
-    translate([0,0,base_ring_th])
-        spiral_shell(Ro0, Ro1, Ro2, Ri0, Ri1, Ri2, height_mm - base_ring_th, twist_deg);
+    translate([0,0,z0 + t*H_shell + z_offset])
+        rotate([0,0,phi_deg(t)])
+            linear_extrude(height=slice_thickness)
+                difference() {
+                    circle(r=r_out);
+                    circle(r=max(1, r_in));
+                }
 }
 
 ///////////////////////////
-// Modules
+// Build: helical shell by hulling successive ring slices
 ///////////////////////////
+module helical_shell() {
+    for (i=[0:slices_total-1]) {
+        t0 = i/slices_total;
+        t1 = (i+1)/slices_total;
+        hull() {
+            ring_slice_at(t0, 0);
+            ring_slice_at(t1, 0);
+        }
+    }
+}
 
-// Mounting seat + base ring that merges into the shade
+///////////////////////////
+// Base mount: seat + ring + center hole
+///////////////////////////
 module base_mount_and_ring() {
     difference() {
         union() {
-            // Base ring up to the shade's bottom radius for support and a clean start
+            // Base ring that matches the shade’s base radius
             cylinder(h=base_ring_th, r=Ro0, center=false);
-
-            // Central flat "seat" for the E14 retaining ring to clamp against
+            // Central flat seat for the E14 retaining ring to clamp on
             cylinder(h=mount_seat_th, r=mount_seat_od/2, center=false);
         }
-
-        // Through-hole for the E14 spigot (with small extra clearance)
-        cylinder(h=mount_seat_th + base_ring_th + 0.5, r=(e14_hole_diameter + seat_hole_extra)/2, center=false);
+        // Through-hole for E14 spigot (+ clearance)
+        cylinder(h=mount_seat_th + base_ring_th + 0.6,
+                 r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
 }
 
-// Builds the hollow twisted shell by subtracting an inner solid from an outer solid,
-// using two linear_extrude segments to get a mid bulge (non-linear radius profile).
-module spiral_shell(Ro0, Ro1, Ro2, Ri0, Ri1, Ri2, H, twist_total) {
-    difference() {
-        // Outer surface
-        spiral_solid(Ro0, Ro1, Ro2, H, twist_total);
-
-        // Inner surface (slightly extended in height for clean subtraction)
-        translate([0,0,-0.05])
-            spiral_solid(Ri0, Ri1, Ri2, H + 0.1, twist_total);
-    }
+///////////////////////////
+// Main
+///////////////////////////
+module spiral_lampshade() {
+    base_mount_and_ring();
+    helical_shell();
 }
 
-// A twisted & lofted solid controlled by the radii at base/mid/top.
-// Implemented as two linear_extrude segments so we can bulge then taper.
-module spiral_solid(r0, r1, r2, H, twist_total) {
-    // Split height as per h1/h2 global
-    // Compute twist allocation proportional to height
-    t1 = twist_total * (h1 / (h1 + h2));
-    t2 = twist_total - t1;
-
-    // Segment 1: base -> mid
-    // Scale factor from r0 to r1
-    s1 = r1 / r0;
-    linear_extrude(height=h1, twist=t1, scale=s1, slices=max(8, ceil(slices_total * (h1/(h1+h2)))), convexity=10)
-        scale(r0) circle(r=1);
-
-    // Segment 2: mid -> top (start already at r1)
-    s2 = r2 / r1;
-    translate([0,0,h1])
-        linear_extrude(height=h2, twist=t2, scale=s2, slices=max(8, ceil(slices_total * (h2/(h1+h2)))), convexity=10)
-        scale(r1) circle(r=1);
-}
-
-///////////////////////////
-// Preview
-///////////////////////////
 spiral_lampshade();
