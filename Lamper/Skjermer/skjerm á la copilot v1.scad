@@ -143,15 +143,20 @@ module helical_shell() {
 module helical_slots() {
     // Slots start & end with margin from both ends
     h_cut = max(0, H_shell - 2*slot_z_margin);
-    if (h_cut <= 0) return;
 
-    for (k=[0:slot_count-1]) {
-        rotate([0,0, k*360/slot_count]) {
-            translate([0,0,z0 + slot_z_margin])
-              linear_extrude(height=h_cut, twist=twist_deg_total, slices=slices_total, convexity=10)
-                // A radial slab from center to beyond max radius; narrow tangential width => slot width
-                translate([0, -slot_width/2])
-                  square([Rmax + 8, slot_width], center=false);
+    // Only build slots if there is usable height
+    if (h_cut > 0) {
+        for (k = [0:slot_count-1]) {
+            rotate([0,0, k*360/slot_count]) {
+                translate([0,0,z0 + slot_z_margin])
+                  linear_extrude(height=h_cut,
+                                 twist=twist_deg_total,
+                                 slices=slices_total,
+                                 convexity=10)
+                    // A radial slab from center to beyond max radius; narrow tangential width => slot width
+                    translate([0, -slot_width/2])
+                      square([Rmax + 8, slot_width], center=false);
+            }
         }
     }
 }
