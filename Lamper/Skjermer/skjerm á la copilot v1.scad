@@ -1,5 +1,5 @@
 //
-// True-Helix Spiral Lampshade for E14 — visible spiral slots, smooth bulge, thick walls
+// Helical Bulge Lampshade for E14 — hollow shell (no vase mode), smooth single-lobe spiral
 // Author: M365 Copilot (for Roy)
 // Units: millimeters
 //
@@ -7,190 +7,180 @@
 ///////////////////////////
 // Quick preview toggle
 ///////////////////////////
-FAST_PREVIEW = true;      // true = faster; false = best quality
+FAST_PREVIEW = true;         // true = faster; false = best
 
 ///////////////////////////
 // User Parameters
 ///////////////////////////
 
-// Overall size & wall
-height_mm         = 180;     // total height of the shade
-wall_thickness    = 2.4;     // shell thickness (≥ nozzle * 3 recommended)
+// Overall height & wall
+height_mm         = 180;     // total height
+wall_thickness    = 2.4;     // shell thickness (e.g., 3 perimeters @ 0.4 mm nozzle)
 
-// Profile (strongly tapered ends + mid bulge)
-// NOTE: These are OUTER diameters.
-base_diameter     = 70;      // very narrow at bottom
-mid_diameter      = 180;     // bulge (ensures bulb space)
-top_diameter      = 60;      // very narrow at top
+// Shape: narrow ends + mid target
+// These are OUTER diameters where the shape's "baseline" (without bulge) would be.
+base_diameter     = 60;      // narrow bottom
+mid_diameter      = 180;     // target max diameter at bulge peak (outer)
+top_diameter      = 50;      // narrow top
 
-// Spiral shape
-turns             = 2.0;     // total helical turns from base to top (float)
-left_handed       = false;   // true = reverse twist direction
+// Helical bulge controls
+bulge_turns       = 2.0;     // how many revolutions the bulge makes bottom->top
+left_handed       = false;   // true = reverse direction
+mid_position      = 0.50;    // z-position (0..1) where bulge amplitude peaks
+bulge_width       = 0.33;    // Gaussian width (0.2..0.5, smaller = tighter belly)
+lobe_power        = 2.0;     // angular sharpness of bulge (1=soft sine, 2..4 tighter lobe)
 
-// Bulge shaping (smooth, rounded)
-mid_position      = 0.50;    // where the bulge peaks (0..1)
-bulge_width       = 0.34;    // Gaussian width; smaller = tighter bulge
-
-// E14 Mount (measure yours!)
-e14_hole_diameter = 29.0;    // through-hole for E14 threaded spigot (28–30 mm typical)
-seat_clearance    = 0.4;     // extra clearance for fit
-mount_seat_od     = 44.0;    // seat disc outer diameter (should exceed nut OD)
+// E14 mount (measure your hardware!)
+e14_hole_diameter = 29.0;    // through-hole for E14 spigot (28–30 mm typical)
+seat_clearance    = 0.4;     // clearance on the hole (added to diameter)
+mount_seat_od     = 44.0;    // clamp seat OD (should exceed nut OD)
 mount_seat_th     = 3.0;     // seat thickness
-spoke_count       = 4;       // spider struts connecting seat to the shell
-spoke_width       = 6.0;     // strut width (radial direction is auto by geometry)
-ring_width        = 6.0;     // inner base ring width that ties into the shell
-mount_at_top      = false;   // false: seat at bottom (table/standard); true: seat at top (pendant)
+spoke_count       = 4;       // spider struts count
+spoke_width       = 6.0;     // strut width
+ring_width        = 6.0;     // inner tie-in ring width
+mount_at_top      = false;   // false: seat at bottom; true: seat at top (pendant)
 
-// Spiral slots (make the helix visible)
-// Set enable_slots=false if you want a fully closed shade (I can add ribs instead).
-enable_slots      = true;
-slot_count        = 2;       // number of helical slots (multi-start)
-slot_width        = 10.0;    // slot width (tangential)
-slot_z_margin     = 6.0;     // keep slots away from very bottom/top (mm)
+// Bulb clearance (sphere Ø80 mm)
+bulb_diameter     = 80.0;
+bulb_clearance    = 3.0;     // radial clearance (≥2–3 mm)
 
 // Geometry quality
-$fn               = FAST_PREVIEW ? 96 : 180;              // circular smoothness
-slices_total      = FAST_PREVIEW ? 180 : 320;             // vertical helical steps
+$fn               = FAST_PREVIEW ? 96 : 200;      // circle smoothness (also used for angular samples)
+slices_total      = FAST_PREVIEW ? 160 : 320;     // vertical steps of the hull
 slice_thickness   = height_mm / slices_total;
-
-// Bulb clearance (80mm bulb)
-bulb_diameter     = 80.0;
-bulb_clearance    = 3.0;     // radial clearance margin (≥2–3mm recommended)
+ang_steps         = $fn;                           // angular resolution for the bulged profile
 
 ///////////////////////////
-// Derived values
+// Derived values & checks
 ///////////////////////////
 Ro0 = base_diameter/2;
 RoM = mid_diameter/2;
 Ro2 = top_diameter/2;
 
-assert(Ro0 > wall_thickness + 1 && RoM > wall_thickness + 1 && Ro2 > wall_thickness + 1,
-       "One of the diameters is too small for the chosen wall thickness.");
-
-Ri0 = Ro0 - wall_thickness;
-RiM = RoM - wall_thickness;
-Ri2 = Ro2 - wall_thickness;
-
-twist_deg_total = (left_handed ? -1 : 1) * (turns * 360);
-
-Rmax = max(Ro0, RoM, Ro2);
-Rmin = min(Ro0, RoM, Ro2);
+assert(Ro0 > wall_thickness + 1 && Ro2 > wall_thickness + 1,
+       "Base/top diameters are too small for this wall thickness.");
 
 H_shell = height_mm;
-z0 = 0; // we keep the inside open from the bottom/top depending on mount
+z0 = 0;
 
-///////////////////////////
-// Helpers
-///////////////////////////
+// Convenience
 function clamp01(x) = x < 0 ? 0 : (x > 1 ? 1 : x);
-function smoothstep01(t) = let(tt = clamp01(t)) tt*tt*(3 - 2*tt);
+function smoothstep01(t) = let(tt=clamp01(t)) tt*tt*(3 - 2*tt);
+function gaussian(t, mu, sigma) = exp(-0.5*pow((t - mu)/sigma, 2));
+function sigma_from_width(w) = max(0.05, w);
 
-// Smooth base→top interpolation (rounded)
+// Baseline (axisymmetric) radius progression bottom -> top (rounded)
 function base_top_radius(t) = Ro0 + (Ro2 - Ro0)*smoothstep01(t);
 
-// Gaussian bump centered at mid_position, scaled to hit RoM exactly
-function sigma_from_width(w) = max(0.05, w);
-function gaussian(t, mu, sigma) = exp(-0.5*pow((t - mu)/sigma, 2));
+// Helical phase (degrees) bottom -> top for the bulge
+function phi_deg(t) = (left_handed ? -1 : 1) * (bulge_turns * 360 * t);
 
-// Outer radius at t
-function outer_radius(t) =
-    let(rb   = base_top_radius(t),
-        rb_m = base_top_radius(mid_position),
-        A    = RoM - rb_m,
-        sig  = sigma_from_width(bulge_width))
-    rb + A * gaussian(t, mid_position, sig);
+// Bulge amplitude along height: choose amplitude s.t. max radius at mid == RoM
+function amplitude_at_t(t) =
+    let(rb_mid = base_top_radius(mid_position),
+        A_mid  = RoM - rb_mid,                 // needed amplitude to hit target at mid
+        sig    = sigma_from_width(bulge_width))
+    A_mid * gaussian(t, mid_position, sig);
 
-// Inner radius
-function inner_radius(t) = outer_radius(t) - wall_thickness;
+// Angular bulge shape (single lobe, >= 0, peak=1)
+function bulge_shape(theta_deg) =
+    pow(max(0, cos(theta_deg)), lobe_power);
 
-// Angle (degrees) at t
-function phi_deg(t) = twist_deg_total * t;
+// Outer radius as function of height fraction t and angle θ (deg)
+function R_outer(t, theta_deg) =
+    base_top_radius(t) + amplitude_at_t(t) * bulge_shape(theta_deg - phi_deg(t));
+
+// Inner radius approx (radial offset)
+function R_inner(t, theta_deg) = R_outer(t, theta_deg) - wall_thickness;
 
 ///////////////////////////
-// Ring slice at t (helical hull primitive)
+// 2D profile polygon at fraction t (outer/inner)
 ///////////////////////////
-module ring_slice_at(t) {
-    r_out = outer_radius(t);
-    r_in  = inner_radius(t);
-    if (r_in <= 1) echo("Warning: inner radius small at t=", t, " r_in=", r_in);
-
-    translate([0,0,z0 + t*H_shell])
-      rotate([0,0,phi_deg(t)])
-        linear_extrude(height=slice_thickness)
-          difference() {
-            circle(r=r_out);
-            circle(r=max(1, r_in));
-          }
+module poly_profile_at(t, is_outer=true) {
+    // Build a polar polygon
+    pts = [
+        for (j=[0:ang_steps-1]) 
+            let(ang = j*360/ang_steps)
+            let(r  = is_outer ? R_outer(t, ang) : max(1, R_inner(t, ang)))
+            [ r * cos(ang), r * sin(ang) ]
+    ];
+    polygon(points=pts);
 }
 
 ///////////////////////////
-// Helical shell (closed, smooth bulge)
+// One thin slab at fraction t
 ///////////////////////////
-module helical_shell() {
+module slab_at(t, is_outer=true) {
+    translate([0,0,z0 + t*H_shell])
+        linear_extrude(height=slice_thickness)
+            poly_profile_at(t, is_outer);
+}
+
+///////////////////////////
+// Build outer and inner helical volumes by hulling successive slabs
+///////////////////////////
+module outer_volume() {
     for (i=[0:slices_total-1]) {
         t0 = i/slices_total;
         t1 = (i+1)/slices_total;
         hull() {
-            ring_slice_at(t0);
-            ring_slice_at(t1);
+            slab_at(t0, true);
+            slab_at(t1, true);
+        }
+    }
+}
+
+module inner_volume() {
+    for (i=[0:slices_total-1]) {
+        t0 = i/slices_total;
+        t1 = (i+1)/slices_total;
+        hull() {
+            slab_at(t0, false);
+            slab_at(t1, false);
         }
     }
 }
 
 ///////////////////////////
-// Helical slot cutters (to make the spiral visible)
+// Final shell: outer - inner  (true hollow wall, no vase mode needed)
 ///////////////////////////
-module helical_slots() {
-    // Slots start & end with margin from both ends
-    h_cut = max(0, H_shell - 2*slot_z_margin);
-
-    // Only build slots if there is usable height
-    if (h_cut > 0) {
-        for (k = [0:slot_count-1]) {
-            rotate([0,0, k*360/slot_count]) {
-                translate([0,0,z0 + slot_z_margin])
-                  linear_extrude(height=h_cut,
-                                 twist=twist_deg_total,
-                                 slices=slices_total,
-                                 convexity=10)
-                    // A radial slab from center to beyond max radius; narrow tangential width => slot width
-                    translate([0, -slot_width/2])
-                      square([Rmax + 8, slot_width], center=false);
-            }
-        }
+module helical_bulge_shell() {
+    difference() {
+        outer_volume();
+        // Slightly extend inner to make a clean subtraction at ends
+        translate([0,0,-0.05]) scale([1,1,(H_shell+0.1)/H_shell]) inner_volume();
     }
 }
 
 ///////////////////////////
-// Base "spider" mount: seat + struts + inner ring (keeps bottom open)
+// Spider mount (seat + struts + inner ring) at z = z_mount
 ///////////////////////////
-module spider_mount_at_z(z_mount) {
+module spider_mount_at_z(z_mount, at_top=false) {
+    // Choose the "end" baseline inner radius (no bulge at ends due to Gaussian → amplitude≈0)
+    r_in_end = (at_top ? base_top_radius(1) : base_top_radius(0)) - wall_thickness;
+
     translate([0,0,z_mount]) difference() {
-        // Union of seat, struts, and inner ring
         union() {
             // Seat disc
             cylinder(h=mount_seat_th, r=mount_seat_od/2);
 
-            // Inner ring that ties into the shell’s inner wall near t=0 (or t=1 if top-mounted)
-            // Place ring adjacent to the shell’s inner radius at that end
-            r_in_end = (z_mount == 0) ? inner_radius(0) : inner_radius(1);
+            // Tie-in inner ring if space permits
             if (r_in_end > (mount_seat_od/2 + 2)) {
                 difference() {
                     cylinder(h=mount_seat_th, r=r_in_end);
-                    cylinder(h=mount_seat_th + 0.1, r=max(mount_seat_od/2 + 0.2, r_in_end - ring_width));
+                    cylinder(h=mount_seat_th + 0.1,
+                             r=max(mount_seat_od/2 + 0.2, r_in_end - ring_width));
+                }
+                // Struts (spokes) from seat to ring
+                span_len = max(0.1, r_in_end - mount_seat_od/2);
+                for (s=[0:spoke_count-1]) {
+                    rotate([0,0, s*360/spoke_count])
+                        translate([mount_seat_od/2, -spoke_width/2, 0])
+                            cube([span_len, spoke_width, mount_seat_th]);
                 }
             }
-
-            // Struts (spokes) from seat to ring
-            span_len = max(0.1, r_in_end - mount_seat_od/2);
-            for (s=[0:spoke_count-1]) {
-                rotate([0,0, s*360/spoke_count])
-                    translate([mount_seat_od/2, -spoke_width/2, 0])
-                        cube([span_len, spoke_width, mount_seat_th]);
-            }
         }
-
-        // Central through-hole for the E14 spigot (+ clearance)
+        // Through hole
         cylinder(h=mount_seat_th + 0.4, r=(e14_hole_diameter + seat_clearance)/2);
     }
 }
@@ -198,33 +188,27 @@ module spider_mount_at_z(z_mount) {
 ///////////////////////////
 // Assembly
 ///////////////////////////
-module shade_body_with_slots() {
-    if (enable_slots) {
-        difference() {
-            helical_shell();
-            helical_slots();
-        }
-    } else {
-        helical_shell();
-    }
-}
+module lampshade() {
+    // The helical shell is open at both ends by construction
+    helical_bulge_shell();
 
-module spiral_lampshade() {
+    // Add E14 seat + spider at chosen end
     if (!mount_at_top) {
         // Seat at bottom (z=0)
-        spider_mount_at_z(0);
-        translate([0,0,0]) shade_body_with_slots();
+        spider_mount_at_z(0, at_top=false);
     } else {
-        // Seat at top (invert along Z)
-        // Build the body then add seat at top plane
-        translate([0,0,0]) shade_body_with_slots();
-        spider_mount_at_z(H_shell - mount_seat_th);
+        // Seat at top (z=height - seat_th)
+        spider_mount_at_z(H_shell - mount_seat_th, at_top=true);
     }
 }
 
-// --- Sanity checks / informative echoes ---
-echo("Ri(mid) = ", RiM, "  (must be ≥ ", (bulb_diameter/2 + bulb_clearance), ")");
-assert(RiM >= (bulb_diameter/2 + bulb_clearance),
-       "Inner radius at bulge is too small for the 80mm bulb + clearance. Increase mid_diameter or reduce wall_thickness.");
+// --- Safety check for the 80 mm bulb ---
+// Require the MIN inner radius at mid (baseline, i.e., without the bulge) to clear the bulb.
+// This guarantees clearance around the "narrow" side too.
+Ri_mid_baseline = base_top_radius(mid_position) - wall_thickness;
+required_rad    = bulb_diameter/2 + bulb_clearance;
+echo("Baseline inner radius at mid = ", Ri_mid_baseline, "  (required ≥ ", required_rad, ")");
+assert(Ri_mid_baseline >= required_rad,
+       "Baseline inner radius at mid is too small for Ø80 bulb + clearance. Increase base/top/mid or reduce wall thickness.");
 
-spiral_lampshade();
+lampshade();
