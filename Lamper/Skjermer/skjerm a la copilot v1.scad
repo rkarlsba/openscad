@@ -1,7 +1,7 @@
 //
 // Spiral Belly Lampshade (polyhedron) for E14 — hollow shell (no vase mode)
-// - Axisymmetric belly for Ø80 bulb clearance (now end-capped so tips aren't inflated)
-// - Single‑lobe helical bulge with tunable height envelope & end caps
+// - Axisymmetric belly for Ø80 bulb clearance (end-capped so tips honor your diameters)
+// - Helical bulge: now supports multi-start (parallel helicals) via lobe_count
 // - Pattern: "solid", "slots" (slits via difference), "ribbons" (bands via intersection)
 // - Spider seat with ORIGINAL straight spokes, shifted 5mm inward (flush with seat)
 // - Preview fix: tiny boosts to difference() heights so preview (F5) looks clean;
@@ -41,22 +41,23 @@ slot_z_margin    = 12.0;     // mm kept solid at bottom/top to preserve strength
 
 // Height & wall
 height_mm            = 180;   // total height
-wall_thickness       = 2.4;   // shell thickness (≈ 3 perimeters @ 0.4mm nozzle)
+wall_thickness       = 2.2;   // shell thickness (≈ 3 perimeters @ 0.4mm nozzle)
 
 // Ends + belly (clearance)
 base_diameter        = 60;    // outer at bottom
 top_diameter_user    = 100;   // requested outer at top (may be raised by top opening guard)
 axis_mid_diameter    = 140;   // axisymmetric belly OUTER diameter at mid (no spiral)
 axis_width           = 0.35;  // belly width along Z (0.25..0.45)
-belly_end_cap        = 0.10;  // fraction of height at each end where belly tapers to 0 (fixes tip inflation)
+belly_end_cap        = 0.30;  // fraction of height at each end where belly tapers to 0 (fixes tip inflation)
 
 // Helical lobe (spiralling bulge)
-max_mid_diameter     = 210;   // OUTER diameter at mid at the lobe crest
+max_mid_diameter     = 160;   // OUTER diameter at mid at the lobe crest
 bulge_turns          = 2.0;   // revolutions from bottom → top
 left_handed          = false; // true to reverse direction
+lobe_count           = 3;     // NEW: number of parallel helical lobes (1 = single, 2 = double, etc.)
 mid_position         = 0.50;  // where belly & lobe peak (0..1)
 lobe_width           = 0.45;  // broader = visible over more height
-lobe_power           = 2.2;   // 1=soft; 2..3=crisper lobe (cos^power, clamped ≥0)
+lobe_power           = 9.2;   // 1=soft; 2..3=crisper lobe (cos^power, clamped ≥0)
 
 // Height envelope control (visibility along height)
 lobe_env_mix         = 0.25;  // 0.0 = flat (visible across height), 1.0 = Gaussian (focused at mid)
@@ -75,7 +76,7 @@ tie_overlap_r        = 1.2;   // mm: tie ring outer intrudes into shell inner wa
 tie_skirt_h          = 10.0;  // mm: inner skirt height overlapping shell interior
 
 // ORIGINAL spokes (straight rectangular bars), shifted inward
-spoke_count          = 4;     // number of spokes
+spoke_count          = 5;     // number of spokes
 spoke_width          = 7.0;   // spoke bar width (tangential)
 spoke_inset          = 5.0;   // mm: move the inner start 5mm closer to center (overlaps seat better)
 spoke_outer_overlap  = 0.6;   // mm: extend past tie-ring inner radius by this
@@ -100,6 +101,7 @@ $fn = 64; // for cylinders (seat, ring)
 ///////////////////////////
 assert(na >= 3, "na (angular segments) must be ≥ 3");
 assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
+assert(lobe_count >= 1, "lobe_count must be ≥ 1");
 EPS = 0.05;
 
 ///////////////////////////
@@ -111,7 +113,7 @@ function smoothstep01(t) = let(tt=clamp01(t)) tt*tt*(3 - 2*tt);
 function gaussian(t, mu, sigma) = exp(-0.5*pow((t - mu)/sigma, 2));
 function sigma_from_width(w) = max(0.05, w);
 
-// End cap taper to zero exactly at t=0 and t=1
+// End cap taper to zero exactly at t=0 and t=1 (for the helical lobe)
 function end_taper(t) =
     (t < end_cap) ? smoothstep01(t/end_cap) :
     (t > 1 - end_cap) ? smoothstep01((1 - t)/end_cap) : 1;
@@ -159,17 +161,27 @@ function R_belly(t) =
 
 function phi_deg(t) = twist_sign * (bulge_turns * 360 * t);
 
+// Height envelope for the lobe amplitude
 function lobe_envelope(t) =
     let(g = gaussian(t, mid_position, sigma_from_width(lobe_width)))
     end_taper(t) * mix(1, g, clamp01(lobe_env_mix));
 
+// Lobe amplitude (so that crest @ mid reaches max_mid_r)
 function lobe_amp(t) =
     let(A_mid = max_mid_r - axis_mid_r)
     lobe_envelope(t) * A_mid;
 
-function lobe_shape(theta_deg) = pow(max(0, cos(theta_deg)), lobe_power);
+// NEW: Multi-start lobe shape (take the max over lobe_count evenly spaced lobes)
+// Keeps amplitude normalized (doesn't exceed 1) while adding parallel helices.
+function lobe_shape_multi(theta_deg, t) =
+    (lobe_count <= 1)
+    ? pow(max(0, cos(theta_deg - phi_deg(t))), lobe_power)
+    : max([ for (k=[0:lobe_count-1])
+             pow(max(0, cos(theta_deg - (phi_deg(t) + k*360/lobe_count))), lobe_power)
+          ]);
 
-function R_outer(t, theta_deg) = R_belly(t) + lobe_amp(t) * lobe_shape(theta_deg - phi_deg(t));
+// Final radii
+function R_outer(t, theta_deg) = R_belly(t) + lobe_amp(t) * lobe_shape_multi(theta_deg, t);
 function R_inner(t, theta_deg) = R_outer(t, theta_deg) - wall_thickness;
 
 ///////////////////////////
