@@ -41,10 +41,10 @@ slot_z_margin    = 12.0;     // mm kept solid at bottom/top to preserve strength
 
 // Height & wall
 height_mm            = 180;   // total height
-wall_thickness       = 2.2;   // shell thickness (≈ 3 perimeters @ 0.4mm nozzle)
+wall_thickness       = 2.0;   // shell thickness (increased for strength)
 
 // Ends + belly (clearance)
-base_diameter        = 60;    // outer at bottom
+base_diameter        = 76;    // outer at bottom (increased for E14 lock ring clearance)
 top_diameter_user    = 100;   // requested outer at top (may be raised by top opening guard)
 axis_mid_diameter    = 140;   // axisymmetric belly OUTER diameter at mid (no spiral)
 axis_width           = 0.35;  // belly width along Z (0.25..0.45)
@@ -52,32 +52,34 @@ belly_end_cap        = 0.30;  // fraction of height at each end where belly tape
 
 // Helical lobe (spiralling bulge)
 max_mid_diameter     = 160;   // OUTER diameter at mid at the lobe crest
-bulge_turns          = 2.0;   // revolutions from bottom → top
+bulge_turns          = 0.5;   // revolutions from bottom → top
 left_handed          = false; // true to reverse direction
-lobe_count           = 3;     // NEW: number of parallel helical lobes (1 = single, 2 = double, etc.)
+lobe_count           = 8;     // NEW: number of parallel helical lobes (1 = single, 2 = double, etc.)
+lobe_start_angle     = 0;     // starting angle of the lobes in degrees (0-360)
+lobe_axis_angle      = 0;     // rotates the lobe pattern orientation (deg)
 mid_position         = 0.50;  // where belly & lobe peak (0..1)
 lobe_width           = 0.45;  // broader = visible over more height
-lobe_power           = 9.2;   // 1=soft; 2..3=crisper lobe (cos^power, clamped ≥0)
+lobe_power           = 70.2;   // 1=soft; 2..3=crisper lobe (cos^power, clamped ≥0)
 
 // Height envelope control (visibility along height)
 lobe_env_mix         = 0.25;  // 0.0 = flat (visible across height), 1.0 = Gaussian (focused at mid)
 end_cap              = 0.04;  // fraction of height at each end where lobe → 0 (keeps ends circular)
 
 // E14 mount (measure your hardware)
-e14_hole_diameter    = 29.0;  // through-hole for E14 spigot (28–30 mm typical)
+e14_hole_diameter    = 28.2;  // through-hole for E14 spigot (28–30 mm typical)
 seat_clearance       = 0.4;   // added to hole diameter
-mount_seat_od        = 44.0;  // seat OD (must exceed nut OD)
-mount_seat_th        = 3.0;   // seat thickness
+mount_seat_od        = 50.0;  // seat OD (increased for better support)
+mount_seat_th        = 5.0;   // seat thickness (increased for strength)
 mount_at_top         = false; // false: bottom seat; true: top seat (pendant)
 
 // Tie ring (overlaps shell interior) + inner skirt (up the inner wall)
-ring_width           = 8.0;   // tie-in ring width (radial thickness)
-tie_overlap_r        = 1.2;   // mm: tie ring outer intrudes into shell inner wall by this
-tie_skirt_h          = 10.0;  // mm: inner skirt height overlapping shell interior
+ring_width           = 10.0;  // tie-in ring width (increased for strength)
+tie_overlap_r        = 2.0;   // mm: tie ring outer intrudes into shell inner wall by this (increased)
+tie_skirt_h          = 15.0;  // mm: inner skirt height overlapping shell interior (increased)
 
 // ORIGINAL spokes (straight rectangular bars), shifted inward
 spoke_count          = 5;     // number of spokes
-spoke_width          = 7.0;   // spoke bar width (tangential)
+spoke_width          = 10.0;  // spoke bar width (tangential)
 spoke_inset          = 5.0;   // mm: move the inner start 5mm closer to center (overlaps seat better)
 spoke_outer_overlap  = 0.6;   // mm: extend past tie-ring inner radius by this
 // Note: spokes sit FLUSH on the seat (z = 0 → mount_seat_th). In preview they get tiny height boost.
@@ -91,8 +93,8 @@ auto_clearance       = true;  // auto-raise belly to ensure bulb clearance
 top_inner_min_diam   = 95.0;  // required top INNER diameter
 
 // Quality (poly count)
-na                   = FAST_PREVIEW ? 96  : 160;   // angular segments
-nz                   = FAST_PREVIEW ? 140 : 240;   // vertical rings
+na                   = (FAST_PREVIEW && $preview) ? 192 : 640;   // angular segments
+nz                   = (FAST_PREVIEW && $preview) ? 280 : 960;   // vertical rings
 
 $fn = 64; // for cylinders (seat, ring)
 
@@ -103,6 +105,8 @@ assert(na >= 3, "na (angular segments) must be ≥ 3");
 assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
 assert(lobe_count >= 1, "lobe_count must be ≥ 1");
 EPS = 0.05;
+
+echo(str("na is ", na, " and nz is ", nz));
 
 ///////////////////////////
 // Helpers
@@ -159,7 +163,7 @@ function R_belly(t) =
         sig  = sigma_from_width(axis_width))
     rb + end_taper_belly(t) * (A * gaussian(t, mid_position, sig));
 
-function phi_deg(t) = twist_sign * (bulge_turns * 360 * t);
+function phi_deg(t) = lobe_start_angle + twist_sign * (bulge_turns * 360 * t);
 
 // Height envelope for the lobe amplitude
 function lobe_envelope(t) =
@@ -174,11 +178,11 @@ function lobe_amp(t) =
 // NEW: Multi-start lobe shape (take the max over lobe_count evenly spaced lobes)
 // Keeps amplitude normalized (doesn't exceed 1) while adding parallel helices.
 function lobe_shape_multi(theta_deg, t) =
-    (lobe_count <= 1)
-    ? pow(max(0, cos(theta_deg - phi_deg(t))), lobe_power)
-    : max([ for (k=[0:lobe_count-1])
-             pow(max(0, cos(theta_deg - (phi_deg(t) + k*360/lobe_count))), lobe_power)
-          ]);
+     (lobe_count <= 1)
+     ? pow(max(0, cos((theta_deg - lobe_axis_angle) - phi_deg(t))), lobe_power)
+     : max([ for (k=[0:lobe_count-1])
+                 pow(max(0, cos((theta_deg - lobe_axis_angle) - (phi_deg(t) + k*360/lobe_count))), lobe_power)
+             ]);
 
 // Final radii
 function R_outer(t, theta_deg) = R_belly(t) + lobe_amp(t) * lobe_shape_multi(theta_deg, t);
@@ -291,27 +295,10 @@ module shell_poly() {
     }
 }
 
-///////////////////////////
-// Helper modules for spokes (GLOBAL to avoid parser errors)
-///////////////////////////
-module spoke_bar_rect(r0, r1, w, h) {
-    translate([r0, -w/2, 0]) cube([max(0.2, r1 - r0), w, h], center=false);
-}
-
-module spoke_bar_obround(r0, r1, w, h) {
-    // Obround = center plank shortened by w + end caps (cylinders)
-    len = max(0, (r1 - r0) - w);
-    union() {
-        if (len > 0)
-            translate([r0 + w/2, -w/2, 0]) cube([len, w, h], center=false);
-        // End caps
-        translate([r0 + w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
-        translate([r1 - w/2, 0, 0]) cylinder(h=h, r=w/2, center=false);
-    }
-}
+// Helper modules removed - no longer needed for solid mount
 
 ///////////////////////////
-// Spider mount (seat + tie ring + ORIGINAL straight spokes) — preview-safe & nicer from below
+// Simple solid mount (no spokes, no gaps) — just a solid disk with E14 hole
 ///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     end_t = at_top ? 1 : 0;
@@ -319,56 +306,20 @@ module spider_mount_at_z(z_mount, at_top=false) {
     let(
         // Shell inner radius at end (axisymmetric; lobe→0 at ends)
         r_in_end       = R_belly(end_t) - wall_thickness,
-
-        // Tie ring (positive overlap into the shell; never protrudes outside)
-        r_ring_o       = r_in_end + tie_overlap_r,
-        r_ring_i_raw   = r_ring_o - ring_width,
-        r_ring_i       = max(mount_seat_od/2 + 1.0, r_ring_i_raw),
-
-        // ORIGINAL straight spokes, shifted inward by spoke_inset
-        r_spoke_inner  = max(0.1, mount_seat_od/2 - spoke_inset),
-        r_spoke_outer  = r_ring_i + spoke_outer_overlap,
-        span_len       = max(0.2, r_spoke_outer - r_spoke_inner),
-
-        // Preview-only tiny height boosts to avoid coplanar z-fighting in underside view
+        
+        // Solid mount fills the entire bottom opening for maximum strength
+        mount_radius   = r_in_end,
+        
+        // Preview-only tiny height boosts to avoid coplanar z-fighting
         seat_h         = mount_seat_th + previewfix,
-        ring_h         = mount_seat_th + previewfix,
-        skirt_h        = tie_skirt_h   + previewfix,
-        hole_h         = mount_seat_th + tie_skirt_h + 0.8 + 2*previewfix
+        hole_h         = mount_seat_th + 2*previewfix
     )
     translate([0,0,z_mount]) difference() {
 
-        // --- UNION: seat + tie ring + skirt + spokes ---
-        union() {
+        // Solid cylinder filling the entire bottom opening
+        cylinder(h=seat_h, r=mount_radius, center=false);
 
-            // Seat (sits on z=0; a hair taller in preview)
-            cylinder(h=seat_h, r=mount_seat_od/2, center=false);
-
-            // Tie ring (same base; inner subtraction a hair taller → no coplanar)
-            difference() {
-                cylinder(h=ring_h,         r=r_ring_o, center=false);
-                cylinder(h=ring_h + 0.02,  r=r_ring_i, center=false);
-            }
-
-            // Inner skirt (overlaps inside shell; starts just above seat)
-            translate([0,0,mount_seat_th - 0.01])
-                difference() {
-                    cylinder(h=skirt_h + 0.02, r=r_ring_o, center=false);
-                    cylinder(h=skirt_h + 0.03, r=r_ring_i, center=false);
-                }
-
-            // SPOKES: obround in preview (nicer), rectangular in final render
-            for (s=[0:spoke_count-1]) {
-                rotate([0,0, s*360/spoke_count]) {
-                    if ($preview)
-                        spoke_bar_obround(r_spoke_inner, r_spoke_outer, spoke_width, seat_h);
-                    else
-                        spoke_bar_rect   (r_spoke_inner, r_spoke_outer, spoke_width, mount_seat_th);
-                }
-            }
-        }
-
-        // SUBTRACT: through-hole for E14 spigot (+ clearance) — start lower & taller in preview
+        // SUBTRACT: through-hole for E14 spigot (+ clearance)
         translate([0,0, -previewfix])
             cylinder(h=hole_h, r=(e14_hole_diameter + seat_clearance)/2, center=false);
     }
