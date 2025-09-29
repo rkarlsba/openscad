@@ -1,7 +1,7 @@
 //
 // Spiral Belly Lampshade (polyhedron) for// Ends + belly (clearance)
-base_diameter        = base_diameter_auto; // outer at bottom (auto-sized for socket type)
-top_diameter_user    = 100;   // requested outer at top (may be raised by top opening guard)4 — hollow shell (no vase mode)
+// outer at bottom (auto-sized for socket type)
+// requested outer at top (may be raised by top opening guard)4 — hollow shell (no vase mode)
 // - Axisymmetric belly for Ø80 bulb clearance (end-capped so tips honor your diameters)
 // - Helical bulge: now supports multi-start (parallel helicals) via lobe_count
 // - Pattern: "solid", "slots" (slits via difference), "ribbons" (bands via intersection)
@@ -9,7 +9,7 @@ top_diameter_user    = 100;   // requested outer at top (may be raised by top op
 // - Preview fix: tiny boosts to difference() heights so preview (F5) looks clean;
 //   final render (F6) remains exact.
 //
-// Author: M365 Copilot (for Roy)
+// Author: RoM365 Copilot (for Roy)
 // Units: millimeters
 //
 

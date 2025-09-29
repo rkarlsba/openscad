@@ -7,27 +7,16 @@
 // - Preview fix: tiny boosts to difference() heights so preview (F5) looks clean;
 //   final render (F6) remains exact.
 //
-// Author: M365 Copilot (for Roy)
-// Units: millimeters
+// Author: Roy Sigurd Karlsbakk, with kind help from M365 Copilot
+// Units: millimeters (and don't you dare think otherwise!)
 //
 
-///////////////////////////
 // Quick preview & debug
-///////////////////////////
-FAST_PREVIEW     = true;     // true = faster; false = smoother (higher na/nz)
 SHOW_SHELL_ONLY  = false;    // render shell only (debug)
 SHOW_SPIDER_ONLY = false;    // render spider only (debug)
 
 // Preview fix for coplanar difference artifacts (F5 only; is 0 in F6)
 previewfix = $preview ? 0.2 : 0;  // mm
-
-///////////////////////////
-// Pattern mode
-///////////////////////////
-// "solid"   = closed shell (helical bulge only)
-// "slots"   = helical slots through the shell (difference: remove narrow bands)
-// "ribbons" = helical ribbons (intersection: keep wide bands)
-pattern = "solid";
 
 // Helical cut parameters (for "slots" or "ribbons")
 slot_count       = 2;        // 1..3
@@ -35,9 +24,7 @@ slot_width       = 12.0;     // mm (tangential width of each helical *slot* remo
 ribbon_width     = 18.0;     // mm (tangential width of each helical *ribbon* kept band)
 slot_z_margin    = 12.0;     // mm kept solid at bottom/top to preserve strength
 
-///////////////////////////
 // User Parameters
-///////////////////////////
 
 // Height & wall
 height_mm            = 210;   // total height
@@ -94,17 +81,15 @@ bulb_clearance       = 3.0;   // radial clearance
 auto_clearance       = true;  // auto-raise belly to ensure bulb clearance
 
 // Top opening: fit Ø60 bulb + fingers comfortably
-top_inner_min_diam   = 95.0;  // required top INNER diameter
+top_inner_min_diam   = 90.0;  // required top INNER diameter
 
 // Quality (poly count) - balanced for detail and performance
-na                   = (FAST_PREVIEW && $preview) ? 192 : 480;   // angular segments (balanced)
-nz                   = (FAST_PREVIEW && $preview) ? 280 : 640;   // vertical rings (balanced)
+na                   = $preview ? 128 : 480;   // angular segments (somewhat balanced)
+nz                   = $preview ? 160 : 640;   // vertical rings (somewhat balanced)
 
 $fn = 48; // for cylinders (seat, ring)
 
-///////////////////////////
 // Guards & constants
-///////////////////////////
 assert(na >= 3, "na (angular segments) must be ≥ 3");
 assert(nz >= 2, "nz (vertical rings) must be ≥ 2");
 assert(lobe_count >= 1, "lobe_count must be ≥ 1");
@@ -112,9 +97,7 @@ EPS = 0.05;
 
 echo(str("na is ", na, " and nz is ", nz));
 
-///////////////////////////
 // Helpers
-///////////////////////////
 function clamp01(x) = x < 0 ? 0 : (x > 1 ? 1 : x);
 function mix(a,b,k) = a*(1-k) + b*k;
 function smoothstep01(t) = let(tt=clamp01(t)) tt*tt*(3 - 2*tt);
@@ -131,9 +114,7 @@ function end_taper_belly(t) =
     (t < belly_end_cap) ? smoothstep01(t/belly_end_cap) :
     (t > 1 - belly_end_cap) ? smoothstep01((1 - t)/belly_end_cap) : 1;
 
-///////////////////////////
 // Derived & checks
-///////////////////////////
 H   = height_mm;
 Ro0 = base_diameter/2;
 
@@ -154,9 +135,7 @@ max_mid_r          = max(max_mid_diameter/2, axis_mid_r + 0.01); // crest > bell
 
 twist_sign = left_handed ? -1 : 1;
 
-///////////////////////////
 // Radius model (helical bulge on axisymmetric belly)
-///////////////////////////
 function base_top_radius(t) = Ro0 + (Ro2 - Ro0)*smoothstep01(t);
 
 // Belly with end-cap so it doesn't inflate top/bottom tips
@@ -192,9 +171,7 @@ function lobe_shape_multi(theta_deg, t) =
 function R_outer(t, theta_deg) = R_belly(t) + lobe_amp(t) * lobe_shape_multi(theta_deg, t);
 function R_inner(t, theta_deg) = R_outer(t, theta_deg) - wall_thickness;
 
-///////////////////////////
 // Polyhedron mesh (shell)
-///////////////////////////
 function idx_out(i,j) = i*na + (j % na);
 function idx_in(i,j)  = (nz+1)*na + i*na + (j % na);
 
@@ -236,74 +213,15 @@ faces_top = [
 
 faces = concat(faces_outer, faces_inner, faces_bottom, faces_top);
 
-module shell_poly_raw() {
+module shell_poly() {
     polyhedron(points=points, faces=faces, convexity=12);
 }
 
-///////////////////////////
 // Helical cutters / keepers — PREVIEW-FIXED
-///////////////////////////
 Rcut        = max(max_mid_r, Ro0, Ro2) + 6; // radial reach of cutters
 twist_total = bulge_turns * 360 * (left_handed ? -1 : 1);
 
-// Narrow *removal* bands for "slots"
-module helical_slot_cutters() {
-    h_cut = max(0, H - 2*slot_z_margin);
-    if (h_cut > 0) {
-        for (k=[0:slot_count-1]) {
-            rotate([0,0, k*360/slot_count]) {
-                // Start a bit lower & taller in preview so no coplanars
-                translate([0,0, slot_z_margin - previewfix])
-                    linear_extrude(height=h_cut + 2*previewfix,
-                                   twist=twist_total, slices=nz, convexity=10)
-                        translate([0, -slot_width/2])
-                            square([Rcut + previewfix, slot_width], center=false);
-            }
-        }
-    }
-}
-
-// Wide *keep* bands for "ribbons"
-module helical_ribbon_keepers() {
-    h_keep = max(0, H - 2*slot_z_margin);
-    if (h_keep > 0) {
-        for (k=[0:slot_count-1]) {
-            rotate([0,0, k*360/slot_count]) {
-                translate([0,0, slot_z_margin - previewfix])
-                    linear_extrude(height=h_keep + 2*previewfix,
-                                   twist=twist_total, slices=nz, convexity=10)
-                        translate([0, -ribbon_width/2])
-                            square([Rcut + previewfix, ribbon_width], center=false);
-            }
-        }
-    }
-}
-
-module shell_poly() {
-    if (pattern == "solid") {
-        shell_poly_raw();
-    } else if (pattern == "slots") {
-        // Remove narrow helical bands (shell remains continuous)
-        difference() {
-            shell_poly_raw();
-            helical_slot_cutters();
-        }
-    } else if (pattern == "ribbons") {
-        // Keep only wide helical bands (intersection), leaving solid collars top/bottom
-        intersection() {
-            shell_poly_raw();
-            helical_ribbon_keepers();
-        }
-    } else {
-        shell_poly_raw();
-    }
-}
-
-// Helper modules removed - no longer needed for solid mount
-
-///////////////////////////
 // Simple solid mount (no spokes, no gaps) — just a solid disk with E14 hole
-///////////////////////////
 module spider_mount_at_z(z_mount, at_top=false) {
     end_t = at_top ? 1 : 0;
 
@@ -329,9 +247,7 @@ module spider_mount_at_z(z_mount, at_top=false) {
     }
 }
 
-///////////////////////////
 // Assembly
-///////////////////////////
 module lampshade() {
     if (SHOW_SHELL_ONLY) {
         shell_poly();
@@ -381,7 +297,5 @@ echo(str("Spider diag: r_in_end=", r_in_end_diag,
          "  spoke_outer=", r_spoke_outer_d,
          "  span_len=", span_len_d));
 
-///////////////////////////
 // Go
-///////////////////////////
 lampshade();
