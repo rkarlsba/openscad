@@ -92,11 +92,11 @@ auto_clearance       = true;  // auto-raise belly to ensure bulb clearance
 // Top opening: fit Ø60 bulb + fingers comfortably
 top_inner_min_diam   = 95.0;  // required top INNER diameter
 
-// Quality (poly count)
-na                   = (FAST_PREVIEW && $preview) ? 192 : 640;   // angular segments
-nz                   = (FAST_PREVIEW && $preview) ? 280 : 960;   // vertical rings
+// Quality (poly count) - balanced for detail and performance
+na                   = (FAST_PREVIEW && $preview) ? 192 : 480;   // angular segments (balanced)
+nz                   = (FAST_PREVIEW && $preview) ? 280 : 640;   // vertical rings (balanced)
 
-$fn = 64; // for cylinders (seat, ring)
+$fn = 48; // for cylinders (seat, ring)
 
 ///////////////////////////
 // Guards & constants
