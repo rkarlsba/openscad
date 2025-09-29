@@ -1,7 +1,5 @@
 //
-// Spiral Belly Lampshade (polyhedron) for// Ends + belly (clearance)
-base_diameter        = base_diameter_auto; // outer at bottom (auto-sized for socket type)
-top_diameter_user    = 100;   // requested outer at top (may be raised by top opening guard)4 — hollow shell (no vase mode)
+// Spiral Belly Lampshade (polyhedron) for E14/E27 — hollow shell (no vase mode)
 // - Axisymmetric belly for Ø80 bulb clearance (end-capped so tips honor your diameters)
 // - Helical bulge: now supports multi-start (parallel helicals) via lobe_count
 // - Pattern: "solid", "slots" (slits via difference), "ribbons" (bands via intersection)
@@ -42,18 +40,18 @@ slot_z_margin    = 12.0;     // mm kept solid at bottom/top to preserve strength
 ///////////////////////////
 
 // Height & wall
-height_mm            = 180;   // total height
+height_mm            = 210;   // total height
 wall_thickness       = 2.0;   // shell thickness (increased for strength)
 
 // Ends + belly (clearance)
 base_diameter        = 76;    // outer at bottom (increased for E14 lock ring clearance)
 top_diameter_user    = 100;   // requested outer at top (may be raised by top opening guard)
-axis_mid_diameter    = 140;   // axisymmetric belly OUTER diameter at mid (no spiral)
+axis_mid_diameter    = 120;   // axisymmetric belly OUTER diameter at mid (no spiral)
 axis_width           = 0.35;  // belly width along Z (0.25..0.45)
 belly_end_cap        = 0.30;  // fraction of height at each end where belly tapers to 0 (fixes tip inflation)
 
 // Helical lobe (spiralling bulge)
-max_mid_diameter     = 160;   // OUTER diameter at mid at the lobe crest
+max_mid_diameter     = 140;   // OUTER diameter at mid at the lobe crest
 bulge_turns          = 0.5;   // revolutions from bottom → top
 left_handed          = false; // true to reverse direction
 lobe_count           = 8;     // NEW: number of parallel helical lobes (1 = single, 2 = double, etc.)
@@ -68,7 +66,7 @@ lobe_env_mix         = 0.25;  // 0.0 = flat (visible across height), 1.0 = Gauss
 end_cap              = 0.04;  // fraction of height at each end where lobe → 0 (keeps ends circular)
 
 // Socket mount (E14 or E27)
-socket_type          = "E14"; // "E14" or "E27" - automatically adjusts hole size and base diameter
+socket_type          = "E27"; // "E14" or "E27" - automatically adjusts hole size and base diameter
 seat_clearance       = 0.4;   // added to hole diameter
 mount_at_top         = false; // false: bottom seat; true: top seat (pendant)
 
