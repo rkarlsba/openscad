@@ -1,10 +1,12 @@
 // vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
 //
+//
 // PARAMETRIC MEASURING SPOON
 // 1.0
 // by Brian Enigma <brian@netninja.com>
 //
-/* {{{
+
+/* Docs {{{
 
 == WHAT IS IT? ==
 
@@ -25,7 +27,7 @@ that size to milliliters.  There are lots of conversion tools to do that.
 I use ConvertBot on the iPhone.  Once you have the volume, in milliliters,
 convert it to a radius using this formula:
 
-radius (in centimeters) = cube_root((3 * volume) / (2 * pi))
+radius (in centimeters) = cube_root((3 * volume) / (2 * PI))
 
 You will need to shift the decimal point over one spot (that is, multiply
 by 10) because OpenSCAD uses millimeters.  Plug that radius value into
@@ -61,6 +63,12 @@ mechanical errors during printing.
 
 }}} */
 
+// Some things never change!
+tablespoon = 15; // ml
+teaspoon = 5; // ml
+
+// ((4 * PI * radius^3)/3)/2 => (2/3) * PI * radius^3
+// This takes mm in and returns ml
 function stretched_hemisphere_volume(r, s) =
     ((2/3) * PI * pow(r,3) * s[0] * s[1] * s[2])/1000;
 
@@ -74,9 +82,11 @@ function roundx(num, decimals) =
 
 ////////// Uncomment these lines for a 1 tbl measuring spoon
 radius = 19.184; // radius of the inner half-sphere
-stretch = [1.0, 1.0, 1.0]; // make it a bit oblong
-label = "1tbl";
+stretch = [0.9, 1.20, 1.0]; // make it a bit oblong
+label = ""; // Det tar jeg i OrcaSlicer
 use_dxf_label = true;
+//label = "1tbl";
+//label = "Oppvask";
 
 //label = "half_tsp";
 //label = "quarter_tsp";
@@ -90,21 +100,30 @@ handle_thickness = 2;
 thickness = max(scoop_thickness, handle_thickness);
 
 // length of handle (actually, not including the end-cap)
-handle_length = 60;
+handle_length = 80;
 
 // hanger hole radius
-hole_radius = 2;
+hole_radius = 3;
 
 // resolution of spheres -- 10 makes for quick renders, higher makes for good prints
 //res = 10;
-res = 50;
+res = 192;
+
+// Code
+// volume = stretched_hemisphere_volume(radius, stretch)
+spoonvol = stretched_hemisphere_volume(radius, stretch);
+echo(str("The volume of the spoon is ", spoonvol, " so ",
+    roundx(spoonvol/tablespoon, 1), "Tbsp or ",
+    roundx(spoonvol/teaspoon, 1), "tsp"));
 
 translate(v = [0, -25, 0]) { // slide over to be better centered on the table
 	rotate (a = [0, 180, 0]) { // rotate to place correctly on the table for printing
 		difference() { // subtract out the inner sphere and make it only half a sphere
 			union() { // combine spheres with handle and curve on end of handle
 				// outer sphere
-				sphere(r = radius + scoop_thickness, $fn = res);
+                scale(stretch) {
+                    sphere(r = radius + scoop_thickness, $fn = res);
+                }
 				// handle
 				translate(v = [handle_width / 2 * -1, 0, handle_thickness * -1]) {
 					cube(size = [handle_width, handle_length, handle_thickness]);
@@ -120,16 +139,18 @@ translate(v = [0, -25, 0]) { // slide over to be better centered on the table
 				cube(size = [60, 60, 60]);
 			}
 			// subtract out inner sphere
-			sphere(r = radius, $fn = res);
+            scale(stretch) { sphere(r = radius, $fn = res);
+            }
 			// subtract out hanger hole
 			translate(v = [0, handle_length, handle_thickness * -1.5]) {
 				cylinder(h = handle_thickness * 2, r = hole_radius, $fn = res);
 			}
 			// Extrude a label, if given one
-			if ("" != label) {
-				translate(v = [5.5, handle_length / 2, handle_thickness / -2]) {
+			if (label != "") {
+				translate(v = [3.2, handle_length * .35, handle_thickness / -2]) {
 					rotate(a = [0, 0, 90]) {
-						scale(v = [7, 7, 7]) {
+						scale(v = [7, 7, 7])
+						{
                             if (use_dxf_label) {
                                 linear_extrude(height = thickness / 2) import(str(label, ".dxf"));
                             } else {
