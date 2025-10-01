@@ -1,9 +1,9 @@
 // vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
 //
-// Separator walls for drawers in the Clas Ohlson parts cabinet / organizer
-// cabinet, part no 31-2376, 31-2375 and others. Parametric, your own choice of
-// colour and far cheaper than getting them from Clas Ohlson (currently about
-// €5.50 for 15 pcs), like all the other stuff we make :D
+// Separator walls for drawers in the Clas Ohlson / Raaco parts cabinet /
+// organizer cabinet, part no 31-2376, 31-2375 and others. Parametric, your own
+// choice of colour and far cheaper than getting them from Clas Ohlson
+// (currently about €5.50 for 15 pcs), like all the other stuff we make :D
 //
 // Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net> in August 2025.
 //
@@ -11,9 +11,9 @@
 // https://creativecommons.org/licenses/by/4.0/ for details.
 //
 
-$fn = 32;
+$fn = 64;
 
-debug = true;
+debug = false;
 
 default_x = 49.8;
 default_y = 34;
@@ -24,7 +24,7 @@ default_r2 = 2;
 between_gap = 46;
 side_gap = 3;
 
-largest_r = default_r1 == default_r2 ? default_r1 : default_r1 > default_r2 ? default_r1 : default_r2;
+largest_r = max(default_r1, default_r2);
 
 default_connector_slots = false;
 default_slot_pos = [default_r1*2,default_r1*2];
@@ -43,6 +43,7 @@ module separator_wall(x = default_x, y = default_y, z = default_z,
                       connector_slots = default_connector_slots,
                       slot_pos = default_slot_pos,
                       slot_size = default_slot_size) {
+
     if (use_chamfer) {
         if (debug) {
             echo(str("Using chamfer, r1 = ", r1, ", r2 = ", r2));
