@@ -9,13 +9,13 @@
 // and on
 
 // Main Variables (all measurements in mm)
-lang    = 30.0;             // Box length
-brd1    = 50.0;             // Width box at top
-brd2    = 50.0;             // Width box at bottom
+lang    = 51.0;             // Box length
+brd1    = lang;             // Width box at top
+brd2    = 37.0;             // Width box at bottom
 hoek    = 2.0;              // Diameter corners
 diep    = 4.5;              // Height edge
 wall1   = 1.5;              // General wall thickness
-hoog1   = 55.0;             // Height box (minimum 20mm because of hinge)
+hoog1   = 75.0;             // Height box (minimum 20mm because of hinge)
 hoog2   = 3.0;              // Height lid
 hinge1  = 4.0;              // Diameter hinge
 hinge2  = 15.0;             // Width of hinge
@@ -53,7 +53,7 @@ rim1    = 1.6;              // Width raised rim (min. 1.2mm)
 rim2    = 0.9*rim1;         // Width raised edge for lid
 margin  = 0.15;             // Margin hinge/hinge opening
 vert    = hinge1-hoek;      // Height vertical hinge opening
-$fn     = 60;               // Variabele for cirkels
+$fn     = 200;              // Variabele for cirkels
 brd     = (brd1 > brd2) ? brd1 : brd2;
 
 // tofarge
