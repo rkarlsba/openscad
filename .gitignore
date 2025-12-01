@@ -1,7 +1,8 @@
 .DS_Store
+*.3mf
+*.gcode
 *.stl
 *.sw[a-p]
-*.3mf
 *.wtf*
 tmp/
 wtf/
