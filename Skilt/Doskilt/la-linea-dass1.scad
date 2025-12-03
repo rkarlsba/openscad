@@ -1,6 +1,7 @@
 /*
  * vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
  */
+
 $fn = 128;
 
 bugfix = $preview ? .1 : 0;
@@ -8,7 +9,7 @@ bugfix = $preview ? .1 : 0;
 corners = 8;
 height = 1.5;
 shrink = height;
-bottom_size = [100,110];
+bottom_size = [165,120];
 top_size = [bottom_size[0]-shrink*2,bottom_size[1]-shrink*2];
 border = true;
 border_width = 1;
@@ -18,7 +19,7 @@ holes = false;
 hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
-graphics_file = "la-linea-dass1.svg";
+graphics_file = "la-linea-dass2.svg";
 
 module rounded_square(size, radius) {
     translate([radius,radius]) {
@@ -81,10 +82,12 @@ module main() {
     }
 }
 
-// main();
+main();
+
+translate([5,5,height]) {
+    linear_extrude(text_height) {
+        import(graphics_file);
+    }
+}
 
 
-        // linear_extrude(text_height)
-        {
-            import(graphics_file);
-        }
