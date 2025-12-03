@@ -19,7 +19,7 @@ holes = false;
 hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
-graphics_file = "la-linea-dass2.svg";
+graphics_file = "la-linea-dass3.svg";
 
 module rounded_square(size, radius) {
     translate([radius,radius]) {
