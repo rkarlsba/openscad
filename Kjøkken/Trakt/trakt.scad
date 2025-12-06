@@ -29,14 +29,14 @@ Tube_Outside_Diameter=22;
 Tube_Cut_Angle=30;
 
 // Wall Thickness
-Wall_Thickness=1;
+Wall_Thickness=1.5;
 
 /* [Hidden] */
-// $fn = $preview ? 32 : 128;
-$fn = 512;
+// $fn = 512;
+$fn = $preview ? 64 : 256;
 Top_Height = Height - Tube_Height;
 Top_Outside_Diameter = Top_Inside_Diameter + Wall_Thickness*2;
-Ledge_Multiplicator = 2.6;
+Ledge_Multiplicator = 3.0;
 
 rotate([180,0,0]) translate([0,0,-Height]) {
 
