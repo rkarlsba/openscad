@@ -35,8 +35,12 @@ stone_screw1_z = stone_top_h - (stone_top_h - stone_top_mid_h) / 4;
 stone_screw2_z = stone_top_h - (stone_top_h - stone_top_mid_h) / 4 * 3;
 
 frame_top_h = holey ? 163.2 : 165.7;
-frame_screw_z = 140.6;
+frame_screw1_z = 114.6;
+frame_screw2_z = frame_screw1_z - (stone_screw1_z - stone_screw2_z);
+frame_hole_rot = 80;
 
+screwplate_d = 12;
+screwplate_th = 3.2;
 screw_d = 3.2;
 
 plug_h = 30;
@@ -53,7 +57,9 @@ assert(draw_count == 1, str("draw count is ", draw_count, " and it should be 1")
 
 // Debug
 if (debug) {
-    echo(str("DEBUG: stone_top_h is ", stone_top_h, ", stone_top_mid_h is ", stone_top_mid_h, ", stone_screw1_z is ", stone_screw1_z, " and stone_screw2_z is ", stone_screw2_z));
+    echo(str("DEBUG: stone_top_h is ", stone_top_h, ", stone_top_mid_h is ", stone_top_mid_h,
+             ", stone_screw1_z is ", stone_screw1_z, " and stone_screw2_z is ", stone_screw2_z,
+             ", frame_screw1_z is ", frame_screw1_z, " and frame_screw2_z is ", frame_screw2_z));
 }
 
 // Square tube
@@ -93,12 +99,12 @@ module holey_stone(screws = true) {
         // Screw holes
         if (screws) {
             translate([0, 0, stone_screw1_z]) {
-                rotate([90,0,0]) {
+                rotate([frame_hole_rot,0,0]) {
                     cylinder(d = screw_d, h = stone_top_d, $fn = 50);
                 }
             }
             translate([0, 0, stone_screw2_z]) {
-                rotate([90,0,0]) {
+                rotate([frame_hole_rot,0,0]) {
                     cylinder(d = screw_d, h = stone_top_d, $fn = 50);
                 }
             }
@@ -112,13 +118,32 @@ module frame() {
 
 module holey_frame(screws = true) {
     difference() {
-        frame();
+        union() {
+            frame();
+            hull() {
+                translate([0, -17.6, frame_screw1_z+3]) {
+                    rotate([frame_hole_rot,0,0]) {
+                        cylinder(d = screwplate_d, h = screwplate_th, $fn = 50);
+                    }
+                }
+                translate([0, -21.2, frame_screw2_z+3]) {
+                    rotate([frame_hole_rot,0,0]) {
+                        cylinder(d = screwplate_d, h = screwplate_th, $fn = 50);
+                    }
+                }
+            }
+        }
         square_tube();
 
         // Screw holes
         if (screws) {
-            translate([0, 0, frame_screw_z]) {
-                rotate([90,0,0]) {
+            translate([0, 0, frame_screw1_z]) {
+                rotate([frame_hole_rot,0,0]) {
+                    cylinder(d = screw_d, h = stone_top_d, $fn = 50);
+                }
+            }
+            translate([0, 0, frame_screw2_z]) {
+                rotate([frame_hole_rot,0,0]) {
                     cylinder(d = screw_d, h = stone_top_d, $fn = 50);
                 }
             }
