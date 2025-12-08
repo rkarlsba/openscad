@@ -25,7 +25,7 @@ module spatula() {
     font_size = 6;
     font_spacing = 1.1;
 
-    spatula_thickness = 1.8;
+    spatula_thickness = 1.2;
     spatula_tip_thickness = 0.4;    // Two layers should do
     spatula_blade_width = 20;
     spatula_blade_length = 12.4;
@@ -42,7 +42,7 @@ module spatula() {
     logo_enabled = true;                                    // Draw logo?
     logo_type = "emboss";                                   // Choose between "cut", "emboss" or "deboss"
     logo_boss_by = 0.2;                                     // Emboss or deboss by this amount. 
-    logo_source = "svg";                                    // "text" or "svg"
+    logo_source = "text";                                   // "text" or "svg"
     logo_svg_file = "bitraf-logo-textonly-stencil2.svg";    // Name of svg file
     logo_svg_translate = [1,-1.3];
     logo_svg_scale = [0.13,0.13];
