@@ -4,5 +4,7 @@
 *.stl
 *.sw[a-p]
 *.wtf*
+*.zip
+*.tar.[gx]z
 tmp/
 wtf/
