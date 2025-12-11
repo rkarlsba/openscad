@@ -8,3 +8,7 @@
 *.tar.[gx]z
 tmp/
 wtf/
+!Bestillinger/
+!Bestillinger/Jonas/
+!Bestillinger/Jonas/Varla stone/Monica/
+!Bestillinger/Jonas/Varla stone/Monica/*.stl
