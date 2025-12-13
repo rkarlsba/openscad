@@ -1,115 +1,63 @@
-// Lamp Stand Design with Threaded Cover and Compartments
-// Circular base with threaded top, electronics compartment, and sand chamber
-// By GitHub Copilot
+/*
+ * vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+ */
+include <ymse.scad>
 
-// Parameters
-base_diameter = 220;        // Base diameter in mm
-base_height = 80;           // Height of the lamp stand
-wall_thickness = 8;         // Wall thickness for hollow interior
-tube_hole_size = 10;        // 10x10mm square hole for aluminum tube
-tube_hole_depth = 40;       // How deep the tube hole goes
+// Prefix stuff
+$fn = $preview ? 64 : 256;
+bugfix = $preview ? .1 : 0;
 
-// Thread parameters (metric M200x2)
-thread_pitch = 2;           // Metric thread pitch
-thread_depth = 1.5;         // Thread depth
-thread_height = 20;         // Height of threaded section
-cover_thickness = 10;       // Thickness of removable cover
+// Variables
+outer_dia = 220;
+inner_dia = 100;
+top_dia = 40;
+tube_side = 10;
+wall = 3;
+height = 60;
+inner_height = 40;
+block1 = 1;
+block2 = 1;
+block3 = 1;
+block4 = 1;
+block5 = 1;
 
-// Electronics compartment
-electronics_radius = 40;    // Radius of central electronics compartment
-divider_thickness = 4;      // Thickness of wall between compartments
-
-// Calculated values
-base_radius = base_diameter / 2;
-outer_sand_inner_radius = electronics_radius + divider_thickness;
-outer_sand_outer_radius = base_radius - wall_thickness;
-
-// Simple thread approximation module
-module metric_thread_external(radius, pitch, height) {
-    linear_extrude(height = height, twist = 360 * height / pitch, slices = height * 4)
-        polygon([
-            [radius - thread_depth, -pitch/4],
-            [radius, 0],
-            [radius - thread_depth, pitch/4]
-        ]);
-}
-
-module metric_thread_internal(radius, pitch, height) {
-    linear_extrude(height = height, twist = -360 * height / pitch, slices = height * 4)
-        polygon([
-            [radius, -pitch/4],
-            [radius + thread_depth, 0],
-            [radius, pitch/4]
-        ]);
-}
-
-module lamp_stand_base() {
+// Code
+if (block1) {
     difference() {
-        // Main body with rounded top
-        hull() {
-            // Bottom cylinder (flat)
-            cylinder(h = base_height - base_radius/3, r = base_radius);
-            
-            // Top sphere section for rounded appearance
-            translate([0, 0, base_height - base_radius/3])
-                sphere(r = base_radius/3);
+        cylinder(d=outer_dia, h=height);
+        translate([0,0,wall]) {
+            cylinder(d=outer_dia-wall, h=height);
         }
-        
-        // Central electronics compartment
-        translate([0, 0, wall_thickness])
-            cylinder(h = base_height - thread_height - cover_thickness - wall_thickness, r = electronics_radius);
-        
-        // Outer sand compartment (ring around electronics)
-        translate([0, 0, wall_thickness])
-            difference() {
-                cylinder(h = base_height - thread_height - cover_thickness - wall_thickness, r = outer_sand_outer_radius);
-                cylinder(h = base_height - thread_height - cover_thickness - wall_thickness + 1, r = outer_sand_inner_radius);
-            }
-        
-        // Thread cavity for removable cover
-        translate([0, 0, base_height - thread_height - cover_thickness])
-            cylinder(h = thread_height + cover_thickness + 1, r = base_radius - wall_thickness);
-        
-        // Internal female threads
-        translate([0, 0, base_height - thread_height - cover_thickness])
-            metric_thread_internal(base_radius - wall_thickness - 1, thread_pitch, thread_height);
-        
-        // Square hole for 10x10mm aluminum tube - goes down from top only
-        translate([0, 0, base_height - tube_hole_depth])
-            linear_extrude(height = tube_hole_depth + 1)
-                square([tube_hole_size, tube_hole_size], center = true);
     }
 }
 
-module lamp_stand_cover() {
-    translate([base_diameter + 20, 0, 0]) {
+if (block2) {
+    difference() {
+        cylinder(d=inner_dia, h=height+inner_height);
+        translate([0,0,inner_height]) {
+            cylinder(d=inner_dia-wall, h=height+bugfix);
+        }
+    }
+}
+
+if (block3) {
+    translate([0,0,height]) {
         difference() {
-            union() {
-                // Cover body
-                hull() {
-                    cylinder(h = cover_thickness - base_radius/6, r = base_radius - wall_thickness - 1);
-                    translate([0, 0, cover_thickness - base_radius/6])
-                        sphere(r = base_radius/6);
-                }
-                
-                // External male threads
-                translate([0, 0, cover_thickness])
-                    metric_thread_external(base_radius - wall_thickness - 1, thread_pitch, thread_height);
-            }
-            
-            // Tube hole through cover
-            translate([0, 0, -1])
-                linear_extrude(height = cover_thickness + thread_height + 2)
-                    square([tube_hole_size, tube_hole_size], center = true);
+            cylinder(d1=outer_dia, d2=top_dia, h=height);
+            cylinder(d1=outer_dia-wall, d2=top_dia-wall, h=height-wall);
         }
     }
 }
 
-// Render both parts
-lamp_stand_base();
-lamp_stand_cover();
+if (block4) {
+    translate([-tube_side/2,-tube_side/2,height*2]) {
+        cube([10,10,10]);
+        /*
+        difference() {
+            cylinder(d1=outer_dia, d2=top_dia, h=height);
+            cylinder(d1=outer_dia-wall, d2=top_dia-wall, h=height-wall);
+        }
+        */
+    }
+}
 
-// Optional: Show a preview of the aluminum tube
-%translate([0, 0, base_height - tube_hole_depth/2])
-    linear_extrude(height = tube_hole_depth + 20)
-        square([tube_hole_size - 0.2, tube_hole_size - 0.2], center = true);
