@@ -8,7 +8,6 @@ use Getopt::Long qw(GetOptions);
 
 my ($in_file, $out_file);
 my ($min_x,$min_y,$min_z);
-my ($fi,$fo);
 
 $min_x = $min_y = $min_z = 1000000;
 
@@ -17,20 +16,23 @@ GetOptions(
     'out-file|o=s' => \$out_file,
 ) or die "Error in command line arguments\n";
 
-# Open input: file or stdin
-my $input = $in_file // '-';
-open my $in_fh, '<', $input
-    or die "Cannot open input", (defined $in_file ? " '$in_file'" : ' (stdin)'), ": $!\n";
+# Input: file or STDIN (no special filename needed)
+my $in_fh;
+if (defined $in_file) {
+    open $in_fh, '<', $in_file or die "Cannot open input '$in_file': $!\n";
+} else {
+    $in_fh = \*STDIN;  # Direct reference to STDIN
+}
 
-# Open output: file or stdout
-my $output = $out_file // '-';
-open my $out_fh, '>', $output
-    or die "Cannot open output", (defined $out_file ? " '$out_file'" : ' (stdout)'), ": $!\n";
+# Output: file or STDOUT
+my $out_fh;
+if (defined $out_file) {
+    open $out_fh, '>', $out_file or die "Cannot open output '$out_file': $!\n";
+} else {
+    $out_fh = \*STDOUT;
+}
 
-$out_fh->autoflush(1);  # Ensure immediate writes to stdout/pipe
-
-# die "Usage: $0 --in-file FILE --out-file FILE\n"
-#     unless defined $in_file && defined $out_file;
+select((select($out_fh), $| = 1)[0]);  # Autoflush output
 
 # Fra STL-filtrukturen {{{
 #
@@ -44,19 +46,10 @@ $out_fh->autoflush(1);  # Ensure immediate writes to stdout/pipe
 #
 # }}}
 
-# Ikke overskriv noe
-if ( -f $out_file) {
-    print STDERR "Output file $out_file exists, giving up\n";
-    exit(1);
-}
-
-# Åpne innfil
-open($fi, "<", $in_file) or
-    die "Can't open < \"$in_file\" $!";
-
 # Lese gjennom innfil for å finne maksverdier
-while (my $s = <$fi>) {
-    if ($s =~ /\s+vertex\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)/) {
+while (my $s = <$in_fh>) {
+    chomp($s);
+    if ($s =~ /vertex\s+(\-?\d+\.\d+)\s+(\-?\d+\.\d+)\s+(\-?\d+\.\d+)/) {
         $min_x = $1 if ($1 < $min_x);
         $min_y = $2 if ($2 < $min_y);
         $min_z = $3 if ($3 < $min_z);
@@ -64,16 +57,21 @@ while (my $s = <$fi>) {
 }
 
 # Spole tilbake til start i innfil
-seek($fi, 0, SEEK_SET);
+seek($in_fh, 0, SEEK_SET);
 
-# open(my $fo, ">", $out_file) or
+# open(my $out_fh, ">", $out_file) or
 #     die "Can't open > \"$out_file\" $!";
-while (my $s = <$fi>) {
-    if ($s =~ /\s+vertex\s+(\d+\.\d+)/) {
-        $min_x = $1 if ($1 < $min_x);
+while (my $s = <$in_fh>) {
+    chomp($s);
+    if ($s =~ /(.*?)vertex(\s+)(\-?\d+\.\d+)(\s+)(\-?\d+\.\d+)(\s+)(\-?\d+\.\d+)/) {
+        #print("$1vertex$2$3-$min_x$4$5-$min_y$6$7-$min_z\n");
+        printf("%svertex%s%f%s%f%s%f\n", $1, $2, $3-$min_x, $4, $5-$min_y, $6, $7-$min_z);
+
+        # $2$3-$min_x$4$5-$min_y$6$7-$min_z\n");
+    } else {
+        print("$s\n");
     }
 }
-
 
 print("X minimum is $min_x\n");
 print("Y minimum is $min_y\n");

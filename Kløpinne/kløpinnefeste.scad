@@ -1,5 +1,5 @@
 $fn = 100;
 
-klopinnemodell = "Kløpinne-topp-t.stl";
+klopinnemodell = "Kløpinne-topp.stl";
 
 import(klopinnemodell);
