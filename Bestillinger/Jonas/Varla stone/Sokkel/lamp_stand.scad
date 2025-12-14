@@ -6,6 +6,8 @@ include <ymse.scad>
 $fn = $preview ? 64 : 512;
 
 kuledia = 200;
+kutt = 85;
+walls = 5;
 
 module halvkule(dia) {
     difference() {
@@ -17,4 +19,13 @@ module halvkule(dia) {
     }
 }
 
-halvkule(kuledia);
+module kutta_halvkule(dia, kutt) {
+    difference() {
+        halvkule(dia);
+        translate([0,0,walls]) {
+            halvkule(dia-walls*2);
+        }
+    }
+}
+
+kutta_halvkule(kuledia, kutt);
