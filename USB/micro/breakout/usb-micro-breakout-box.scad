@@ -29,11 +29,10 @@ int_right_size = [ext_bottom_size[0]-vegg-tverrligger[0]-int_left_size[0], int_s
 kabelhull = 4;
 
 referanse = false;
-debug = false;
+debug = true;
 vis_bunn = true;
 vis_topp = true;
 
-vis_referanse = referanse || debug;
 toppskift = (vis_topp && vis_bunn);
 
 if (debug) {
@@ -134,7 +133,7 @@ module referanse_bunn() {
 // Referanse
 if (vis_bunn) {
     bunn();
-    if (vis_referanse) {
+    if (referanse) {
         referanse_bunn();
     }
 }
@@ -143,7 +142,7 @@ if (vis_topp) {
     topp_pos = toppskift ? [ext_top_size[0]*1.1, 0, 0] : [0, 0, 0];
     translate(topp_pos) {
         topp();
-        if (vis_referanse) {
+        if (referanse) {
             referanse_topp();
         }
     }
