@@ -166,7 +166,17 @@ module pie_slice(a, r, h){
   }
 }
 
-// Create a countersunk screw hole with the bottom (smallest) height of g1 and ditto diameter of d1
-module countersunk_screw_hole(h1, d1, h2, d2) {
+// Create a countersunk screw hole with a height of h and diameter of d and a counterscrew height of
+// ch and a diameter of cd.
+module countersunk_screw_hole(h, d, ch, cd, countersunk_bottom=false) {
+    if (countersunk_bottom) {
+        cylinder(h=h, d=d);
+        cylinder(h=ch, d1=cd, d2=d);
+    } else {
+        cylinder(h=h, d=d);
+        translate([0, 0, h-ch]) {
+            cylinder(h=ch, d1=d, d2=cd);
+        }
+    }
 }
 
