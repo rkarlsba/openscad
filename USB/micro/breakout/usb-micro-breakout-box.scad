@@ -21,9 +21,9 @@ pluggvegg = 0.6;
 pluggbredde = 8.0;
 int_size = [ext_top_size[0] - (vegg + pluggvegg) + bugfix * 2,
     ext_top_size[1] - vegg * 2, ext_bottom_size[2] - vegg + bugfix];
-int_size_insert = [int_size[0]-.3, int_size[1]-.3, 1];
+int_size_insert1 = [11.5, int_size[1]-.3, 1];
+int_size_insert2 = [int_size[0]-15.5, int_size[1]-.3, 1];
 int_left_size = [6.7, int_size[1], int_size[2]];
-// int_right_size = [8.3, int_size[1], int_size[2]];
 tverrligger = [5.5+bugfix*2, int_size[1], 2.5+bugfix];
 int_right_size = [ext_bottom_size[0]-vegg-tverrligger[0]-int_left_size[0], int_size[1], int_size[2]];
 kabelhull = 4;
@@ -43,21 +43,31 @@ if (debug) {
     echo(str("int_right_size is ", int_right_size));
     echo(str("tverrligger is ", tverrligger));
     echo(str("tverrligger[0]+int_left_size[0]+int_right_size[0] is ", tverrligger[0]+int_left_size[0]+int_right_size[0]));
-    echo(str("int_size_insert is ", int_size_insert));
+    echo(str("int_size_insert1 is ", int_size_insert1));
+    echo(str("int_size_insert2 is ", int_size_insert2));
 }
 
 // Toppp
 module topp() {
     difference() {
         union() {
+            // Boks
             roundedcube(ext_top_size, rounding_r);
+            blockcolour = $preview ? "red" : "#cccccc";
+
+            // Innsats
             translate([pluggvegg, vegg, ext_top_size[2]]) {
-                cube(int_size_insert);
+                color(blockcolour) {
+                    translate([int_size_insert1[0]+5,0,0]) {
+                        cube(int_size_insert2);
+                    }
+                    cube(int_size_insert1);
+                }
             }
         }
         for (i = [0 : len(hole_pos) - 1]) {
             translate(hole_pos[i]) {
-                countersunk_screw_hole(h = ext_top_size[2]+int_size_insert[2]+bugfix*2, d = top_hole_r*2,
+                countersunk_screw_hole(h = ext_top_size[2]+int_size_insert1[2]+bugfix*2, d = top_hole_r*2,
                 ch=countersinkheight, cd=countersinkwidth, countersunk_bottom=true); 
             }
         }
