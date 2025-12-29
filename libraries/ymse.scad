@@ -1,5 +1,7 @@
 // ymse.scad
 //
+// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:tw=120
+//
 // Ymse: Norwegian word, ['ymsɘ], meaning "diverse" or "various")
 // Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net>
 
@@ -162,5 +164,9 @@ module pie_slice(a, r, h){
   rotate_extrude(angle=a) {
     square([r,h]);
   }
+}
+
+// Create a countersunk screw hole with the bottom (smallest) height of g1 and ditto diameter of d1
+module countersunk_screw_hole(h1, d1, h2, d2) {
 }
 
