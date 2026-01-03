@@ -2,14 +2,14 @@
  * vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
  */
 
-$fn = 128;
+$fn = $preview ? 32 : 128;
 
 bugfix = $preview ? .1 : 0;
 
 corners = 8;
 height = 1.5;
 shrink = height;
-bottom_size = [165,120];
+bottom_size = [150,140];
 top_size = [bottom_size[0]-shrink*2,bottom_size[1]-shrink*2];
 border = true;
 border_width = 1;
@@ -19,7 +19,9 @@ holes = false;
 hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
-graphics_file = "la-linea-dass3.svg";
+graphics_file = "Att tänka.svg";
+//svg_dpi = 25.4;
+svg_dpi = 10;
 
 module rounded_square(size, radius) {
     translate([radius,radius]) {
@@ -74,20 +76,19 @@ module main() {
             }
         }
     }
-    if (0)
-    translate([10,10,height]) {
+    translate([12,3,height]) {
         linear_extrude(text_height) {
-            import(graphics_file);
+            import(graphics_file, dpi=svg_dpi);
         }
     }
 }
 
-main();
-
-translate([5,5,height]) {
+module test() {
     linear_extrude(text_height) {
-        import(graphics_file);
+        import(graphics_file, dpi=svg_dpi);
     }
 }
 
+// test();
+main();
 
