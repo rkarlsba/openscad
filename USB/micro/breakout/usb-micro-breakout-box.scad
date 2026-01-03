@@ -47,7 +47,7 @@ if (debug) {
     echo(str("int_size_insert_cable is ", int_size_insert_cable));
 }
 
-// Toppp
+// Top
 module topp() {
     difference() {
         union() {
