@@ -2,9 +2,10 @@
 set -euo pipefail
 
 SCAD_FILE="RadiusGauge.scad"
+OUT_DIR='stl'
 
 for mm in $(seq 1 50); do
-  out="RadiusGauge-$(printf '%02d' "$mm").stl"
+  out="$OUT_DIR/RadiusGauge-$(printf '%02d' "$mm").stl"
 
   # Pass variables via -D and export to STL via -o:
   openscad \
