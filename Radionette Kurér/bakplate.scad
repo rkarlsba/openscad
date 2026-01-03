@@ -1,18 +1,27 @@
+// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+
 include <ymse.scad>
 
-w=87;
-h=73;
-t=2;
-r=1.5;
-R=2.5;
+// Settings
+$fn = 0;   // fixed number of fragments
+$fs = 0.5; // minimum fragment size (linear)
+$fa = 3;   // minimum fragment angle (angular)
 
-linear_extrude(t) {
+// Variables
+width=330;
+height=230;
+thickness=2;
+corner_r=40;
+airhole_r=12.5;
+
+// Code
+linear_extrude(thickness) {
     difference() {
-        roundedsquare([w,h], r, $fn=64);
-        for (y=[8:11.5:73]) {
-            for (x=[8:12:80]) {
+        roundedsquare([width, height], corner_r);
+        for (x=[airhole_r*3:airhole_r*4:width-airhole_r*2]) {
+            for (y=[airhole_r*3:airhole_r*4:height-airhole_r*2]) {
                 translate([x,y]) {
-                    circle(r=R, $fn=64);
+                    circle(r=airhole_r);
                 }
             }
         }
