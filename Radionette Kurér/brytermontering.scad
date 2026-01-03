@@ -12,16 +12,17 @@ $fa = 3;   // minimum fragment angle (angular)
 bug = $preview ? .1 : 0;
 
 // Variables
-airhole_r = 12.5;
-bryter = [10.7, 5.8];
+airhole_r = 12.80;
+bryter = [10.8, 5.8];
 thickness = 2.5;
 lip_width  = 2;
 lip_thickness = .6;
+tolerance = .5;
 
 // Plugg
 module plug() {
     linear_extrude(lip_thickness) {
-        circle(airhole_r-.25+lip_width);
+        circle(d=(airhole_r*2)-tolerance+lip_width);
     }
     translate([0, 0, lip_thickness]) {
         linear_extrude(thickness) {
@@ -44,6 +45,16 @@ module main() {
             plug();
             translate(-bryter/2) 
             switch();
+            translate([6,7,0]) {
+                linear_extrude(.4) {
+                    mirror([1,0,0]) {
+                        text(text=str(bryter), size=2);
+                        translate([2,-3,0]) {
+                            text(text=str("t = ", tolerance), size=2);
+                        }
+                    }
+                }
+            }
         }
     }
 }
