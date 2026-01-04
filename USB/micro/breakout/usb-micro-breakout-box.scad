@@ -1,6 +1,4 @@
-/*
 // vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:tw=100
- */
 use <ymse.scad>
 
 $fn = $preview ? 64 : 256;
@@ -13,6 +11,7 @@ countersinkheight = 1.6;
 countersinkwidth = 5.7;
 top_hole_r = 1.8;
 bottom_hole_r = 1.5;
+scew_pin_r = bottom_hole_r-.1;
 hole_pos = [[8.0+top_hole_r, 5, 0],[8.0+top_hole_r, ext_top_size[1]-5, 0]];
 rounding_r = 2.0;
 vegg = 1.8;
@@ -26,6 +25,9 @@ int_left_size = [6.7, int_size[1], int_size[2]];
 tverrligger = [5.5, int_size[1], 2.5];
 int_right_size = [ext_bottom_size[0]-vegg-tverrligger[0]-int_left_size[0], int_size[1], int_size[2]];
 kabelhull = 4;
+
+top_colour = $preview ? "red" : "#cccccc";
+bottom_colour = $preview ? "green" : "#cccccc";
 
 referanse = false;
 debug = true;
@@ -54,11 +56,10 @@ module topp() {
             union() {
                 // Boks
                 roundedcube(ext_top_size, rounding_r);
-                blockcolour = $preview ? "red" : "#cccccc";
 
                 // Innsats
                 translate([pluggvegg, vegg, ext_top_size[2]]) {
-                    color(blockcolour) {
+                    color(top_colour) {
                         translate([int_size_insert_usb[0]+5,0,0]) {
                             cube(int_size_insert_cable);
                         }
@@ -66,10 +67,12 @@ module topp() {
                     }
                 }
             }
-            for (i = [0 : len(hole_pos) - 1]) {
-                translate(hole_pos[i]) {
-                    countersunk_screw_hole(h = ext_top_size[2]+int_size_insert_usb[2], d = top_hole_r*2,
-                    ch=countersinkheight, cd=countersinkwidth, countersunk_bottom=true); 
+            if (skruer) {
+                for (i = [0 : len(hole_pos) - 1]) {
+                    translate(hole_pos[i]) {
+                        countersunk_screw_hole(h = ext_top_size[2]+int_size_insert_usb[2], d = top_hole_r*2,
+                        ch=countersinkheight, cd=countersinkwidth, countersunk_bottom=true); 
+                    }
                 }
             }
         }
@@ -127,8 +130,8 @@ module bunn() {
         }
         if (!skruer) {
             for (i = [0 : len(hole_pos) - 1]) {
-                translate(hole_pos[i]) {
-                    cylinder(r = bottom_hole_r, h = ext_bottom_size[2]); 
+                translate([hole_pos[i][0], hole_pos[i][1], tverrligger[2]]) {
+                    cylinder(r = scew_pin_r, h = 3); 
                 }
             }
         }
@@ -138,7 +141,7 @@ module bunn() {
 // Modell fra printables, top
 module referanse_topp() {
     translate([0,-ext_top_size[1]*1.1,0]) {
-        color("#ffa050") {
+        color(bottom_colour) {
             import(lid_filename);
         }
     }
@@ -147,7 +150,7 @@ module referanse_topp() {
 // Modell fra printables, bunn
 module referanse_bunn() {
     translate([0,-ext_top_size[1]*1.1,0]) {
-        color("#ffa050") {
+        color(bottom_colour) {
             import(mount_filename);
         }
     }
