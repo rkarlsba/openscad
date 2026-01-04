@@ -43,8 +43,9 @@ module main() {
     render(convexity=4) {
         difference() {
             plug();
-            translate(-bryter/2) 
-            switch();
+            translate(-bryter/2)  {
+                switch();
+            }
             translate([6,7,0]) {
                 linear_extrude(.4) {
                     mirror([1,0,0]) {

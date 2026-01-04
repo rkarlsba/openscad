@@ -42,8 +42,9 @@ module main() {
     render(convexity=4) {
         difference() {
             plug();
-            translate(-bryter/2) 
-            switch();
+            translate(-bryter/2) {
+                switch();
+            }
         }
     }
 }
