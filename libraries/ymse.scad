@@ -67,9 +67,37 @@ module roundedsquare(size, radius) {
     }
 }
 
+module roundedsquare_half(size, radius) {
+    r0 = 0.01;
+    if (radius == 0) {
+        square(size);
+    } else {
+        hull() {
+            translate([r0, r0]) {
+                circle(r=r0);
+            }
+            translate([size[0]-radius, radius]) {
+                circle(r=radius);
+            }
+            translate([r0, size[1]-r0]) {
+                circle(r=r0);
+            }
+            translate([size[0]-radius, size[1]-radius]) {
+                circle(r=radius);
+            }
+        }
+    }
+}
+
 module roundedcube(dim, r) {
     linear_extrude(dim[2]) {
         roundedsquare([dim[0], dim[1]], r);
+    }
+}
+
+module roundedcube_half(dim, r) {
+    linear_extrude(dim[2]) {
+        roundedsquare_half([dim[0], dim[1]], r);
     }
 }
 
