@@ -1,7 +1,8 @@
 // vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
 
 // Trenger jeg denne?
-include <ymse.scad>
+use <ymse.scad>
+use </Users/roysk/src/git/rkarlsba/openscad/USB/micro/breakout/usb-micro-breakout-box.scad>
 
 // Settings
 $fn = 0;   // fixed number of fragments
@@ -18,6 +19,10 @@ thickness = 2.5;
 lip_width  = 2;
 lip_thickness = .6;
 tolerance = .5;
+
+// ext_top_size()
+// ext_bottom_size()
+// ext_size()
 
 // Plugg
 module plug() {
