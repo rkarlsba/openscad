@@ -50,6 +50,8 @@ toppskift = (vis_topp && vis_bunn);
 if (debug) {
     echo(str("hole_pos is ", hole_pos));
     echo(str("ext_top_size is ", ext_top_size()));
+    echo(str("ext_bottom_size is ", ext_bottom_size()));
+    echo(str("ext_size is ", ext_size()));
     echo(str("int_size is ", int_size));
     echo(str("int_left_size is ", int_left_size));
     echo(str("int_right_size is ", int_right_size));
@@ -72,7 +74,11 @@ module topp() {
         difference() {
             union() {
                 // Boks
-                roundedcube(ext_top_size(), rounding_r);
+                if (airhole_fit) {
+                    roundedcube_half(ext_top_size(), rounding_r);
+                } else {
+                    roundedcube(ext_top_size(), rounding_r);
+                }
 
                 // Innsats
                 translate([pluggvegg, vegg, ext_top_size()[2]]) {
