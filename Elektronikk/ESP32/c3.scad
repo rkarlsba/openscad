@@ -10,7 +10,12 @@
 
 include <BOSL2/std.scad>;
 include <BOSL2/rounding.scad>
-include <hex-grid.scad>
+use <hex-grid.scad>
+
+// Settings
+$fn = 0;   // fixed number of fragments
+$fs = 0.5; // minimum fragment size (linear)
+$fa = 3;   // minimum fragment angle (angular)
 
 // corner definition
 cut = 1.5;
@@ -19,17 +24,18 @@ k=.7;
 
 delta=.15;
 
-module case(width, length, height) {
+module case(width, length, height, pins) {
     difference() {
-        linear_extrude(height=height) {
+        linear_extrude(height=height+pins) {
             polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
         }
 
-        up(1) cuboid([width+delta,length+delta,height], anchor=BOTTOM);
-        up(2) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=1.4, anchor=BOTTOM); // Usb-c
-        up(height-1.5) prismoid(size2=[width+delta,length+delta], size1=[width+delta +.5,length+delta+.5], h=1.5, anchor=BOTTOM);
-        up(height-1) fwd(-1* length/2) cuboid([4,4, 4], anchor=BOTTOM); // Nook
+        up(1) cuboid([width+delta,length+delta,height+pins], anchor=BOTTOM);
+        up(2+pins) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=1.4, anchor=BOTTOM); // Usb-c
+        up(height-1.5+pins) prismoid(size2=[width+delta,length+delta], size1=[width+delta +.5,length+delta+.5], h=1.5, anchor=BOTTOM);
+        up(height-1+pins) fwd(-1* length/2) cuboid([4,4, 4], anchor=BOTTOM); // Nook
     }
+    if (pins > 0) up(1) cuboid([width-5+delta,length+delta,pins], anchor=BOTTOM);
 }
 
 module lid(width, length) { 
@@ -63,13 +69,31 @@ module cable_case(width, length, height)
     }
 }
 
+module flatcable_case(width, length, height, pins=0)
+{
+    difference() {
+        case(width, length, height, pins);
+        up(height-7.5) fwd(-.5*length-1) cuboid([6, 14, 8.5+pins], rounding=1, anchor=BOTTOM);
+    }
+}
+
 
 // EXAMPLES
 //
-left(75) case(18, 23.2, 18.5);
-left(50) cable_case(18, 23.2, 13.5);
-left(25) case(18, 23.2, 8.5);
-cable_case(18, 23.2, 8.5);
+module examples() {
+    render(convexity=4) {
+        left(75) case(18, 23.2, 18.5);
+        left(50) cable_case(18, 23.2, 13.5);
+        left(25) case(18, 23.2, 8.5);
+        cable_case(18, 23.2, 8.5);
 
-right(25) lid(18, 23.2);
-right(50) lid_hex(18, 23.2);
+        right(25) lid(18, 23.2);
+        right(50) lid_hex(18, 23.2);
+    }
+}
+
+render(convexity=4) {
+    flatcable_case(18, 28.3, 18.5, pins=1.8); // C6
+    right(25) lid_hex(18, 28.3);
+}
+
