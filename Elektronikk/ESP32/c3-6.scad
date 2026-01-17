@@ -92,23 +92,23 @@ module thickcable_case(width, length, height, headers=0)
 module examples() {
     // Add render() here to avoid the openscad bug that showing the top fuzzy in preview
     render(convexity=4) {
-        left(125) thickcable_case(18, 28.3, 18.5, headers=1.8); // C6 with headers soldered on it
-        left(100) thickcable_case(18, 28.3, 18.5);              // C6
-        left(75) case(18, 23.2, 18.5);                          // C3
-        left(50) cable_case(18, 23.2, 13.5);                    // C3
-        left(25) case(18, 23.2, 8.5);                           // C3
-        cable_case(18, 23.2, 8.5);                              // C3
+        left(100) thickcable_case(18, 28.3, 18.5, headers=1.8); // ESP32-C6 with headers soldered on it
+        left(75) thickcable_case(18, 28.3, 18.5);               // ESP32-C6
+        left(50) case(18, 23.2, 18.5);                          // ESP32-C3
+        left(25) cable_case(18, 23.2, 13.5);                    // ESP32-C3
+        case(18, 23.2, 8.5);                                    // ESP32-C3
+        right(25) cable_case(18, 23.2, 8.5);                    // ESP32-C3
 
-        right(25) lid(18, 23.2);                                // Full lid
-        right(50) lid_hex(18, 23.2);                            // See-thorugh lid with hex pattern
+        right(50) lid(18, 23.2);                                // Full lid
+        right(75) lid_hex(18, 23.2);                            // See-thorugh lid with hex pattern
     }
 }
 
 // My parts
 module main() {
     render(convexity=4) {
-        thickcable_case(18, 28.3, 35, headers=1.8); // C6
-        right(25) lid_hex(18, 28.3);
+        thickcable_case(18, 28.3, 35, headers=1.8);             // ESP32-C6
+        right(25) lid_hex(18, 28.3);                            // See-thorugh lid with hex pattern
     }
 }
 
