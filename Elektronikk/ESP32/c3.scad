@@ -33,7 +33,7 @@ k=.7;
 
 delta=.15;
 
-module case(width, length, height, headers) {
+module case(width, length, height, headers=0) {
     difference() {
         linear_extrude(height=height+headers) {
             polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
@@ -93,20 +93,28 @@ module examples() {
     // Add render() here to avoid the openscad bug that showing the top fuzzy in preview
     render(convexity=4) {
         left(125) thickcable_case(18, 28.3, 18.5, headers=1.8); // C6 with headers soldered on it
-        left(100) thickcable_case(18, 28.3, 18.5); // C6
-        left(75) case(18, 23.2, 18.5);
-        left(50) cable_case(18, 23.2, 13.5);
-        left(25) case(18, 23.2, 8.5);
-        cable_case(18, 23.2, 8.5);
+        left(100) thickcable_case(18, 28.3, 18.5);              // C6
+        left(75) case(18, 23.2, 18.5);                          // C3
+        left(50) cable_case(18, 23.2, 13.5);                    // C3
+        left(25) case(18, 23.2, 8.5);                           // C3
+        cable_case(18, 23.2, 8.5);                              // C3
 
-        right(25) lid(18, 23.2);
-        right(50) lid_hex(18, 23.2);
+        right(25) lid(18, 23.2);                                // Full lid
+        right(50) lid_hex(18, 23.2);                            // See-thorugh lid with hex pattern
     }
 }
 
 // My parts
-render(convexity=4) {
-    thickcable_case(18, 28.3, 35, headers=1.8); // C6
-    right(25) lid_hex(18, 28.3);
+module main() {
+    render(convexity=4) {
+        thickcable_case(18, 28.3, 35, headers=1.8); // C6
+        right(25) lid_hex(18, 28.3);
+    }
 }
+
+// Make examples
+examples();
+
+// Production
+// main();
 
