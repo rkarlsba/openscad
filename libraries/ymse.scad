@@ -67,7 +67,58 @@ module roundedsquare(size, radius) {
     }
 }
 
-module roundedsquare_half(size, radius) {
+// Halvrundet firkant med valgbar flatside.
+// flatside: "left" (default), "right", "top", "bottom"
+module roundedsquare_half(size, radius, flatside="left", r0=0.01) {
+
+    // Basis: flat venstreside (beholder din opprinnelige kode mest mulig)
+    module _base_left(sz, rad, rsmall) {
+        if (rad == 0) {
+            square(sz);
+        } else {
+            hull() {
+                // Venstre nederst - liten radius -> "flat" (nesten hjørne)
+                translate([rsmall, rsmall]) circle(r=rsmall);
+                // Høyre nederst - rundet
+                translate([sz[0]-rad, rad]) circle(r=rad);
+                // Venstre øverst - liten radius -> "flat"
+                translate([rsmall, sz[1]-rsmall]) circle(r=rsmall);
+                // Høyre øverst - rundet
+                translate([sz[0]-rad, sz[1]-rad]) circle(r=rad);
+            }
+        }
+    }
+
+    // Velg flatside via transformasjoner av basisformen
+    if (flatside == "left") {
+        // Som originalen
+        _base_left(size, radius, r0);
+
+    } else if (flatside == "right") {
+        // Speil rundt y-aksen ved x=0 og flytt tilbake til [0, size[0]]
+        translate([size[0], 0]) mirror([1, 0, 0]) _base_left(size, radius, r0);
+
+    } else if (flatside == "bottom") {
+        // Venstre -> bunn: roter +90° rundt origo, da havner formen i x ∈ [-size[1], 0].
+        // Flytt den til positiv x med translate([size[1], 0]).
+        translate([size[1], 0]) rotate(90) _base_left([size[1], size[0]], radius, r0);
+
+        // Merk: _base_left bruker kun size-komponentene som koordinater,
+        // og selve hullet er invariant under rotasjonen, så vi kan la size stå.
+        // For klarhet kan man rotere uten å bytte size, men denne varianten er trygg.
+
+    } else if (flatside == "top") {
+        // Venstre -> topp: roter -90° rundt origo, da havner y ∈ [-size[0], 0].
+        // Flytt den opp med translate([0, size[0]]).
+        translate([0, size[0]]) rotate(-90) _base_left([size[1], size[0]], radius, r0);
+
+    } else {
+        assert(false, str("Ugyldig flatside: ", flatside, ". Bruk \"left\", \"right\", \"top\" eller \"bottom\"."));
+    }
+}
+
+/*
+module roundedsquare_half(size, radius, flatside=0) {
     r0 = 0.01;
     if (radius == 0) {
         square(size);
@@ -88,16 +139,19 @@ module roundedsquare_half(size, radius) {
         }
     }
 }
+*/
 
 module roundedcube(dim, r) {
     linear_extrude(dim[2]) {
         roundedsquare([dim[0], dim[1]], r);
     }
 }
-
-module roundedcube_half(dim, r) {
+/*
+ * See roundedsquare_half for an explaination of flatside
+ */
+module roundedcube_half(dim, r, flatside="left") {
     linear_extrude(dim[2]) {
-        roundedsquare_half([dim[0], dim[1]], r);
+        roundedsquare_half([dim[0], dim[1]], r, flatside);
     }
 }
 

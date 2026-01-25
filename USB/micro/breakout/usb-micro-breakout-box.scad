@@ -75,7 +75,7 @@ module topp() {
             union() {
                 // Boks
                 if (airhole_fit) {
-                    roundedcube_half(ext_top_size(), rounding_r);
+                    roundedcube_half(ext_top_size(), rounding_r, "left");
                 } else {
                     roundedcube(ext_top_size(), rounding_r);
                 }
@@ -107,7 +107,7 @@ module bunn() {
     render(convexity=4) {
         difference() {
             if (airhole_fit) {
-                roundedcube_half(ext_bottom_size(), rounding_r);
+                roundedcube_half(ext_bottom_size(), rounding_r, "left");
             } else {
                 roundedcube(ext_bottom_size(), rounding_r);
             }

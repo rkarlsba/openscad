@@ -1,4 +1,4 @@
-// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+    // vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
 
 // Ferdigskrivi
 include <ymse.scad>
@@ -12,7 +12,7 @@ $fs = 0.5; // minimum fragment size (linear)
 $fa = 3;   // minimum fragment angle (angular)
 
 // Variables
-airhole_r = 12.5;
+airhole_r = 12.75;
 bryter = [10.7, 5.8];
 thickness = 2.5;
 lip_width  = 2;
