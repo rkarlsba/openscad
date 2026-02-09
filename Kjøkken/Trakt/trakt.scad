@@ -1,39 +1,41 @@
 // Code written by "Shii" Sep 2016
 // Code refubished and tweaked by Roy Sigurd Karlsbakk <roy@karlsbakk.net> September 2023
 
+// Resolution
+$fn = 0;   // fixed number of fragments
+$fs = 0.5; // minimum fragment size (linear)
+$fa = 3;   // minimum fragment angle (angular)
+
 // Lita presskanne indre diameter: 64
 lita_presskanne_id = 64;
 
 // Mellomstor presskanne indre diameter: 82
 mellomstor_presskanne_id = 82;
 
-Slack=1.5;
+tolerance=1.5;
 
 // Inner Top Diameter
-// Top_Inside_Diameter=lita_presskanne_id-Slack;
-Top_Inside_Diameter=120;
+// Top_Inside_Diameter=lita_presskanne_id-tolerance;
+Top_Inside_Diameter=40;
 
 // Total Height
-Height=Top_Inside_Diameter;
+Height=38;
 
 // Top Ledge Width
 Ledge=4;
 
 // Tube Height
-Tube_Height=45;
+Tube_Height=14;
 
 // Tube Outside Diameter
-Tube_Outside_Diameter=22;
+Tube_Outside_Diameter=8;
 
 // Tube Bottom Cut Angle
 Tube_Cut_Angle=30;
 
 // Wall Thickness
-Wall_Thickness=1.5;
+Wall_Thickness=1.2;
 
-/* [Hidden] */
-// $fn = 512;
-$fn = $preview ? 64 : 256;
 Top_Height = Height - Tube_Height;
 Top_Outside_Diameter = Top_Inside_Diameter + Wall_Thickness*2;
 Ledge_Multiplicator = 3.0;
@@ -112,3 +114,4 @@ rotate([180,0,0]) {
     }
   }
 }
+
