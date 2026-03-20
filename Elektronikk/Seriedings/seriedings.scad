@@ -35,8 +35,9 @@ k=.7;
 
 delta=.15;
 
-module case(width, length, height, headers=0, rest_block=-1) {
-    _rest_block = rest_block < 0 ? width-5+delta : rest_block;
+module case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1) {
+    _rest_block_x = rest_block_x < 0 ? width-5+delta : rest_block_x;
+    _rest_block_y = rest_block_y < 0 ? length+delta : rest_block_y;
     difference() {
         linear_extrude(height=height+headers) {
             polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
@@ -50,8 +51,8 @@ module case(width, length, height, headers=0, rest_block=-1) {
     if (headers > 0) {
         up(1) {
             // cuboid([width-5+delta,length+delta,headers], anchor=BOTTOM, rounding=k);
-            echo(str("rest_block = ", rest_block));
-            cuboid([_rest_block,length+delta,headers], anchor=BOTTOM, rounding=k);
+            echo(str("rest_block_x = ", rest_block_x));
+            cuboid([_rest_block_x, length+delta,headers], anchor=BOTTOM, rounding=k);
         }
     }
 }
@@ -86,9 +87,9 @@ module cable_case(width, length, height) {
     }
 }
 
-module thickcable_case(width, length, height, headers=0, rest_block=-1) {
+module thickcable_case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1) {
     difference() {
-        case(width, length, height, headers, rest_block);
+        case(width, length, height, headers, rest_block_x);
         up(height-7.5) fwd(-.5*length-1) cuboid([6, 14, 8.5+headers], rounding=k, anchor=BOTTOM);
     }
 }
@@ -135,10 +136,11 @@ module esp32_classic38_usb_micro_max3232() {
     max3232_x = 32.5;
     max3232_y = 29.5;
     esp32_max3232_y = esp32_y+max3232_y+10;
-    rest_block = esp32_x-5+delta;
+    rest_block_x = esp32_x-5+delta;
+    rest_block_y = esp32_y+5;
 
     render(convexity=4) {
-        thickcable_case(max3232_x, esp32_max3232_y, esp32_z, esp32_h, rest_block=rest_block); // ESP32-C3 med MAX3232
+        thickcable_case(max3232_x, esp32_max3232_y, esp32_z, esp32_h, rest_block_x=rest_block_x, rest_block_y=rest_block_y); // ESP32-C3 med MAX3232
         right(max3232_x*sqrt(2)) {
             lid_hex(max3232_x, esp32_max3232_y);                          // See-thorugh lid with hex pattern
         }
