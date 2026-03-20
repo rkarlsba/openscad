@@ -1,0 +1,153 @@
+// Copyright 2025, Jeroen van Grondelle
+//
+// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+// Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Changes by Roy Sigurd Karlsbakk <roy@karlsbakk.net> in 2026-01:
+//
+// - Added resolution ($fn etc)
+// - Added render() to avoid the openscad bug that shows fuzzy edges in case difference() is exact
+// - Added new thickcable_case
+// - Added "headers" argument to cases to add space in case haders are soldered on. Headers are given in their height, typially 1.8mm
+// - Perhaps presets should be made for different boards, like these?
+//    c3_mini_size = [18, 23.2, 18.5]
+//    c6_mini_size = [18, 28.3, 18.5]
+//
+
+include <BOSL2/std.scad>;
+include <BOSL2/rounding.scad>
+use <hex-grid.scad>
+
+// Resolution
+$fn = 0;   // fixed number of fragments
+$fs = 0.5; // minimum fragment size (linear)
+$fa = 3;   // minimum fragment angle (angular)
+
+// corner definition
+cut = 1.5;
+k=.7;
+
+delta=.15;
+
+module case(width, length, height, headers=0, rest_block=-1) {
+    _rest_block = rest_block < 0 ? width-5+delta : rest_block;
+    difference() {
+        linear_extrude(height=height+headers) {
+            polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
+        }
+
+        up(1) cuboid([width+delta,length+delta,height+headers], anchor=BOTTOM);
+        up(2+headers) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=2*k, anchor=BOTTOM); // Usb-c
+        up(height-1.5+headers) prismoid(size2=[width+delta,length+delta], size1=[width+delta +.5,length+delta+.5], h=1.5, anchor=BOTTOM);
+        up(height-1+headers) fwd(-1* length/2) cuboid([4,4, 4], anchor=BOTTOM); // Nook
+    }
+    if (headers > 0) {
+        up(1) {
+            // cuboid([width-5+delta,length+delta,headers], anchor=BOTTOM, rounding=k);
+            echo(str("rest_block = ", rest_block));
+            cuboid([_rest_block,length+delta,headers], anchor=BOTTOM, rounding=k);
+        }
+    }
+}
+
+module lid(width, length) { 
+    union() {
+         linear_extrude(height=1.5) {
+            polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
+         }
+         
+         up(1.4) cuboid([width,length,1.6], anchor=BOTTOM);
+         up(1.5) prismoid(size1=[width/1.5,length], size2=[width/1.5,length+.7], h=1.5, anchor=BOTTOM);
+         up(1.5) prismoid(size1=[width,length/1.5], size2=[width+.7,length/1.5], h=1.5, anchor=BOTTOM);
+    }
+}
+
+module lid_hex(width, length) {
+    difference() {
+        lid(width, length);
+        down(3) cuboid($fn=30, [width-2,length-2,10], anchor=BOTTOM);
+    }
+    intersection() {
+        up(0.5) rotate([0,0, 20]) create_grid(size=[2*width,2.1*length,1],SW=4,wall=.8);
+        down(3) cuboid($fn=30, [width-2+delta, length-2+delta, 10], rounding=k, anchor=BOTTOM);
+    }
+}
+
+module cable_case(width, length, height) {
+    difference() {
+        case(width, length, height);
+        up(height-5.5) fwd(-.5*length-1) cuboid([1.5, 14, 5], rounding=k, anchor=BOTTOM);
+    }
+}
+
+module thickcable_case(width, length, height, headers=0, rest_block=-1) {
+    difference() {
+        case(width, length, height, headers, rest_block);
+        up(height-7.5) fwd(-.5*length-1) cuboid([6, 14, 8.5+headers], rounding=k, anchor=BOTTOM);
+    }
+}
+
+
+// EXAMPLES
+//
+module examples() {
+    // Add render() here to avoid the openscad bug that showing the top fuzzy in preview
+    render(convexity=4) {
+        left(100) thickcable_case(18, 28.3, 18.5, headers=1.8); // ESP32-C6 with headers soldered on it
+        left(75) thickcable_case(18, 28.3, 18.5);               // ESP32-C6
+        left(50) case(18, 23.2, 18.5);                          // ESP32-C3
+        left(25) cable_case(18, 23.2, 13.5);                    // ESP32-C3
+        case(18, 23.2, 8.5);                                    // ESP32-C3
+        right(25) cable_case(18, 23.2, 8.5);                    // ESP32-C3
+
+        right(50) lid(18, 23.2);                                // Full lid
+        right(75) lid_hex(18, 23.2);                            // See-thorugh lid with hex pattern
+    }
+}
+
+// My parts
+module esp32_c3_max3232() {
+    x = 18;
+    y = 23.2;
+    z = 18.5;
+    h = 1.8;
+
+    render(convexity=4) {
+        thickcable_case(x, y, z, h);          // ESP32-C3 med MAX3232
+        right(x*sqrt(2)) {
+            lid_hex(x, y);                    // See-thorugh lid with hex pattern
+        }
+    }
+}
+
+// My parts
+module esp32_classic38_usb_micro_max3232() {
+    esp32_x = 28.5;
+    esp32_y = 55.5;
+    esp32_z = 18.5;
+    esp32_h = 1.8;
+    max3232_x = 32.5;
+    max3232_y = 29.5;
+    esp32_max3232_y = esp32_y+max3232_y+10;
+    rest_block = esp32_x-5+delta;
+
+    render(convexity=4) {
+        thickcable_case(max3232_x, esp32_max3232_y, esp32_z, esp32_h, rest_block=rest_block); // ESP32-C3 med MAX3232
+        right(max3232_x*sqrt(2)) {
+            lid_hex(max3232_x, esp32_max3232_y);                          // See-thorugh lid with hex pattern
+        }
+    }
+}
+
+// Make examples
+// examples();
+
+// Production
+// main();
+esp32_classic38_usb_micro_max3232();

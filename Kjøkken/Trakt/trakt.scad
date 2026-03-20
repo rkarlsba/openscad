@@ -16,25 +16,25 @@ tolerance=1.5;
 
 // Inner Top Diameter
 // Top_Inside_Diameter=lita_presskanne_id-tolerance;
-Top_Inside_Diameter=40;
+Top_Inside_Diameter=150;
 
 // Total Height
-Height=38;
+Height=120;
 
 // Top Ledge Width
 Ledge=4;
 
 // Tube Height
-Tube_Height=14;
+Tube_Height=35;
 
 // Tube Outside Diameter
-Tube_Outside_Diameter=8;
+Tube_Outside_Diameter=16;
 
 // Tube Bottom Cut Angle
 Tube_Cut_Angle=30;
 
 // Wall Thickness
-Wall_Thickness=1.2;
+Wall_Thickness=1.0;
 
 Top_Height = Height - Tube_Height;
 Top_Outside_Diameter = Top_Inside_Diameter + Wall_Thickness*2;
