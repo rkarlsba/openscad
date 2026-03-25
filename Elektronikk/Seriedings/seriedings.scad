@@ -38,30 +38,32 @@ delta=.15;
 module case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1) {
     _rest_block_x = rest_block_x < 0 ? width-5+delta : rest_block_x;
     _rest_block_y = rest_block_y < 0 ? length+delta : rest_block_y;
+
+    echo(str("width = ", width));
+    echo(str("length = ", length));
+    echo(str("headers = ", headers));
+    echo(str("rest_block_x = ", rest_block_x));
+    echo(str("rest_block_y = ", rest_block_y));
+    echo(str("_rest_block_y-length = ", length-_rest_block_y));
+    echo(str("_rest_block_y-length-10 = ", length-_rest_block_y-10));
+
     difference() {
         linear_extrude(height=height+headers) {
             polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
         }
 
-        up(1) cuboid([width+delta,length+delta,height+headers], anchor=BOTTOM);
-        up(2+headers) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=2*k, anchor=BOTTOM); // Usb-c
+        up(1) cuboid([width+delta,length+delta,height+headers], anchor=BOTTOM); // MAX3232
+        up(1.3+headers) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=2*k, anchor=BOTTOM); // USB-C
         up(height-1.5+headers) prismoid(size2=[width+delta,length+delta], size1=[width+delta +.5,length+delta+.5], h=1.5, anchor=BOTTOM);
         up(height-1+headers) fwd(-1* length/2) cuboid([4,4, 4], anchor=BOTTOM); // Nook
     }
     if (headers > 0) {
         up(1) {
-            // cuboid([width-5+delta,length+delta,headers], anchor=BOTTOM, rounding=k);
-            echo(str("width = ", width));
-            echo(str("length = ", length));
-            echo(str("headers = ", headers));
-            echo(str("rest_block_x = ", rest_block_x));
-            echo(str("rest_block_y = ", rest_block_y));
-            echo(str("_rest_block_y-length = ", length-_rest_block_y));
-            echo(str("_rest_block_y-length-10 = ", length-_rest_block_y-10));
-            // echo(str(" = ", ));
             fwd((length-_rest_block_y)/2) cuboid([_rest_block_x, _rest_block_y, headers], anchor=BOTTOM, rounding=k);
         }
     }
+    back(length/2-2) color("green") cuboid([width+delta,4,2.5], anchor=BOTTOM, rounding=k);
+    back(length/2-15) color("green") cuboid([width+delta,7,2.5], anchor=BOTTOM, rounding=k);
 }
 
 module lid(width, length) { 
@@ -97,7 +99,7 @@ module cable_case(width, length, height) {
 module thickcable_case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1) {
     difference() {
         case(width, length, height, headers, rest_block_x, rest_block_y);
-        up(1.5) {
+        up(4) {
             fwd(-.5*length-1) {
                 cuboid([32, 14.3, 15.3], rounding=2, anchor=BOTTOM);
             }
@@ -139,12 +141,11 @@ module esp32_c3_max3232() {
 }
 
 // My parts
-module esp32_classic38_usb_micro_max3232() {
+module esp32_classic38_usb_micro_max3232(case=true, lid=true) {
     esp32_x = 28.5;
     esp32_y = 55.5;
-    esp32_z = 18.5;
-    //esp32_headers = 1.8;
-    esp32_headers = 0;
+    esp32_z = 28.0;
+    esp32_headers = 0; // 1.8mm hvis de stikker ut nedover, denne ligger på rygg
     max3232_x = 32.5;
     max3232_y = 29.0;
     crossbar = 4;
@@ -153,11 +154,15 @@ module esp32_classic38_usb_micro_max3232() {
     rest_block_y = esp32_y;
 
     render(convexity=4) {
-        thickcable_case(max3232_x, esp32_max3232_y, esp32_z, esp32_headers,
-                        rest_block_x=rest_block_x, rest_block_y=rest_block_y); // ESP32-C3 med MAX3232
-        back(13.0) cuboid([esp32_x,crossbar,esp32_z/2], anchor=BOTTOM);
-        right(max3232_x*sqrt(2)) {
-            lid_hex(max3232_x, esp32_max3232_y);                          // See-thorugh lid with hex pattern
+        if (case) {
+            thickcable_case(max3232_x, esp32_max3232_y, esp32_z, esp32_headers,
+                            rest_block_x=rest_block_x, rest_block_y=rest_block_y); // ESP32-C3 med MAX3232
+            back(13.0) cuboid([esp32_x+4.5,crossbar,esp32_z/sqrt(2)], anchor=BOTTOM);
+        }
+        if (lid) {
+            right(max3232_x*sqrt(2)) {
+                lid_hex(max3232_x, esp32_max3232_y);                          // See-thorugh lid with hex pattern
+            }
         }
     }
 }
@@ -167,4 +172,5 @@ module esp32_classic38_usb_micro_max3232() {
 
 // Production
 // main();
-esp32_classic38_usb_micro_max3232();
+esp32_classic38_usb_micro_max3232(case=true, lid=true);
+
