@@ -3,57 +3,63 @@
 $fn = 128;
 bugfix = $preview ? .1 : 0;
 
-// ---- Parameters (filled by Python) ----
-corners = @@corners@@;
-height = @@thickness@@;
+// ---- Parameters (from Python) ----
+svg_size = [@@SVG_W@@, @@SVG_H@@];
+margin = @@MARGIN@@;
+
+corners = @@CORNERS@@;
+height = @@THICKNESS@@;
 shrink = height;
 
-bottom_size = [@@width@@,@@height_mm@@];
-
-border = @@border@@;
-border_width = @@border_width@@;
-border_height = @@border_height@@;
+border = @@BORDER@@;
+border_width = @@BORDER_WIDTH@@;
+border_height = @@BORDER_HEIGHT@@;
 text_height = border_height;
 
-holes = @@holes@@;
-hole_d = @@hole_d@@;
+holes = @@HOLES@@;
+hole_d = @@HOLE_D@@;
 hole_h = height*2;
-hole_dist = @@hole_dist@@;
+hole_dist = @@HOLE_DIST@@;
 
-graphics_file = "@@svg_file@@";
+graphics_file = "@@SVG_FILE@@";
 
-// ---- Derived ----
+// ---- Derived sizes ----
+bottom_size = [
+    svg_size[0] + margin*2 + shrink*2,
+    svg_size[1] + margin*2 + shrink*2
+];
+
 top_size = [
     bottom_size[0] - shrink*2,
     bottom_size[1] - shrink*2
 ];
 
-// ---- Geometry ----
+// ------------ Geometry ------------
 
 module rounded_square(size, radius) {
     translate([radius,radius]) {
         minkowski() {
-            square([size[0] - 2*radius, size[1] - 2 * radius]);
+            square([size[0] - 2*radius, size[1] - 2*radius]);
             circle(r=radius, $fn=50);
         }
     }
 }
 
-module rounded_cube(size, radius, height) {
-    linear_extrude(height) {
+module rounded_cube(size, radius, h) {
+    linear_extrude(h) {
         rounded_square(size, radius);
     }
 }
 
-module border() {
+module border_shape() {
     translate([shrink,shrink,height]) {
         difference() {
-            rounded_cube(size=top_size, radius=corners, border_height);
+            rounded_cube(top_size, corners, border_height);
             translate([border_width,border_width,0]) {
                 rounded_cube(
-                    size=[top_size[0]-border_width*2,
-                          top_size[1]-border_width*2],
-                    radius=corners,
+                    [ top_size[0]-border_width*2,
+                      top_size[1]-border_width*2 ],
+                    corners,
                     border_height
                 );
             }
@@ -61,21 +67,19 @@ module border() {
     }
 }
 
-module bunnplate() {
+module baseplate() {
     hull() {
-        rounded_cube(size=bottom_size,radius=corners,.1);
+        rounded_cube(bottom_size, corners, .1);
         translate([shrink,shrink,height]) {
-            rounded_cube(size=top_size,radius=corners,.1);
+            rounded_cube(top_size, corners, .1);
         }
     }
-    if (border) {
-        border();
-    }
+    if (border) border_shape();
 }
 
 module main() {
     difference() {
-        bunnplate();
+        baseplate();
         if (holes) {
             translate([hole_dist,bottom_size[1]-hole_dist,-bugfix])
                 cylinder(d=hole_d,h=hole_h+bugfix*2);
@@ -88,7 +92,12 @@ module main() {
 
 main();
 
-translate([5,5,height]) {
+// ---- SVG ----
+translate([
+    (bottom_size[0] - svg_size[0]) / 2,
+    (bottom_size[1] - svg_size[1]) / 2,
+    height
+]) {
     linear_extrude(text_height)
         import(graphics_file);
 }
