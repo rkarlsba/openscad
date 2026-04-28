@@ -1,25 +1,34 @@
-/*
- * vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:ft=openscad
- */
+// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:ft=openscad
 
 $fn = 128;
-
 bugfix = $preview ? .1 : 0;
 
-corners = 8;
-height = 1.5;
+// ---- Parameters (filled by Python) ----
+corners = {corners};
+height = {thickness};
 shrink = height;
-bottom_size = [165,120];
-top_size = [bottom_size[0]-shrink*2,bottom_size[1]-shrink*2];
-border = true;
-border_width = 1;
-border_height = 1;
+
+bottom_size = [{width},{height_mm}];
+
+border = {border};
+border_width = {border_width};
+border_height = {border_height};
 text_height = border_height;
-holes = false;
-hole_d = 5;
+
+holes = {holes};
+hole_d = {hole_d};
 hole_h = height*2;
-hole_dist = 10;
-graphics_file = "la-linea-dass3.svg";
+hole_dist = {hole_dist};
+
+graphics_file = "{svg_file}";
+
+// ---- Derived ----
+top_size = [
+    bottom_size[0] - shrink*2,
+    bottom_size[1] - shrink*2
+];
+
+// ---- Geometry ----
 
 module rounded_square(size, radius) {
     translate([radius,radius]) {
@@ -41,9 +50,12 @@ module border() {
         difference() {
             rounded_cube(size=top_size, radius=corners, border_height);
             translate([border_width,border_width,0]) {
-                rounded_cube(size=[top_size[0]-border_width*2,
-                    top_size[1]-border_width*2],
-                    radius=corners, border_height);
+                rounded_cube(
+                    size=[top_size[0]-border_width*2,
+                          top_size[1]-border_width*2],
+                    radius=corners,
+                    border_height
+                );
             }
         }
     }
@@ -51,9 +63,9 @@ module border() {
 
 module bunnplate() {
     hull() {
-        rounded_cube(size=bottom_size,radius=corners, .1);
+        rounded_cube(size=bottom_size,radius=corners,.1);
         translate([shrink,shrink,height]) {
-            rounded_cube(size=top_size,radius=corners, .1);
+            rounded_cube(size=top_size,radius=corners,.1);
         }
     }
     if (border) {
@@ -65,19 +77,11 @@ module main() {
     difference() {
         bunnplate();
         if (holes) {
-            translate([hole_dist,bottom_size[1]-hole_dist,-bugfix]) {
+            translate([hole_dist,bottom_size[1]-hole_dist,-bugfix])
                 cylinder(d=hole_d,h=hole_h+bugfix*2);
-            }
             translate([bottom_size[0]-hole_dist,
-                bottom_size[1]-hole_dist,-bugfix]) {
+                      bottom_size[1]-hole_dist,-bugfix])
                 cylinder(d=hole_d,h=hole_h+bugfix*2);
-            }
-        }
-    }
-    if (0)
-    translate([10,10,height]) {
-        linear_extrude(text_height) {
-            import(graphics_file);
         }
     }
 }
@@ -85,9 +89,7 @@ module main() {
 main();
 
 translate([5,5,height]) {
-    linear_extrude(text_height) {
+    linear_extrude(text_height)
         import(graphics_file);
-    }
 }
-
 
