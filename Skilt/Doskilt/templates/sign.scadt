@@ -1,0 +1,95 @@
+// vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:ft=openscad
+
+$fn = 128;
+bugfix = $preview ? .1 : 0;
+
+// ---- Parameters (filled by Python) ----
+corners = @@corners@@;
+height = @@thickness@@;
+shrink = height;
+
+bottom_size = [@@width@@,@@height_mm@@];
+
+border = @@border@@;
+border_width = @@border_width@@;
+border_height = @@border_height@@;
+text_height = border_height;
+
+holes = @@holes@@;
+hole_d = @@hole_d@@;
+hole_h = height*2;
+hole_dist = @@hole_dist@@;
+
+graphics_file = "@@svg_file@@";
+
+// ---- Derived ----
+top_size = [
+    bottom_size[0] - shrink*2,
+    bottom_size[1] - shrink*2
+];
+
+// ---- Geometry ----
+
+module rounded_square(size, radius) {
+    translate([radius,radius]) {
+        minkowski() {
+            square([size[0] - 2*radius, size[1] - 2 * radius]);
+            circle(r=radius, $fn=50);
+        }
+    }
+}
+
+module rounded_cube(size, radius, height) {
+    linear_extrude(height) {
+        rounded_square(size, radius);
+    }
+}
+
+module border() {
+    translate([shrink,shrink,height]) {
+        difference() {
+            rounded_cube(size=top_size, radius=corners, border_height);
+            translate([border_width,border_width,0]) {
+                rounded_cube(
+                    size=[top_size[0]-border_width*2,
+                          top_size[1]-border_width*2],
+                    radius=corners,
+                    border_height
+                );
+            }
+        }
+    }
+}
+
+module bunnplate() {
+    hull() {
+        rounded_cube(size=bottom_size,radius=corners,.1);
+        translate([shrink,shrink,height]) {
+            rounded_cube(size=top_size,radius=corners,.1);
+        }
+    }
+    if (border) {
+        border();
+    }
+}
+
+module main() {
+    difference() {
+        bunnplate();
+        if (holes) {
+            translate([hole_dist,bottom_size[1]-hole_dist,-bugfix])
+                cylinder(d=hole_d,h=hole_h+bugfix*2);
+            translate([bottom_size[0]-hole_dist,
+                      bottom_size[1]-hole_dist,-bugfix])
+                cylinder(d=hole_d,h=hole_h+bugfix*2);
+        }
+    }
+}
+
+main();
+
+translate([5,5,height]) {
+    linear_extrude(text_height)
+        import(graphics_file);
+}
+
