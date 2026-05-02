@@ -2,7 +2,7 @@
 
 # Basic Object Positioning: Anchor, Spin and Orient
 
-When you create attachable objects using BOSL2 you have some options
+When you create attachable objects using BOSL2 you have some 
 options for controling how that object is positioned relative to the
 origin and the coordinate axes.  The basic object positioning
 parameters are optional named parameters supported by attachable
@@ -257,43 +257,6 @@ More precisely, the Z direction of the shape is rotated to align with
 the vector you specify.  Two dimensional attachables, which have no Z vector,
 do not accept the `orient=` argument.  
 
-
-## Mixing Anchoring, Spin, and Orientation
-When giving `anchor=`, `spin=`, and `orient=`, they are applied anchoring first, spin second,
-then orient last.  For example, here's a cube:
-
-```openscad-3D
-include <BOSL2/std.scad>
-cube([20,20,50]);
-```
-
-You can center it with an `anchor=CENTER` argument:
-
-```openscad-3D
-include <BOSL2/std.scad>
-cube([20,20,50], anchor=CENTER);
-```
-
-Add a 45 degree spin:
-
-```openscad-3D
-include <BOSL2/std.scad>
-cube([20,20,50], anchor=CENTER, spin=45);
-```
-
-Now tilt the top up and forward:
-
-```openscad-3D
-include <BOSL2/std.scad>
-cube([20,20,50], anchor=CENTER, spin=45, orient=UP+FWD);
-```
-
-For 2D shapes, you can mix `anchor=` with `spin=`, but not with `orient=`.
-
-```openscad-2D
-include <BOSL2/std.scad>
-square([40,30], anchor=BACK+LEFT, spin=30);
-```
 
 ## Mixing Anchoring, Spin, and Orientation
 When giving `anchor=`, `spin=`, and `orient=`, they are applied anchoring first, spin second,

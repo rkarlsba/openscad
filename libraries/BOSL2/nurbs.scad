@@ -14,7 +14,8 @@
 // FileSummary: NURBS and B-spline curves and surfaces.
 //////////////////////////////////////////////////////////////////////
 
-include<BOSL2/std.scad>
+_BOSL2_NURBS = is_undef(_BOSL2_STD) && (is_undef(BOSL2_NO_STD_WARNING) || !BOSL2_NO_STD_WARNING) ?
+       echo("Warning: nurbs.scad included without std.scad; dependencies may be missing\nSet BOSL2_NO_STD_WARNING = true to mute this warning.") true : true;
 
 // Section: NURBS Curves
 
@@ -27,39 +28,53 @@ include<BOSL2/std.scad>
 //   pts = nurbs_curve(control, degree, splinesteps, [mult=], [weights=], [type=], [knots=]);
 //   pts = nurbs_curve(control, degree, u=, [mult=], [weights=], [type=], [knots=]);
 // Description:
-//   Compute the points specified by a NURBS curve.  You specify the NURBS by supplying the control points, knots and weights.  and knots.
+//   Compute the points specified by a NURBS curve.  You specify the NURBS by supplying the control points, knots and weights.  
 //   Only the control points are required.  The knots and weights default to uniform, in which case you get a uniform B-spline.
+//   The length of `weights`, if given, must match the length of `control`.  
 //   You can specify endpoint behavior using the `type` parameter.  The default, "clamped", gives a curve which starts and
 //   ends at the first and last control points and moves in the tangent direction to the first and last control point segments.
-//   If you request an "open" spline you get a curve which starts somewhere in the middle of the control points.
-//   Finally, a "closed" curve is a one that starts where it ends.  Note that each of these types of curve require
-//   a different number of knots.
+//   A "closed" curve is a one that starts where it ends.  An "open" spline is a generic curve that starts somewhere
+//   in the middle of the control points. The "open" curve is less common; you only need this if you are managing the
+//   knots and control points yourself to create your own clamped or closed curve, so avoid this type unless you know what you're doing.  
+//   Each of these types of curve require a different number of knots as described below.  
 //   .
 //   The control points are the most important control over the shape
-//   of the curve.  You must have at least p+1 control points for clamped and open NURBS.  Unlike a bezier, there is no maximum
+//   of the curve.  You must have at least degree+1 control points for clamped and open NURBS.  Don't confuse the degree of a
+//   NURBS with its *order*:  the order of a NURBS, often called $p$, is degree+1.  Unlike a bezier, there is no maximum
 //   number of control points.  A single NURBS is more like a bezier **path** than like a single bezier spline.
 //   .
 //   A NURBS or B-spline is a curve made from a moving average of several Bezier curves.  The knots specify when one Bezier fades
-//   away to be replaced by the next one.  At generic points, the curves are differentiable, but by increasing knot multiplicity, you
-//   can decrease smoothness, or even produce a sharp corner.  The knots must be an ascending sequence of values, but repeating values
-//   is OK and controls the smoothness at the knots.  The easiest way to specify the knots is to take the default of uniform knots,
-//   and simply set the multiplicity to create repeated knots as needed.  The total number of knots is then the sum of the multiplicity
-//   vector.  Alternatively you can simply list the knots yourself.  Note that regardless of knot values, the domain of evaluation
+//   away to be replaced by the next one.  The knot list is a non-increasing list of values that you specify using two parameters,
+//   `knots` and `mult`.  In practice changing the knot values doesn't have a strong effect on the curve, so it usually suffices
+//   to use a uniform knot vector, which is the default.  The major exception to this is repeated knot values.  
+//   At generic points in the NURBS, the curve is infinitely differentiable, but at a point that
+//   corresponds to a knot, a NURBS with degree $d$ will have a $(d-1)\mathrm{th}$ derivative that is continuous.
+//   However, if a value repeats in the knot vector that creates a knot with a multiplicity larger than 1, and each
+//   repetition decreases the smoothness of the curve at the corresponding NURBS point by 1.  This means that
+//   if the multiplicity equals the degree then the curve is not differentiable: it has a corner at the knot point.  Using the `mult` parameter
+//   without giving `knots` allows you to give a vector of multiplicities, which produces a knot vector that is uniform
+//   except it has some repeated knots.  A value of 1 in the `mult` vector means the knot is not repeated; a value of 2 means it is
+//   repeated twice.  The multiplicity can be as large as the degree but no larger.  (A special exception is at the ends for open
+//   NURBS, where multiplicity degree+1 is permitted.)  When you specify the multiplicity vector the total number of knots is the sum of that vector.  You can also list
+//   the knots explicitly yourself.  The knots exist in the parameter space of the NURBS, but the knot values you give can cover any range;
+//   they will be scaled to correspond properly to the NURBS parameter space: regardless of the knot values you give, the domain of evaluation
 //   for u is always the interval [0,1], and it will be scaled to give the entire valid portion of the curve you have chosen.
-//   If you give both a knot vector and multiplicity then the multiplicity vector is appled to the provided knots.
-//   For an open spline the number of knots must be `len(control)+p+1`.  For a clamped spline the number of knots is `len(control)-p+1`,
+//   . 
+//   For an open spline the number of knots must be `len(control)+degree+1`.  For a clamped spline the number of knots is `len(control)-degree+1`,
 //   and for a closed spline you need `len(control)+1` knots.  If you are using the default uniform knots then the way to
-//   ensure that you have the right number is to check that `sum(mult)` is either not set or equal to the correct value.
+//   ensure that you have the right number is to check that mult is not set or `sum(mult)` equals the correct value.
 //   .
 //   You can use this function to evaluate the NURBS at `u`, which can be a single point or a list of points.  You can also
 //   use it to evaluate the NURBS over its entire domain by giving a splinesteps value.  This specifies the number of segments
 //   to use between each knot and guarantees a point exactly at each knot.  This may be important if you set the knot multiplicity
 //   to the degree somewhere in your curve, which creates a corner at the knot, because it guarantees a sharp corner regardless
-//   of the number of points.  
+//   of the number of points.  If you don't give `u` or `splinesteps` then `splinesteps=16` is used as the default evaluation.  
+//   .
+//   Instead of providing separate parameters you can give a first parameter of the form of a NURBS parameter list: `[type, degree, control, knots, mult, weights]`.  
 // Arguments:
-//   control = list of control points in any dimension
+//   control = list of control points in any dimension or a NURBS parameter list
 //   degree = degree of NURBS
-//   splinesteps = evaluate whole spline with this number of segments between each pair of knots
+//   splinesteps = evaluate whole spline with this number of segments between each pair of knots.  Default: 16 if `u` is not given
 //   ---
 //   u = list of values or range in the interval [0,1] where the NURBS should be evaluated
 //   mult = list of multiplicities of the knots.  Default: all 1
@@ -173,8 +188,16 @@ include<BOSL2/std.scad>
 //   debug_nurbs(control, 3, splinesteps=16,weights=w,mult=[1,3,3],width=.1,size=.2,type="closed",show_knots=true);
 
 function nurbs_curve(control,degree,splinesteps,u,  mult,weights,type="clamped",knots) =
-    assert(num_defined([splinesteps,u])==1, "Must define exactly one of u and splinesteps")
-    is_finite(u) ? nurbs_curve(control,degree,u=[u],mult,weights,type=type)[0]
+    let(
+        splinesteps = !any_defined([splinesteps,u]) ? 16 : splinesteps
+    )
+    is_list(control) && in_list(control[0], ["closed","open","clamped"]) ?
+       assert(len(control)>=6, "Invalid NURBS parameter list")
+       assert(num_defined([degree,mult,weights,knots])==0,
+              "Cannot give degree, mult, weights or knots when you provide a NURBS parameter list")
+       nurbs_curve(control[2], control[1], splinesteps, u, weights=control[5],mult=control[4], type=control[0], knots=control[3])
+  : assert(num_defined([splinesteps,u])==1, "Must define exactly one of u and splinesteps")
+    is_finite(u) ? nurbs_curve(control,degree,u=[u],mult=mult,weights=weights,knots=knots,type=type)[0]
   : assert(is_undef(splinesteps) || (is_int(splinesteps) && splinesteps>0), "splinesteps must be a positive integer")
     let(u=is_range(u) ? list(u) : u)                  
     assert(is_undef(u) || (is_vector(u) && min(u)>=0 && max(u)<=1), "u must be a list of points on the interval [0,1] or a range contained in that interval")
@@ -182,13 +205,13 @@ function nurbs_curve(control,degree,splinesteps,u,  mult,weights,type="clamped",
                       let(
                            dim = len(control[0]),
                            control = [for(i=idx(control)) [each control[i]*weights[i],weights[i]]],
-                           curve = nurbs_curve(control,degree,u=u,splinesteps=splinesteps, mult=mult,type=type)
+                           curve = nurbs_curve(control,degree,u=u,splinesteps=splinesteps, mult=mult, knots=knots, type=type)
                       )
                       [for(pt=curve) select(pt,0,-2)/last(pt)]
   :
     let(
          uniform = is_undef(knots), 
-         dum=assert(in_list(type, ["closed","open","clamped"]), str("Unknown nurbs spline type", type))
+         dum=assert(in_list(type, ["closed","open","clamped"]), str("Unknown nurbs spline type: ", type))
              assert(type=="closed" || len(control)>=degree+1, str(type," nurbs requires at least degree+1 control points"))
              assert(is_undef(mult) || is_vector(mult), "mult must be a vector"),
          badmult = is_undef(mult) ? []
@@ -206,11 +229,12 @@ function nurbs_curve(control,degree,splinesteps,u,  mult,weights,type="clamped",
                                           "where degree+1 is allowed.  The mult vector has bad values at indices: ",badmult))
                   assert(is_undef(knots) || is_undef(mult) || len(mult)==len(knots), "If both mult and knots are given they must be vectors of the same length")
                   assert(is_undef(mult) || type!="clamped" || sum(mult)==len(control)-degree+1,
-                         str("For ",type," spline knot count (sum of multiplicity vector) must be ",len(control)-degree+1," but is instead ",mult?sum(mult):0))
+                         str("For clamped spline knot count (sum of multiplicity vector) must be ",len(control)-degree+1," but is instead ",mult?sum(mult):0))
                   assert(is_undef(mult) || type!="closed" || sum(mult)==len(control)+1,
                          str("For closed spline knot count (sum of multiplicity vector) must be ",len(control)+1," but is instead ",mult?sum(mult):0))
                   assert(is_undef(mult) || type!="open" || sum(mult)==len(control)+degree+1,
-                         str("For closed spline knot count (sum of multiplicity vector) must be ",len(control)+degree+1," but is instead ",mult?sum(mult):0)),
+                         str("For open spline knot count (sum of multiplicity vector) must be ",len(control)+degree+1," but is instead ",mult?sum(mult):0))
+                  assert(uniform || is_increasing(knots), "Knot vector must be increasing"),
          control = type=="open" ? control
                  : type=="clamped" ? control  //concat(repeat(control[0], degree),control, repeat(last(control),degree))
                  : /*type=="closed"*/ concat(control, select(control,count(degree))),
@@ -235,7 +259,7 @@ function nurbs_curve(control,degree,splinesteps,u,  mult,weights,type="clamped",
               : uniform ? [for(i=idx(mult)) each repeat(i/(len(mult)-1),mult[i])]
               : let(
                     xknots = is_undef(mult)? knots
-                           : assert(len(mult) == len(knots), "If knot vector and mult vector must be the same length")
+                           : assert(len(mult) == len(knots), "Knot vector and mult vector must be the same length")
                              [for(i=idx(mult)) each repeat(knots[i], mult[i])]
                 )
                 type=="open" ? assert(len(xknots)==len(control)+degree+1, str("For open spline, knot vector with multiplicity must have length ",
@@ -244,7 +268,7 @@ function nurbs_curve(control,degree,splinesteps,u,  mult,weights,type="clamped",
               : type=="clamped" ? assert(len(xknots) == len(control)+1-degree, str("For clamped spline of degree ",degree,", knot vector with multiplicity must have length ",
                                                                         len(control)+1-degree," but has length ", len(xknots)))
                                   assert(xknots[0]!=xknots[1] && last(xknots)!=select(xknots,-2),
-                                         "For clamped splint, first and last knots cannot repeat (must have multiplicity one")
+                                         "For clamped spline, first and last knots cannot repeat (must have multiplicity one")
                                   concat(repeat(xknots[0],degree), xknots, repeat(last(xknots),degree))
               : /*type=="closed"*/ assert(len(xknots) == len(control)+1-degree,  str("For closed spline, knot vector (including multiplicity) must have length ",
                                                                         len(control)+1-degree," but has length ", len(xknots),control))
@@ -253,55 +277,65 @@ function nurbs_curve(control,degree,splinesteps,u,  mult,weights,type="clamped",
                                  _extend_knot_vector(xknots,0,len(control)+degree+1),
          bound = type=="clamped" ? undef
                : [knot[degree], knot[len(control)]],
-         adjusted_u = !is_undef(splinesteps) ?
-                         [for(i=[degree:1:len(control)-1])
-                           each 
-                             if (knot[i]!=knot[i+1])
-                               lerpn(knot[i],knot[i+1],splinesteps, endpoint=false),
-                          if (type!="closed") knot[len(control)]
-                         ]
-                    : is_undef(bound) ? u
-                    : add_scalar((bound[1]-bound[0])*u,bound[0])
-    )
-    uniform?
-           let(
-               msum = cumsum(mult)
-           )
-           [for(uval=adjusted_u)
-              let(
-                  mind = floor(uval*(len(mult)-1)),
-                  knotidxR=msum[mind]-1,
-                  knotidx = knotidxR<len(control) ? knotidxR : knotidxR - mult[mind]
-              )
-              _nurbs_pt(knot,select(control,knotidx-degree,knotidx),uval,1,degree,knotidx)
-           ]
-       : let(
-           kmult = _calc_mult(knot),
-           knotidx =
-             [for(
-                  kind = kmult[0]-1,
-                  uind=0,
-                  kmultind=1,
-                  output=undef,
-                  done=false
-                     ;
-                  !done
-                     ;
-                  output = (uind<len(adjusted_u) && approx(adjusted_u[uind],knot[kind]) && kind>kmult[0]-1 && ((kmultind>=len(kmult)-1 || kind+kmult[kmultind]>=len(control))))
-                                            ?kind-kmult[kmultind-1]
-                         : (uind<len(adjusted_u) && adjusted_u[uind]>=knot[kind] && adjusted_u[uind]>=knot[kind] && adjusted_u[uind]<knot[kind+kmult[kmultind]]) ? kind
-                         : undef,
-                  done =  uind==len(adjusted_u), 
-                  uind = is_def(output) ? uind+1 : uind,
-                  inc_k = uind<len(adjusted_u) && adjusted_u[uind]>=knot[kind+kmult[kmultind]],
-                  kind = inc_k ? kind+kmult[kmultind] : kind,
-                  kmultind = inc_k ? kmultind+1 : kmultind
-              )
-              if (is_def(output)) output]
+         adjusted_u_orig = !is_undef(splinesteps) ?
+                              [for(i=[degree:1:len(control)-1])
+                                each 
+                                  if (!approx(knot[i],knot[i+1]))
+                                    lerpn(knot[i],knot[i+1],splinesteps, endpoint=false),
+                               if (type!="closed") knot[len(control)]
+                              ]
+                         : is_undef(bound) ? u
+                         : add_scalar((bound[1]-bound[0])*u,bound[0]),
+         reorder = is_undef(splinesteps) && !is_increasing(adjusted_u_orig) ?
+                      let(ind = sortidx(adjusted_u_orig))
+                      [ind,sortidx(ind)]
+                 : false,
+         // The u list needs to be sorted for the algorithm to identify the knot spans, so sort it if necessary
+         adjusted_u = reorder ? select(adjusted_u_orig,reorder[0]) : adjusted_u_orig,
+         nurbs_pts = 
+                   uniform?
+                          let(
+                              msum = cumsum(mult)
+                          )
+                          [for(uval=adjusted_u)
+                             let(
+                                 mind = floor(uval*(len(mult)-1)),
+                                 knotidxR=msum[mind]-1,
+                                 knotidx = knotidxR<len(control) ? knotidxR : knotidxR - mult[mind]
+                             )
+                             _nurbs_pt(knot,select(control,knotidx-degree,knotidx),uval,1,degree,knotidx)
+                          ]
+                      : let(
+                          kmult = _calc_mult(knot),
+                          knotidx =
+                            [for(
+                                 kind = kmult[0]-1,
+                                 uind=0,
+                                 kmultind=1,
+                                 output=undef,
+                                 done=false
+                                    ;
+                                 !done
+                                    ;
+                                 output = (uind<len(adjusted_u) && approx(adjusted_u[uind],knot[kind]) && kind>kmult[0]-1
+                                           && ((kmultind>=len(kmult)-1 || kind+kmult[kmultind]>=len(control))))
+                                                           ?kind-kmult[kmultind-1]
+                                        : (uind<len(adjusted_u) && adjusted_u[uind]>=knot[kind] && adjusted_u[uind]>=knot[kind]
+                                            && adjusted_u[uind]<knot[kind+kmult[kmultind]]) ? kind
+                                        : undef,
+                                 done =  uind==len(adjusted_u), 
+                                 uind = is_def(output) ? uind+1 : uind,
+                                 inc_k = uind<len(adjusted_u) && adjusted_u[uind]>=knot[kind+kmult[kmultind]],
+                                 kind = inc_k ? kind+kmult[kmultind] : kind,
+                                 kmultind = inc_k ? kmultind+1 : kmultind
+                             )
+                             if (is_def(output)) output]
+                        )
+                        [for(i=idx(adjusted_u))
+                           _nurbs_pt(knot,slice(control, knotidx[i]-degree,knotidx[i]), adjusted_u[i], 1, degree, knotidx[i])
+                        ]
          )
-         [for(i=idx(adjusted_u))
-            _nurbs_pt(knot,slice(control, knotidx[i]-degree,knotidx[i]), adjusted_u[i], 1, degree, knotidx[i])
-         ];
+         reorder ? select(nurbs_pts,reorder[1]) : nurbs_pts;
        
 
 function _nurbs_pt(knot, control, u, r, p, k) = 
@@ -333,12 +367,11 @@ function _calc_mult(knots) =
   let(
       ind=[ 0,
             for(i=[1:len(knots)-1])
-              if (knots[i]!=knots[i-1]) i,
+              if (!approx(knots[i],knots[i-1])) i,
             len(knots)
           ]
   )
   deltas(ind);
-
 
 
 // Module: debug_nurbs()
@@ -350,9 +383,10 @@ function _calc_mult(knots) =
 //   debug_nurbs(control, degree, [width], [splinesteps=], [type=], [mult=], [knots=], [size=], [show_weights=], [show_knots=], [show_idx=]);
 // Description:
 //   Displays a 2D or 3D NURBS and the associated control points to help debug NURBS curves.  You can display the
-//   control point indices and weights, and can also display the knot points.  
+//   control point indices and weights, and can also display the knot points.
+//   Instead of providing separate parameters you can give a first parameter of the form of a NURBS parameter list: `[type, degree, control, knots, mult, weights]`.  
 // Arguments:
-//   control = control points for NURBS
+//   control = list of control points in any dimension or a NURBS parameter list
 //   degree = degree of NURBS
 //   splinesteps = number of segments between each pair of knots.  Default: 16
 //   width = width of the line.  Default: 1
@@ -363,6 +397,7 @@ function _calc_mult(knots) =
 //   show_index = if true then display index of each control point vertex.  Default: true
 //   show_weights = if true then display any non-unity weights.  Default: true if weights vector is supplied, false otherwise
 //   show_knots = If true then show the knots on the spline curve.  Default: false
+//   show_control = If true then show the control points and its polygon.  Default: true
 // Example(2D,Med,NoAxes): The default display includes the control point polygon with its vertices numbered, and the NURBS curve
 //   pts = [[5,0],[0,20],[33,43],[37,88],[60,62],[44,22],[77,44],[79,22],[44,3],[22,7]];
 //   debug_nurbs(pts,4,type="closed");
@@ -374,43 +409,52 @@ function _calc_mult(knots) =
 //   weights = [1,1,1,7,1,1,7,1,1,1];
 //   debug_nurbs(pts,4,type="closed",weights=weights);
 
-module debug_nurbs(control,degree,splinesteps=16,width=1, size, mult,weights,type="clamped",knots, show_weights, show_knots=false, show_index=true)
-{  
-  $fn=8;
-  size = default(size, 3*width);
-  show_weights = default(show_weights, is_def(weights));
-  N=len(control);
-  twodim = len(control[0])==2;
-  curve = nurbs_curve(control=control,degree=degree,splinesteps=splinesteps, mult=mult,weights=weights, type=type, knots=knots);
-  stroke(curve, width=width, closed=type=="closed");//, color="green");
-  stroke(control, width=width/2, color="lightblue", closed=type=="closed");
-  if (show_knots){
-    knotpts = nurbs_curve(control=control, degree=degree, splinesteps=1, mult=mult, weights=weights, type=type, knots=knots);
-    echo(knotpts);
-    color([1,.5,1])
-      move_copies(knotpts)
-        if (twodim)circle(r=width);
-        else sphere(r=width);
+module debug_nurbs(control,degree,splinesteps=16,width=1, size, mult,weights,type="clamped",knots, show_weights, show_knots=false, show_index=true, show_control=true)
+{
+  if (is_list(control) && in_list(control[0], ["closed","open","clamped"])) {
+    assert(len(control)>=6, "Invalid NURBS parameter list")
+    assert(num_defined([degree,mult,weights,knots])==0,
+           "Cannot give degree, mult, weights or knots when you provide a NURBS parameter list")
+    debug_nurbs(control[2], control[1], splinesteps, width, size, weights=control[5],mult=control[4], type=control[0], knots=control[3],
+                show_weights=show_weights, show_knots=show_knots, show_index=show_index, show_control=show_control);
   }
-  color("blue")
-    if (show_index)
-      move_copies(control){
-        let(label = str($idx),
-            anch = show_weights && is_def(weights[$idx]) && weights[$idx]!=1 ? FWD : CENTER)
-          if (twodim) text(text=label, size=size, anchor=anch);
-          else rot($vpr) text3d(text=label, size=size, anchor=anch);
+  else {
+    $fn=8;
+    size = default(size, 3*width);
+    show_weights = default(show_weights, is_def(weights));
+    N=len(control);
+    twodim = len(control[0])==2;
+    curve = nurbs_curve(control=control,degree=degree,splinesteps=splinesteps, mult=mult,weights=weights, type=type, knots=knots);
+    stroke(curve, width=width, closed=type=="closed");//, color="green");
+    if (show_control)
+      stroke(control, width=width/2, color="white", closed=type=="closed");
+    if (show_knots){
+      knotpts = nurbs_curve(control=control, degree=degree, splinesteps=1, mult=mult, weights=weights, type=type, knots=knots);
+      echo(knotpts);
+        color([0,.8,0])
+        move_copies(knotpts)
+          if (twodim) union(){rect([3*width,width]); rect([width,3*width]);} //circle(r=width);
+          else for(i=[0:2]) cuboid(list_rotate([3*width,width,width],i));
     }
-  color("blue")
-    if ( show_weights)
-      move_copies(control){
-        if(is_def(weights[$idx]) && weights[$idx]!=1)
-          let(label = str("w=",weights[$idx]), 
-              anch = show_index ? BACK : CENTER
-              )
-          if (twodim) fwd(size/2*0)text(text=label, size=size, anchor=anch);
-          else rot($vpr) text3d(text=label, size=size, anchor=anch);
-    }
-  
+    color("blue")
+      if (show_index && show_control)
+        move_copies(control){
+          let(label = str($idx),
+              anch = show_weights && is_def(weights[$idx]) && weights[$idx]!=1 ? FWD : CENTER)
+            if (twodim) text(text=label, size=size, anchor=anch);
+            else rot($vpr) text3d(text=label, size=size, anchor=anch);
+      }
+    color("blue")
+      if ( show_weights)
+        move_copies(control){
+          if(is_def(weights[$idx]) && weights[$idx]!=1)
+            let(label = str("w=",weights[$idx]), 
+                anch = show_index ? BACK : CENTER
+                )
+            if (twodim) fwd(size/2*0)text(text=label, size=size, anchor=anch);
+            else rot($vpr) text3d(text=label, size=size, anchor=anch);
+      }
+  }
 }  
 
 
@@ -442,17 +486,19 @@ function is_nurbs_patch(x) =
 //   parameter between the knots, ensuring that a sample appears at every knot.  If you instead give u and v then
 //   the values at those points in parameter space will be returned.  The various NURBS parameters can all be
 //   single values, if the NURBS has the same parameters in both directions, or pairs listing the value for the
-//   two directions.  
+//   two directions.  If you want uniform knots in one direction and specified knots in the other you can
+//   give `undef` as the knot vector, e.g., `[undef,vknots]` to have uniform knots in the first dimension and
+//   specified knots in the second one.  You can do the same thing with the `mult` parameter.   
 // Arguments:
-//   patch = rectangular list of control points in any dimension
+//   patch = rectangular list of control points in any dimension, or a NURBS parameter list
 //   degree = a scalar or 2-vector giving the degree of the NURBS in the two directions
 //   splinesteps = a scalar or 2-vector giving the number of segments between each knot in the two directions
 //   ---
 //   u = evaluation points in the u direction of the patch
 //   v = evaluation points in the v direction of the patch
 //   mult = a single list or pair of lists giving the knot multiplicity in the two directions. Default: all 1
-//   knots = a single list of pair of lists giving the knot vector in each of the two directions.  Default: uniform
-//   weights = a single list or pair of lists giving the weight at each control point in the patch.  Default: all 1
+//   knots = a single list or pair of lists giving the knot vector in each of the two directions.  Default: uniform
+//   weights = a matrix whose size corresponds to `patch` giving the weight at each control point in the patch.  Default: all 1
 //   type = a single string or pair of strings giving the NURBS type, where each entry is one of "clamped", "open" or "closed".  Default: "clamped"
 // Example(3D,NoScale): Computing points on a patch using ranges
 //   patch = [
@@ -474,7 +520,12 @@ function is_nurbs_patch(x) =
 //   move_copies(flatten(pts)) sphere(r=2,$fn=16);
 
 function nurbs_patch_points(patch, degree, splinesteps, u, v, weights, type=["clamped","clamped"], mult=[undef,undef], knots=[undef,undef]) =
-    assert(is_undef(splinesteps) || !any_defined([u,v]), "Cannot combine splinesteps with u and v")
+    is_list(patch) && _valid_surface_type(patch[0]) ?
+       assert(len(patch)>=6, "NURBS parameter list is invalid")
+       assert(num_defined([degree,weights])==0 && mult==[undef,undef] && knots==[undef,undef],
+              "Cannot give degree, mult, weights or knots when you provide a NURBS parameter list")
+       nurbs_patch_points(patch[2], patch[1], splinesteps, u, v, patch[5], patch[0], knots=patch[3],mult=patch[4])
+  : assert(is_undef(splinesteps) || !any_defined([u,v]), "Cannot combine splinesteps with u and v")
     is_def(weights) ?
        assert(is_matrix(weights,len(patch),len(patch[0])), "The weights parameter must be a matrix that matches the size of the patch array")
        let(
@@ -489,7 +540,7 @@ function nurbs_patch_points(patch, degree, splinesteps, u, v, weights, type=["cl
     let(
         u=is_range(u) ? list(u) : u,
         v=is_range(v) ? list(v) : v,
-        degree = force_list(degree,2), 
+        degree = force_list(degree,2),
         type = force_list(type,2),
         splinesteps = is_undef(splinesteps) ? [undef,undef] : force_list(splinesteps,2),
         mult = is_vector(mult) || is_undef(mult) ? [mult,mult]
@@ -505,34 +556,48 @@ function nurbs_patch_points(patch, degree, splinesteps, u, v, weights, type=["cl
   : is_num(v) ? column(nurbs_patch_points(patch, degree, u=u, v=[v], knots=knots, mult=mult, type=type),0)
   :                                      
     let(
-        
         vsplines = [for (i = idx(patch[0])) nurbs_curve(column(patch,i), degree[0], splinesteps=splinesteps[0],u=u, type=type[0],mult=mult[0],knots=knots[0])]
     )
     [for (i = idx(vsplines[0])) nurbs_curve(column(vsplines,i), degree[1], splinesteps=splinesteps[1], u=v, mult=mult[1], knots=knots[1], type=type[1])];
 
-// Function: nurbs_vnf()
+    
+// Function&Module: nurbs_vnf()
 // Synopsis: Generates a (possibly non-manifold) VNF for a single NURBS surface patch.
 // SynTags: VNF
 // Topics: NURBS Patches
 // See Also: nurbs_patch_points()
-// Usage:
-//   vnf = nurbs_vnf(patch, degree, [splinesteps], [mult=], [knots=], [weights=], [type=], [style=]);
+// Usage: (as a function)
+//   vnf = nurbs_vnf(patch, degree, [splinesteps], [mult=], [knots=], [weights=], [type=], [style=], [reverse=], [triangulate=], [caps=], [caps1=], [caps2=]);
+// Usage: (as a module)
+//   nurbs_vnf(patch, degree, [splinesteps], [mult=], [knots=], [weights=], [type=], [style=], [reverse=], [triangulate=], [caps=], [caps1=], [caps2=], [convexity=],[atype=],[cp=], [cp=], [atype=], ...) CHILDREN;
 // Description:
-//   Compute a (possibly non-manifold) VNF for a NURBS.  The input patch must be an array of control points.  If weights is given it
+//   Compute a (possibly non-manifold) VNF for a NURBS.  The input patch must be an array of control points or a NURBS parameter list.  If weights is given it
 //   must be an array of weights that matches the size of the control points.  The style parameter
 //   gives the {{vnf_vertex_array()}} style to use.  The other parameters may specify the NURBS parameters in the two directions
 //   by giving a single value, which applies to both directions, or a list of two values to specify different values in each direction.
 //   You can specify undef for for a direction to keep the default, such as `mult=[undef,v_multiplicity]`.
+//   .
+//   Instead of providing separate parameters you can give a first parameter as a NURBS parameter list: `[type, degree, control, knots, mult, weights]`.  
 // Arguments:
-//   patch = rectangular list of control points in any dimension
+//   patch = rectangular list of control points in any dimension, or a NURBS parameter list
 //   degree = a scalar or 2-vector giving the degree of the NURBS in the two directions
-//   splinesteps = a scalar or 2-vector giving the number of segments between each knot in the two directions
+//   splinesteps = a scalar or 2-vector giving the number of segments between each knot in the two directions.  Default: 16
 //   ---
 //   mult = a single list or pair of lists giving the knot multiplicity in the two directions.  Default: all 1
 //   knots = a single list of pair of lists giving the knot vector in each of the two directions.  Default: uniform
 //   weights = a single list or pair of lists giving the weight at each control point in the.  Default: all 1
 //   type = a single string or pair of strings giving the NURBS type, where each entry is one of "clamped", "open" or "closed".  Default: "clamped"
+//   caps = If true, add endcap faces to both ends.  The type must be ["clamped","closed"] or ["closed","clamped"] to enable caps.  
+//   cap1 = If true, add an endcap face to the first end.
+//   cap2 = If true, add an endcap face to the second end.
+//   reverse = If true, reverse all face normals.
 //   style = {{vnf_vertex_array ()}} style to use for triangulating the surface.  Default: "default"
+//   triangulate = If true, triangulates endcaps to resolve possible CGAL issues.  This can be an expensive operation if the endcaps are complex.  Default: false
+//   cp = (module) Centerpoint for determining intersection anchors or centering the shape.  Determines the base of the anchor vector.  Can be "centroid", "mean", "box" or a 3D point.  Default: "centroid"
+//   anchor = (module) Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#subsection-anchor).  Default: `"origin"`
+//   spin = (module) Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#subsection-spin).  Default: `0`
+//   orient = (module) Vector to rotate top toward, after spin. See [orient](attachments.scad#subsection-orient).  Default: `UP`
+//   atype = (module) Select "hull" or "intersect" anchor type.  Default: "hull"
 // Example(3D): Quadratic B-spline surface
 //   patch = [
 //       [[-50, 50,  0], [-16, 50,  20], [ 16, 50,  20], [50, 50,  0]],
@@ -585,10 +650,60 @@ function nurbs_patch_points(patch, degree, splinesteps, u, v, weights, type=["cl
 //   vknots = [0, 1/2, 1/2, 1/2, 1];               
 //   vnf = nurbs_vnf(patch, 3,weights=weights, knots=[undef,vknots]);
 //   vnf_polyhedron(vnf);    
-function nurbs_vnf(patch, degree, splinesteps=16, weights, type="clamped", mult, knots, style="default") =
-   assert(is_nurbs_patch(patch),"Input patch is not a rectangular aray of points")
+function nurbs_vnf(patch, degree, splinesteps=16, weights, type="clamped", mult, knots, style="default", reverse=false, triangulate=false, caps,cap1,cap2) =
+   is_list(patch) && _valid_surface_type(patch[0]) ?
+      assert(len(patch)>=6, "NURBS parameter list is invalid")
+      assert(num_defined([degree,mult,weights,knots]==0),
+              "Cannot give degree, mult, weights or knots when you provide a NURBS parameter list")
+      nurbs_vnf(patch[2], patch[1], splinesteps, patch[5], patch[0], knots=patch[3], mult=patch[4], style=style,caps=caps,cap1=cap1,cap2=cap2,
+                                                               reverse=reverse, triangulate=triangulate)
+ : assert(is_nurbs_patch(patch),"Input patch is not a rectangular aray of points")
+   assert(_valid_surface_type(type), "type must be one of or a list of two of: \"closed\", \"clamped\" and \"open\"")
+   let(havecaps = num_true([caps,cap1,cap2])>0)
+   assert(!havecaps || type==["clamped","closed"] || type==["closed","clamped"],
+                    "Surface must be [\"closed\",\"clamped\"] or [\"clamped\",\"closed\"] to for caps to be created")
    let(
-        pts = nurbs_patch_points(patch=patch, degree=degree, splinesteps=splinesteps, type=type, mult=mult, knots=knots, weights=weights)
+        type = force_list(type,2),
+        havecaps = num_true([caps,cap1,cap2])>0,
+        flip = havecaps && type[0]=="closed",
+        pts = nurbs_patch_points(patch=patch, degree=degree, splinesteps=splinesteps, type=type, mult=mult, knots=knots, weights=weights),
+        tpts = flip ? (transpose(pts)) : pts
    )
-   vnf_vertex_array(pts, style=style, row_wrap=type[0]=="closed", col_wrap=type[1]=="closed");
+   vnf_vertex_array(tpts, style=style, row_wrap=type[flip?1:0]=="closed", col_wrap=type[flip?0:1]=="closed",reverse=reverse,triangulate=triangulate,
+                    caps=caps,cap1=cap1,cap2=cap2);
+
+
+function _valid_surface_type(type) =
+    in_list(type,["closed","clamped","open"]) ? true
+  : !is_list(type) || len(type)!=2 ? false
+  : _valid_surface_type(type[0]) && _valid_surface_type(type[1]);
+  
+
+
+module nurbs_vnf(patch, degree, splinesteps=16, weights, type="clamped", mult, knots, style="default", reverse=false, triangulate=false,
+                 convexity=2, cp="centroid", anchor="origin", spin=0, orient=UP, atype="hull", caps, cap1, cap2) 
+{
+   if (is_list(patch) && _valid_surface_type(patch[0])){
+       assert(len(patch)>=6, "NURBS parameter list is invalid");
+       assert(num_defined([degree,mult,weights,knots]==0),
+              "Cannot give degree, mult, weights or knots when you provide a NURBS parameter list");
+       nurbs_vnf(patch[2], patch[1], splinesteps, patch[5], patch[0], mult=patch[4], knots=patch[3], style=style, reverse=reverse, triangulate=triangulate,
+                 convexity=convexity, cp=cp, anchor=anchor, spin=spin, orient=orient, atype=atype, caps=caps, cap1=cap1, cap2=cap2) children();
+   }
+   else {
+       type = force_list(type,2);
+       havecaps = num_true([caps,cap1,cap2])>0;
+       dummy = 
+               assert(is_nurbs_patch(patch),"Input patch is not a rectangular aray of points")
+               assert(_valid_surface_type(type), "type must be one of or a list of two of: \"closed\", \"clamped\" and \"open\"")
+               assert(!havecaps || type==["clamped","closed"] || type==["closed","clamped"],
+                      "Surface must be [\"closed\",\"clamped\"] or [\"clamped\",\"closed\"] to for caps to be created");
+       flip = havecaps && type[0]=="closed";
+       pts = nurbs_patch_points(patch=patch, degree=degree, splinesteps=splinesteps, type=type, mult=mult, knots=knots, weights=weights);
+       tpts = flip ? (transpose(pts)) : pts;
+       vnf_vertex_array(tpts, style=style, row_wrap=type[flip?1:0]=="closed", col_wrap=type[flip?0:1]=="closed", reverse=reverse, triangulate=triangulate, cp=cp,
+                        convexity=convexity, anchor=anchor, spin=spin, orient=orient, atype=atype, caps=caps, cap1=cap1, cap2=cap2) children();
+   }
+}
+
 

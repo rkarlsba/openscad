@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker
 
-
 import argparse
 import subprocess
 from pathlib import Path
@@ -38,9 +37,6 @@ def render_template(text: str, values: dict) -> str:
 
 
 def confirm_overwrite(path: Path, args) -> bool:
-    """
-    Return True if file may be written.
-    """
     if not path.exists():
         return True
 
@@ -51,7 +47,6 @@ def confirm_overwrite(path: Path, args) -> bool:
         print(f"Skipping existing file: {path}")
         return False
 
-    # Interactive prompt
     while True:
         resp = input(f"File exists: {path} — overwrite? [y/N] ").strip().lower()
         if resp in ("y", "yes"):
@@ -69,14 +64,24 @@ def main():
     p.add_argument("--template", required=True, help="SCAD template (.scadt)")
     p.add_argument("-o", "--output", help="Output STL")
 
-    p.add_argument("--margin", type=float, default=2.0)
+    # Margins
+    p.add_argument("--margin", type=float, default=2.0,
+                   help="Uniform margin in mm (default: 2.0)")
+    p.add_argument("--x-margin", type=float,
+                   help="Horizontal margin (overrides --margin)")
+    p.add_argument("--y-margin", type=float,
+                   help="Vertical margin (overrides --margin)")
+
+    # Geometry
     p.add_argument("--thickness", type=float, default=1.5)
     p.add_argument("--corners", type=float, default=8)
 
+    # Border
     p.add_argument("--border", action="store_true")
     p.add_argument("--border-width", type=float, default=1)
     p.add_argument("--border-height", type=float, default=1)
 
+    # Holes
     p.add_argument("--holes", action="store_true")
     p.add_argument("--hole-d", type=float, default=5)
     p.add_argument("--hole-dist", type=float, default=10)
@@ -103,6 +108,10 @@ def main():
 
     svg_w, svg_h = svg_size_mm(svg)
 
+    # Margin resolution (explicit and predictable)
+    x_margin = args.x_margin if args.x_margin is not None else args.margin
+    y_margin = args.y_margin if args.y_margin is not None else args.margin
+
     out_stl = Path(args.output) if args.output else svg.with_suffix(".stl")
     out_scad = out_stl.with_suffix(".scad")
 
@@ -110,7 +119,8 @@ def main():
         "SVG_FILE": svg.as_posix(),
         "SVG_W": svg_w,
         "SVG_H": svg_h,
-        "MARGIN": args.margin,
+        "X_MARGIN": x_margin,
+        "Y_MARGIN": y_margin,
         "THICKNESS": args.thickness,
         "CORNERS": args.corners,
         "BORDER": scad_bool(args.border),
@@ -121,7 +131,7 @@ def main():
         "HOLE_DIST": args.hole_dist,
     }
 
-    # Write SCAD (if allowed)
+    # Write SCAD
     if confirm_overwrite(out_scad, args):
         rendered = render_template(tmpl.read_text(), values)
         out_scad.write_text(rendered)
@@ -129,7 +139,7 @@ def main():
     else:
         print(f"Did not write {out_scad}")
 
-    # Write STL (if allowed)
+    # Write STL
     if confirm_overwrite(out_stl, args):
         subprocess.check_call([
             args.openscad,
@@ -143,3 +153,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

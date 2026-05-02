@@ -14,6 +14,10 @@
 // FileFootnotes: STD=Included in std.scad
 //////////////////////////////////////////////////////////////////////
 
+_BOSL2_SKIN = is_undef(_BOSL2_STD) && (is_undef(BOSL2_NO_STD_WARNING) || !BOSL2_NO_STD_WARNING) ?
+       echo("Warning: skin.scad included without std.scad; dependencies may be missing\nSet BOSL2_NO_STD_WARNING = true to mute this warning.") true : true;
+
+
 __vnf_no_n_mesg=" texture is a VNF so it does not accept n. Set sample rate for VNF textures using the tex_samples parameter to cyl(), linear_sweep(), or rotate_sweep().";
 
 // Section: Skin and sweep
@@ -412,6 +416,8 @@ function skin(profiles, slices, refine=1, method="direct", sampling, caps, close
   assert(in_list(atype, _ANCHOR_TYPES), "\nAnchor type must be \"hull\" or \"intersect\".")
   assert(is_def(slices),"\nThe slices argument must be specified.")
   assert(is_list(profiles) && len(profiles)>1, "\nMust provide at least two profiles.")
+  // If the user forgets the first element should be a list, the other messages aren't as precisely helpful
+  assert(is_list(profiles)&&is_path(profiles[0]), "\nThe first argument to `skin` must be a list of paths")
   let(
        profiles = [for(p=profiles) if (is_region(p) && len(p)==1) p[0] else p]
   )
@@ -750,7 +756,7 @@ module linear_sweep(
     tex_depth, tex_scale, tex_samples,
     cp, atype="hull", h,l,length,
     anchor, spin=0, orient=UP
-) {
+) { 
     h = one_defined([h, height,l,length],"h,height,l,length",dflt=1);
     region = force_region(region);
     check = assert(is_region(region),"\nInput is not a region");
@@ -1011,7 +1017,9 @@ function linear_sweep(
 //   spin = Rotate this many degrees around Z axis after anchor. Default: 0
 //   orient = Vector to rotate top toward after spin (module only)
 // Named Anchors:
-//   "origin" = The native position of the shape.  
+//   "origin" = The native position of the shape.
+//   "start-centroid" = (module only) When `angle<360`, the centroid of the shape, on the face at the starting face of the object
+//   "end-centroid" = (module only) When `angle<360`, the centroid of the shape, on the face at the ending face of the object
 // Anchor Types:
 //   "hull" = Anchors to the virtual convex hull of the shape.
 //   "intersect" = Anchors to the surface of the shape.
@@ -1299,6 +1307,7 @@ function rotate_sweep(
     spin=0, orient=UP, start=0, 
     _tex_inhibit_y_slicing
 ) =
+    assert(is_num(angle) && angle>0 && angle<=360,"\nangle must be a positive number not more than 360")
     assert(num_defined([closed,caps])<2, "\nIn rotate_sweep the `closed` paramter has been replaced by `caps` with the opposite meaning. You cannot give both.")
     assert(num_defined([tex_reps,tex_counts])<2, "\nIn rotate_sweep() the 'tex_counts' parameters has been replaced by 'tex_reps'. You cannot give both.")
     assert(num_defined([tex_scale,tex_depth])<2, "\nIn linear_sweep() the 'tex_scale' parameter has been replaced by 'tex_depth'. You cannot give both.")
@@ -1380,7 +1389,8 @@ module rotate_sweep(
     _tex_inhibit_y_slicing=false
 ) {
     dummy =
-       assert(num_defined([closed,caps])<2, "\nIn rotate_sweep the `closed` paramter has been replaced by `caps` with the opposite meaning.  You cannot give both.")
+       assert(is_num(angle) && angle>0 && angle<=360,"\nangle must be a positive number not more than 360")      
+       assert(num_defined([closed,caps])<2, "\nIn rotate_sweep the `closed` parameter has been replaced by `caps` with the opposite meaning.  You cannot give both.")
        assert(num_defined([tex_reps,tex_counts])<2, "\nIn rotate_sweep() the 'tex_counts' parameters has been replaced by 'tex_reps'.  You cannot give both.")
        assert(num_defined([tex_scale,tex_depth])<2, "\nIn rotate_sweep() the 'tex_scale' parameter has been replaced by 'tex_depth'.  You cannot give both.")
        assert(!is_path(shape) || caps || len(shape)>=3, "\n'shape' is a path and caps=false, but a closed path requires three points.");
@@ -1391,7 +1401,15 @@ module rotate_sweep(
              : tex_reps;
     tex_depth = is_def(tex_scale)? echo("In rotate_sweep() the 'tex_scale' parameter is deprecated and has been replaced by 'tex_depth'")tex_scale
               : default(tex_depth,1);
-    region = _force_xplus(force_region(shape));
+    region = is_path(shape) && caps ? _force_xplus([deduplicate([[0,shape[0].y], each shape, [0,last(shape).y]])])
+                                    : _force_xplus(force_region(shape));
+    ctr2d = centroid(region);
+    ctr3d = [ctr2d.x, 0, ctr2d.y];
+    namedanch = angle==360 ? []
+              :[
+                 named_anchor("start-centroid", ctr3d, FWD),
+                 named_anchor("end-centroid", rot = zrot(angle)*move(ctr3d)*xrot(-90)*zrot(180))
+               ];
     check = assert(is_region(region), "\nInput is not a region or polygon.");
     bounds = pointlist_bounds(flatten(region));
     min_x = bounds[0].x;
@@ -1401,6 +1419,7 @@ module rotate_sweep(
     h = max_y - min_y;
     check2 = assert(min_x>=0, "\nInput region must exist entirely in the X+ half-plane.");
     if (!is_undef(texture)) {
+        change_anchors(named=namedanch) 
         _textured_revolution(
             shape,
             texture=texture,
@@ -1418,25 +1437,24 @@ module rotate_sweep(
             style=style,
             atype=atype, anchor=anchor, 
             spin=spin, orient=orient, start=start
-        ) children();
+        )
+        children();
     } else {
-        region = is_path(shape) && caps ? [deduplicate([[0,shape[0].y], each shape, [0,last(shape).y]])]
-               : region;
         steps = ceil(segs(max_x) * angle / 360) + (angle<360? 1 : 0);
         skmat = down(min_y) * skew(sxz=shift.x/h, syz=shift.y/h) * up(min_y);
         transforms = [
             if (angle==360) for (i=[0:1:steps-1]) skmat * rot([90,0,start+360-i*360/steps]),
             if (angle<360) for (i=[0:1:steps-1]) skmat * rot([90,0,start+angle-i*angle/(steps-1)]),
         ];
-        sweep(
-            region, transforms,
-            closed=angle==360,
-            caps=angle!=360,
-            style=style, cp=cp,
-            convexity=convexity,
-            atype=atype, anchor=anchor,
-            spin=spin, orient=orient
-        ) children();
+        change_anchors(named=namedanch)
+        sweep(region, transforms,
+              closed=angle==360,
+              caps=angle!=360,
+              style=style, cp=cp,
+              convexity=convexity,
+              atype=atype, anchor=anchor,
+              spin=spin, orient=orient)
+                   children();
     }
 }
 
@@ -1595,16 +1613,16 @@ function spiral_sweep(poly, h, r, turns=1, taper, r1, r2, d, d1, d2, internal=fa
         // regardless of what kind of subsampling occurs for tapers.
         orig_anglist = [
             if (minang<0) minang,
-            each reverse([for(ang = [-ang_step:-ang_step:minang+EPSILON]) ang]),
-            for(ang = [0:ang_step:maxang-EPSILON]) ang,
+            each reverse([for(ang = [-ang_step:-ang_step:minang+_EPSILON]) ang]),
+            for(ang = [0:ang_step:maxang-_EPSILON]) ang,
             maxang
         ],
         anglist = [
-           for(a=orig_anglist) if (a<cut_ang1-EPSILON) a,
+           for(a=orig_anglist) if (a<cut_ang1-_EPSILON) a,
            cut_ang1,
-           for(a=orig_anglist) if (a>cut_ang1+EPSILON && a<cut_ang2-EPSILON) a,
+           for(a=orig_anglist) if (a>cut_ang1+_EPSILON && a<cut_ang2-_EPSILON) a,
            cut_ang2,
-           for(a=orig_anglist) if (a>cut_ang2+EPSILON) a
+           for(a=orig_anglist) if (a>cut_ang2+_EPSILON) a
         ],
         interp_ang = [
                       for(i=idx(anglist,e=-2)) 
@@ -1676,7 +1694,7 @@ module spiral_sweep(poly, h, r, turns=1, taper, r1, r2, d, d1, d2, internal=fals
 // Synopsis: Sweep a 2d polygon path along a 2d or 3d path. 
 // SynTags: VNF, Geom
 // Topics: Extrusion, Sweep, Paths, Textures
-// See Also: sweep_attach(), linear_sweep(), rotate_sweep(), sweep(), spiral_sweep(), path_sweep2d(), offset_sweep()
+// See Also: sweep_attach(), linear_sweep(), rotate_sweep(), sweep(), spiral_sweep(), path_sweep2d(), offset_sweep(), bezier_sweep()
 // Usage: As module
 //   path_sweep(shape, path, [method], [normal=], [closed=], [twist=], [twist_by_length=], [symmetry=], [scale=], [scale_by_length=], [last_normal=], [tangent=], [uniform=], [relaxed=], [caps=], [style=], [convexity=], [anchor=], [cp=], [spin=], [orient=], [atype=]) [ATTACHMENTS];
 // Usage: As function
@@ -1862,7 +1880,7 @@ module spiral_sweep(poly, h, r, turns=1, taper, r1, r2, d, d1, d2, internal=fals
 //   atype  = Select "hull" or "intersect" anchor types.  Default: "hull"
 //   cp = Centerpoint for determining "intersect" anchors or centering the shape.  Determintes the base of the anchor vector.  Can be "centroid", "mean", "box" or a 3D point.  Default: "centroid"
 // Side Effects:
-//   `$sweep_path` is set to the path thd defining the swept object
+//   `$sweep_path` is set to the path defining the swept object
 //   `$sweep_shape` is set to the shape being swept
 //   `$sweep_closed` is true if the sweep is closed and false otherwise
 //   `$sweep_transforms` is set to the array of transformation matrices that define the swept object.
@@ -2208,6 +2226,9 @@ module path_sweep(shape, path, method="incremental", normal, closed, twist=0, tw
 {
     dummy = assert(is_region(shape) || is_path(shape,2), "\nshape must be a 2D path or region.")
             assert(in_list(atype, _ANCHOR_TYPES), "\nAnchor type must be \"hull\" or \"intersect\".");
+    caps = !closed ? caps
+         : assert(is_undef(caps) || caps==false || caps==[false,false], "Cannot specify caps when closed=true")
+           false; 
     trans_scale = path_sweep(shape, path, method, normal, closed, twist, twist_by_length, scale, scale_by_length,
                             symmetry, last_normal, tangent, uniform, relaxed, caps, style, transforms=true,_return_scales=true);
     transforms = trans_scale[0];
@@ -2270,10 +2291,14 @@ function path_sweep(shape, path, method="incremental", normal, closed, twist=0, 
   assert(closed || symmetry==1, "\nsymmetry must be 1 when closed=false.")
   assert(is_integer(symmetry) && symmetry>0, "\nsymmetry must be a positive integer.")
   let(path = force_path(path))
-  assert(is_path(path,[2,3]), "\ninput path is not a 2D or 3D path.")
+  assert(is_path(path,[2,3]), "\nInput path is not a 2D or 3D path.")
+  assert(len(path)==len(deduplicate(path)),"\nInput path contains duplicate points (consider using deduplicate)")
   assert(!closed || !approx(path[0],last(path)), "\nClosed path includes start point at the end.")
   assert((is_region(shape) || is_path(shape,2)) || (transforms && !(closed && method=="incremental")),"\nshape must be a 2d path or region.")
   let(
+    caps = !closed ? caps
+         : assert(is_undef(caps) || caps==false || caps==[false,false], "Cannot specify caps when closed=true")
+           false, 
     path = path3d(path),
     normalOK = is_undef(normal) || (method!="natural" && is_vector(normal,3))
                                 || (method=="manual" && same_shape(normal,path)),
@@ -2284,7 +2309,7 @@ function path_sweep(shape, path, method="incremental", normal, closed, twist=0, 
                   : method=="incremental" ? "\nNormal with \"incremental\" method must be a 3-vector."
                   : str("Incompatible normal given.  Must be a 3-vector or a list of ",len(path)," 3-vectors"))
   assert(is_undef(normal) || (is_vector(normal) && len(normal)==3) || (is_path(normal) && len(normal)==len(path) && len(normal[0])==3), "\nInvalid normal specified.")
-  assert(is_undef(tangent) || (is_path(tangent) && len(tangent)==len(path) && len(tangent[0])==3), "\nInvalid tangent specified.")
+  assert(is_undef(tangent) || (is_path(tangent) && len(tangent)==len(path)), "\nInvalid tangent specified.")
   assert(scaleOK,str("\nIncompatible or invalid scale",closed?" for closed path":"",": must be ", closed?"":"a scalar, a 2-vector, ",
         "a vector of length ",len(path)," or a ",len(path),"x2 matrix of scales."))
   let(
@@ -2293,7 +2318,7 @@ function path_sweep(shape, path, method="incremental", normal, closed, twist=0, 
             !scale_by_length ? lerpn([1,1],s,len(path))
           : lerp([1,1],s, path_length_fractions(path,false)),
     scale_list = [for(s=scale) scale(s),if (closed) scale(scale[0])],
-    tangents = is_undef(tangent) ? path_tangents(path,uniform=uniform,closed=closed) : [for(t=tangent) unit(t)],
+    tangents = is_undef(tangent) ? path_tangents(path,uniform=uniform,closed=closed) : [for(t=path3d(tangent)) unit(t)],
     normal = is_path(normal) ? [for(n=normal) unit(n)] :
              is_def(normal) ? unit(normal) :
              method =="incremental" && abs(tangents[0].z) > 1/sqrt(2) ? BACK : UP,
@@ -2518,10 +2543,10 @@ function path_sweep2d(shape, path, closed=false, caps, quality=1, style="min_edg
    reorient(anchor,spin,orient,vnf=vnf,p=vnf,extent=atype=="hull",cp=cp);
 
 
-module path_sweep2d(profile, path, closed=false, caps, quality=1, style="min_edge", convexity=10,
+module path_sweep2d(shape, path, closed=false, caps, quality=1, style="min_edge", convexity=10,
                     anchor="origin", cp="centroid", spin=0, orient=UP, atype="hull")
 {
-   vnf = path_sweep2d(profile, path, closed, caps, quality, style);
+   vnf = path_sweep2d(shape, path, closed, caps, quality, style);
    vnf_polyhedron(vnf,convexity=convexity,anchor=anchor, spin=spin, orient=orient, atype=atype, cp=cp)
         children();
 }
@@ -2693,8 +2718,8 @@ function sweep(shape, transforms, closed=false, caps, style="min_edge",
                 for (rgn=regions) each [
                     for (path=rgn)
                         sweep(path, transforms, closed=closed, caps=false, style=style),
-                    if (flatcaps[0]) vnf_from_region(rgn, transform=transforms[0], reverse=true),
-                    if (flatcaps[1]) vnf_from_region(rgn, transform=last(transforms)),
+                    if (flatcaps[0]) vnf_from_region(rgn, transform=transforms[0], reverse=true, triangulate=true),  // triangulation needed?
+                    if (flatcaps[1]) vnf_from_region(rgn, transform=last(transforms), triangulate=true),
                 ],
             ],
             vnf = vnf_join(vnfs)
@@ -4035,8 +4060,8 @@ function texture(tex, n, border, gap, roughness, inset) =
                each path3d(square(1)),
             ], [
                 [4,7,3,0], [1,2,6,5],
-                if (gap+border < 1-EPSILON) [4,5,6,7],
-                if (gap > EPSILON) each [[1,9,10,2], [0,3,11,8]],
+                if (gap+border < 1-_EPSILON) [4,5,6,7],
+                if (gap > _EPSILON) each [[1,9,10,2], [0,3,11,8]],
             ]
         ] :
     tex=="wave_ribs"?
@@ -4044,7 +4069,7 @@ function texture(tex, n, border, gap, roughness, inset) =
         let(
             n = max(6,default(n,8))
         ) [[
-            for(a=[0:360/n:360-EPSILON])
+            for(a=[0:360/n:360-_EPSILON])
             (cos(a)+1)/2
         ]] :
     tex=="diamonds"?
@@ -4343,7 +4368,7 @@ function texture(tex, n, border, gap, roughness, inset) =
         ) [
             [
                 each hex,
-                each move([0.5,0.5], p=yscale(sc, p=path3d(ellipse(d=1-2*border, circum=true, spin=-30,$fn=6),1))),
+                each move([0.5,0.5], p=yscale(sc, p=path3d(ellipse(d=1-2*border, circum=true, realign=false, spin=-30,$fn=6),1))),
                 hex[0]-[0,diag*sc,-1],
                 for (ang=[270+60,270-60]) hex[1]+yscale(sc, p=cylindrical_to_xyz(diag,ang,1)),
                 hex[2]-[0,diag*sc,-1],
@@ -4747,7 +4772,6 @@ function _textured_revolution(
     style="min_edge", atype="intersect",
     anchor=CENTER, spin=0, orient=UP
 ) =
-    assert(angle>0 && angle<=360)
     assert(is_path(shape,[2]) || is_region(shape))
     assert(is_undef(samples) || is_int(samples))
     assert(is_bool(closed))
@@ -4767,6 +4791,10 @@ function _textured_revolution(
                       testpoly = [[0,shape[0].y], each shape, [0,last(shape).y]]
                   )
                   [[is_polygon_clockwise(testpoly) ? shape : reverse(shape)]],
+
+
+
+        
         checks = [
             for (rgn=regions, path=rgn)
                 assert(all(path, function(pt) pt.x>=0),"\nAll points in the shape must have non-negative x value."),
@@ -4841,7 +4869,7 @@ function _textured_revolution(
                          assert(taper>=0 && taper<=0.5, str("\ntex_taper must be between 0 and 0.5 but was ",taper,"."))
                          function (x) lookup(x, [[0,0],
                                                  if (taper==0.5) [taper,1]
-                                                 else each [[taper+EPSILON,1],[1-taper-EPSILON,1]],
+                                                 else each [[taper+_EPSILON,1],[1-taper-_EPSILON,1]],
                                                  [1,0]])
                   : is_path(taper,2) ?
                          let(

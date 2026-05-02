@@ -9,17 +9,19 @@ $fs = 0.5; // minimum fragment size (linear)
 $fa = 3;   // minimum fragment angle (angular)
 
 height=8.1;
-modscale=[1.4, 1.4, 1.2];
+modscale=[1.6, 1.6, 1.2];
 
+filename="M3_knurled_levelingKnob-center.stl";
 module justeringshjul() {
-    import("M3_knurled_levelingKnob-center.stl");
+    import(filename);
     cylinder(r1=6, r2=4, h=8);
 }
 
 render(convexity=10) {
     difference() {
-        scale([modscale,modscale,modscale])
-        justeringshjul();
+        scale(modscale) {
+            justeringshjul();
+        }
         translate([0,0,-.3]) {
             scale([1, 1, 1.2]) {
                 hull() {

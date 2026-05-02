@@ -11,6 +11,11 @@
 // FileFootnotes: STD=Included in std.scad
 //////////////////////////////////////////////////////////////////////
 
+
+_BOSL2_MATH = is_undef(_BOSL2_STD) && (is_undef(BOSL2_NO_STD_WARNING) || !BOSL2_NO_STD_WARNING) ?
+       echo("Warning: math.scad included without std.scad; dependencies may be missing\nSet BOSL2_NO_STD_WARNING = true to mute this warning.") true : true;
+
+
 // Section: Math Constants
 
 // Constant: PHI
@@ -21,23 +26,24 @@
 PHI = (1+sqrt(5))/2;
 
 // Constant: EPSILON
-// Synopsis: A tiny value to compare floating point values.  `1e-9`
+// Synopsis: A tiny value to compare floating point values.  1e-9
 // Topics: Constants, Math
-// See Also: PHI, EPSILON, INF, NAN
-// Description: A really small value useful in comparing floating point numbers.  ie: abs(a-b)<EPSILON  `1e-9`
+// See Also: PHI, INF, NAN
+// Description: A really small value useful in comparing floating point numbers.  ie: abs(a-b)<EPSILON.  This is set to 1e-9, which is larger than machine epsilon, but generally works well in geometric computations.  
 EPSILON = 1e-9;
+_EPSILON = 1e-9;  // This is the private library version
 
 // Constant: INF
 // Synopsis: The floating point value for Infinite.
 // Topics: Constants, Math
-// See Also: PHI, EPSILON, INF, NAN
+// See Also: PHI, EPSILON, NAN
 // Description: The value `inf`, useful for comparisons.
 INF = 1/0;
 
 // Constant: NAN
 // Synopsis: The floating point value for Not a Number.
 // Topics: Constants, Math
-// See Also: PHI, EPSILON, INF, NAN
+// See Also: PHI, EPSILON, INF
 // Description: The value `nan`, useful for comparisons.
 NAN = acos(2);
 
@@ -200,12 +206,12 @@ function slerp(v1, v2, u) =
         a = unit(v1),
         b = unit(v2),
         theta = acos(max(-1, min(1, a*b))),
-        err = assert(abs(theta-180)>EPSILON, "\nNo solution when vectors v1 and v2 are 180° apart."),
+        err = assert(abs(theta-180)>_EPSILON, "\nNo solution when vectors v1 and v2 are 180° apart."),
         sin_theta = sin(theta)
-    ) sin_theta < EPSILON ? unit(a+b) // fallback
-    : is_finite(u) ? (sin_theta < EPSILON ? unit(a+b)
+    ) sin_theta < _EPSILON ? unit(a+b) // fallback
+    : is_finite(u) ? (sin_theta < _EPSILON ? unit(a+b)
         : (a * sin((1 - u) * theta) + b * sin(u * theta)) / sin_theta)
-    : [for(t=u) sin_theta < EPSILON ? unit(a+b)
+    : [for(t=u) sin_theta < _EPSILON ? unit(a+b)
         : (a * sin((1 - t) * theta) + b * sin(t * theta)) / sin_theta];
 
 
@@ -236,12 +242,12 @@ function slerpn(v1, v2, n, endpoint=true) =
         a = unit(v1),
         b = unit(v2),
         theta = acos(max(-1, min(1, a*b))),
-        err = assert(abs(theta-180)>EPSILON, "\nNo solution when vectors v1 and v2 are 180° apart."),
+        err = assert(abs(theta-180)>_EPSILON, "\nNo solution when vectors v1 and v2 are 180° apart."),
         sin_theta = sin(theta),
         d = n - (endpoint ? 1 : 0)
     ) [
     for(i=[0:n-1]) let(u=i/d)
-        sin_theta < EPSILON ? unit(a+b) // fallback
+        sin_theta < _EPSILON ? unit(a+b) // fallback
         : (a * sin((1 - u) * theta) + b * sin(u * theta)) / sin_theta
 ];
 
@@ -1093,7 +1099,7 @@ function sum_of_sines(a, sines) =
 //   ints = rand_int(0,100,3);
 //   int = rand_int(-10,10,1)[0];
 function rand_int(minval, maxval, n, seed=undef) =
-    assert( is_finite(minval+maxval+n) && (is_undef(seed) || is_finite(seed) ), "\nInput must be finite numbers.")
+    assert( is_vector([minval,maxval,n]) && (is_undef(seed) || is_finite(seed) ), "\nInput must be finite numbers.")
     assert(maxval >= minval, "\nMax value cannot be smaller than minval.")
     let (rvect = is_def(seed) ? rands(minval,maxval+1,n,seed) : rands(minval,maxval+1,n))
     [for(entry = rvect) floor(entry)];
@@ -1209,33 +1215,55 @@ function spherical_random_points(n=1, radius=1, seed) =
 
 
 // Function: random_polygon()
-// Synopsis: Returns the CCW path of a simple random polygon.
+// Synopsis: Returns the clockwise path of a simple random polygon.
 // Topics: Random, Polygon
 // See Also: random_points(), spherical_random_points()
 // Usage:
-//    points = random_polygon([n], [size], [seed]);
+//    points = random_polygon([n], [size], [angle_sep], [seed]);
 // Description:
-//   Generate the `n` vertices of a random counter-clockwise simple 2d polygon 
+//   Generate the `n` vertices of a random clockwise star-shaped 2d polygon 
 //   inside a circle centered at the origin with radius `size`.
+//   The polygons have the property that they always contain the origin and a line segment connecting
+//   the origin to a vertex is always contained in the polygon.
+//   .
+//   If size is a vector, then
+//   The polygon's vertices lie inside a ring with inner radius `size[0]` and outer radius `size[1]`.  
+//   The first vertex of the polygon will be the first vertex below the X+ axis.  
+//   .
+//   The angular position of the vertices are randomly chosen.  
+//   The `angle_sep` parameter controls the separation in angle required between vertices.  If you set it
+//   to zero, no separation is required.  If you set it to 1 then the angular separation is maximal,
+//   which means the angles are spread uniformly without any randomness.
 // Arguments:
 //   n = number of vertices of the polygon. Default: 3
-//   size = the [min,max] radius of a circle centered at the origin containing the polygon. A single number specifies the max radius. Default: [0.01,1]
+//   size = the [min,max] radius of a ring centered at the origin containing the polygon's vertices. If you give a single number `s` then that is equivalent to `[s/2,s]`.  Default: [0.5,1]
+//   ---
+//   angle_sep = values in [0,1] specifying minimum angular separation between adjacent points, where 0 means none and 1 is maximal (points are uniform in angle).  Default: 0.2
 //   seed = an optional seed for the random generation.
 // Example(2D): A 17-sided polygon with vertices between radii 10 and 20.
-//   polygon(random_polygon(17, [10,20], 888));
-function random_polygon(n=3,size=1, seed) =
-    assert( is_int(n) && n>2, "\nImproper number of polygon vertices.")
-    assert(all_positive(size) && (is_vector(size,2) || is_num(size)), "\nImproper size.")
+//   polygon(random_polygon(17, [10,20], seed=888));
+// Example(2D): A 17-sided polygon with vertices between radii 0.1 and 20.
+//   polygon(random_polygon(17, [0.1,20], seed=888));
+function random_polygon(n=3,size=1, angle_sep=0.2, seed) =
+    assert( is_int(n) && n>2, "\nPolygon vertex count must be an integer larger than 2.")
+    assert(all_positive(size) && (is_vector(size,2) || is_num(size)), "\nsize must be a positive value or list of two positive values.")
+    assert(is_finite(angle_sep) && angle_sep>=0 && angle_sep<=1, "\nangle_sep must be a number in [0,1]")
     let(
-        rmin = is_num(size) ? 0.01 : size[0],
+        rmin = is_num(size) ? size/2 : size[0],
         rmax = is_num(size) ? size : size[1],
-        seed = is_undef(seed) ? rands(0,1000,1)[0] : seed,
-        cumm = cumsum(rands(0.1,10,n+1,seed)),
-        angs = 360*cumm/cumm[n-1],
-        rads = rands(rmin,rmax,n,seed+cumm[0])
+        ang_space = (1-angle_sep)*360,
+        // Create random angle list where angles are separated based on ang_sep but all angular differences < 180
+        randang = function(seed)
+                     let (
+                          rand = is_undef(seed) ? rands(0,ang_space,n) : rands(0,ang_space,n,seed=seed),
+                          angs = sort(rand)+lerpn(0,1,n)*(360-ang_space),
+                          dang = [each deltas(angs),angs[0]-last(angs)+360]
+                     )
+                     max(dang)<180 ? angs : randang(seed=u_add(seed,angs[0])),
+        angs = randang(seed), 
+        rads = is_undef(seed) ? rands(rmin,rmax,n) : rands(rmin,rmax,n,seed+angs[0])
       )
-    [for(i=count(n)) rads[i]*[cos(angs[i]), sin(angs[i])] ];
-
+      [for(i=count(n)) rads[i]*[cos(angs[i]), -sin(angs[i])]];
 
 
 // Section: Calculus
@@ -1552,7 +1580,10 @@ function c_norm(z) = norm_fro(z);
 //    coefficients are real numbers.  If real is true, then returns only the
 //    real roots.  Otherwise returns a pair of complex values.  This method
 //    may be more reliable than the general root finder at distinguishing
-//    real roots from complex roots.  
+//    real roots from complex roots.  If the input is a linear equation the
+//    function returns a single root, and it returns the empty list when no
+//    appropriate roots exist (such as when all the roots are complex and real=true).
+
 //    Algorithm from: https://people.csail.mit.edu/bkph/articles/Quadratics.pdf
 function quadratic_roots(a,b,c,real=false) =
   real ? [for(root = quadratic_roots(a,b,c,real=false)) if (root.y==0) root.x]
@@ -1561,7 +1592,8 @@ function quadratic_roots(a,b,c,real=false) =
   assert(is_num(a) && is_num(b) && is_num(c))
   assert(a!=0 || b!=0 || c!=0, "\nQuadratic must have a nonzero coefficient.")
   a==0 && b==0 ? [] :     // No solutions
-  a==0 ? [[-c/b,0]] : 
+  a==0 ? [[-c/b,0]] :     // linear case, only one root
+  b==0 && c==0 ? [[0,0],[0,0]] :   // a*x^2=0, zero is a double root
   let(
       descrim = b*b-4*a*c,
       sqrt_des = sqrt(abs(descrim))

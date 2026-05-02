@@ -5,7 +5,8 @@ bugfix = $preview ? .1 : 0;
 
 // ---- Parameters (from Python) ----
 svg_size = [@@SVG_W@@, @@SVG_H@@];
-margin = @@MARGIN@@;
+x_margin = @@X_MARGIN@@;
+y_margin = @@Y_MARGIN@@;
 
 corners = @@CORNERS@@;
 height = @@THICKNESS@@;
@@ -25,8 +26,8 @@ graphics_file = "@@SVG_FILE@@";
 
 // ---- Derived sizes ----
 bottom_size = [
-    svg_size[0] + margin*2 + shrink*2,
-    svg_size[1] + margin*2 + shrink*2
+    svg_size[0] + x_margin*2 + shrink*2,
+    svg_size[1] + y_margin*2 + shrink*2
 ];
 
 top_size = [

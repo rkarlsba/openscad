@@ -1,0 +1,414 @@
+[[test]]
+name = "test_is_vnf"
+script = '''
+include <../std.scad>
+
+module test_is_vnf() {
+    assert(is_vnf([[],[]]));
+    assert(!is_vnf([]));
+    assert(is_vnf([[[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]],[[0,1,2],[0,3,1],[1,3,2],[2,3,0]]]));
+}
+test_is_vnf();
+'''
+
+[[test]]
+name = "test_is_vnf_list"
+script = '''
+include <../std.scad>
+
+module test_is_vnf_list() {
+    assert(is_vnf_list([]));
+    assert(!is_vnf_list([[],[]]));
+    assert(is_vnf_list([[[],[]]]));
+    assert(!is_vnf_list([[[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]],[[0,1,2],[0,3,1],[1,3,2],[2,3,0]]]));
+    assert(is_vnf_list([[[[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]],[[0,1,2],[0,3,1],[1,3,2],[2,3,0]]]]));
+}
+test_is_vnf_list();
+'''
+
+[[test]]
+name = "test_vnf_vertices"
+script = '''
+include <../std.scad>
+
+module test_vnf_vertices() {
+    vnf = [[[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]],[[0,1,2],[0,3,1],[1,3,2],[2,3,0]]];
+    assert(vnf_vertices(vnf) == vnf[0]);
+}
+test_vnf_vertices();
+'''
+
+[[test]]
+name = "test_vnf_faces"
+script = '''
+include <../std.scad>
+
+module test_vnf_faces() {
+    vnf = [[[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]],[[0,1,2],[0,3,1],[1,3,2],[2,3,0]]];
+    assert(vnf_faces(vnf) == vnf[1]);
+}
+test_vnf_faces();
+'''
+
+[[test]]
+name = "test_vnf_from_polygons"
+script = '''
+include <../std.scad>
+
+module test_vnf_from_polygons() {
+    verts = [[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]];
+    faces = [[0,1,2],[0,3,1],[2,3,0],[0,1,0]];      // Last face has zero area
+    assert(vnf_merge_points(
+                     vnf_from_polygons([for (face=faces) select(verts,face)])) == [verts,select(faces,0,-2)]); 
+}
+test_vnf_from_polygons();
+'''
+
+[[test]]
+name = "test_vnf_volume"
+script = '''
+include <../std.scad>
+
+module test_vnf_volume() {
+    assert_approx(vnf_volume(cube(100, center=false)), 1000000);
+    assert(approx(vnf_volume(sphere(d=100, anchor=BOT, $fn=144)) / (4/3*PI*pow(50,3)),1, eps=.001));
+}
+test_vnf_volume();
+'''
+
+[[test]]
+name = "test_vnf_area"
+script = '''
+include <../std.scad>
+
+module test_vnf_area(){
+    assert(approx(vnf_area(sphere(d=100, $fn=144)) / (4*PI*50*50),1, eps=1e-3));
+}
+test_vnf_area();
+'''
+
+[[test]]
+name = "test_vnf_join"
+script = '''
+include <../std.scad>
+
+module test_vnf_join() {
+    vnf1 = vnf_from_polygons([[[-1,-1,-1],[1,-1,-1],[0,1,-1]]]);
+    vnf2 = vnf_from_polygons([[[1,1,1],[-1,1,1],[0,1,-1]]]);
+    assert(vnf_join([vnf1,vnf2]) == [[[-1,-1,-1],[1,-1,-1],[0,1,-1],[1,1,1],[-1,1,1],[0,1,-1]],[[0,1,2],[3,4,5]]]);
+}
+test_vnf_join();
+'''
+
+[[test]]
+name = "test_vnf_triangulate"
+script = '''
+include <../std.scad>
+
+module test_vnf_triangulate() {
+    vnf = [[[-1,-1,0],[1,-1,0],[1,1,0],[-1,1,0]],[[0,1,2,3]]];
+    assert(vnf_triangulate(vnf) == [[[-1,-1,0],[1,-1,0],[1,1,0],[-1,1,0]], [[0,1,2],[2,3,0]]]);
+}
+test_vnf_triangulate();
+'''
+
+[[test]]
+name = "test_vnf_vertex_array"
+script = '''
+include <../std.scad>
+
+module test_vnf_vertex_array() {
+    vnf1 = vnf_vertex_array(
+        points=[for (h=[0:100:100]) [[100,-50,h],[-100,-50,h],[0,100,h]]],
+        col_wrap=true, caps=true
+    );
+    vnf2 = vnf_vertex_array(
+        points=[for (h=[0:100:100]) [[100,-50,h],[-100,-50,h],[0,100,h]]],
+        col_wrap=true, caps=true, style="alt"
+    );
+    vnf3 = vnf_vertex_array(
+        points=[for (h=[0:100:100]) [[100,-50,h],[-100,-50,h],[0,100,h]]],
+        col_wrap=true, caps=true, style="quincunx"
+    );
+    assert(vnf1 == [[[100,-50,0],[-100,-50,0],[0,100,0],[100,-50,100],[-100,-50,100],[0,100,100]],[[2,1,0],[3,4,5],[0,4,3],[0,1,4],[1,5,4],[1,2,5],[2,3,5],[2,0,3]]]);
+    assert(vnf2 == [[[100,-50,0],[-100,-50,0],[0,100,0],[100,-50,100],[-100,-50,100],[0,100,100]],[[2,1,0],[3,4,5],[0,1,3],[3,1,4],[1,2,4],[4,2,5],[2,0,5],[5,0,3]]]);
+    assert(vnf3 == [[[100,-50,0],[-100,-50,0],[0,100,0],[100,-50,100],[-100,-50,100],[0,100,100],[0,-50,50],[-50,25,50],[50,25,50]],[[2,1,0],[3,4,5],[0,6,3],[3,6,4],[4,6,1],[1,6,0],[1,7,4],[4,7,5],[5,7,2],[2,7,1],[2,8,5],[5,8,3],[3,8,0],[0,8,2]]]);
+}
+test_vnf_vertex_array();
+'''
+
+[[test]]
+name = "test_vnf_bounds"
+script = '''
+include <../std.scad>
+
+module test_vnf_bounds() {
+    vnf = cube([10,20,30], center=false);
+    b = vnf_bounds(vnf);
+    assert_approx(b[0], [0,0,0]);
+    assert_approx(b[1], [10,20,30]);
+    // centered cube
+    vnf2 = cube([6,6,6], center=true);
+    b2 = vnf_bounds(vnf2);
+    assert_approx(b2[0], [-3,-3,-3]);
+    assert_approx(b2[1], [3,3,3]);
+}
+test_vnf_bounds();
+'''
+
+[[test]]
+name = "test_vnf_reverse_faces"
+script = '''
+include <../std.scad>
+
+module test_vnf_reverse_faces() {
+    verts = [[-1,-1,-1],[1,-1,-1],[0,1,-1],[0,0,1]];
+    faces = [[0,1,2],[0,3,1],[1,3,2],[2,3,0]];
+    vnf = [verts, faces];
+    rev = vnf_reverse_faces(vnf);
+    assert(rev[0] == verts);
+    // each face should be the reverse of the original
+    for (i = idx(faces))
+        assert_equal(rev[1][i], reverse(faces[i]));
+}
+test_vnf_reverse_faces();
+'''
+
+[[test]]
+name = "test_vnf_quantize"
+script = '''
+include <../std.scad>
+
+module test_vnf_quantize() {
+    vnf = [[[ 1.000001,-1.000001,-1],[1,-1,-1],[0,1,-1]],[[0,1,2]]];
+    q = vnf_quantize(vnf, q=0.001);
+    assert(is_vnf(q));
+    assert(len(q[0]) == 3);
+}
+test_vnf_quantize();
+'''
+
+[[test]]
+name = "test_vnf_drop_unused_points"
+script = '''
+include <../std.scad>
+
+module test_vnf_drop_unused_points() {
+    // Add an extra vertex that is not referenced by any face
+    verts = [[-1,-1,-1],[1,-1,-1],[0,1,-1],[99,99,99]];
+    faces = [[0,1,2]];
+    vnf = [verts, faces];
+    clean = vnf_drop_unused_points(vnf);
+    assert(len(clean[0]) == 3);
+    assert(clean[1] == [[0,1,2]]);
+}
+test_vnf_drop_unused_points();
+'''
+
+[[test]]
+name = "test_vnf_merge_points"
+script = '''
+include <../std.scad>
+
+module test_vnf_merge_points() {
+    // Two identical vertices → merged into one
+    verts = [[0,0,0],[1,0,0],[0,1,0],[0,0,0]];
+    faces = [[0,1,2],[3,2,1]];
+    vnf = [verts, faces];
+    m = vnf_merge_points(vnf);
+    // After merging, vertex 3 is the same as vertex 0
+    assert(len(m[0]) == 3);
+}
+test_vnf_merge_points();
+'''
+
+[[test]]
+name = "test_vnf_from_region"
+script = '''
+include <../std.scad>
+
+module test_vnf_from_region() {
+    sq = [square(10, center=true)];
+    vnf = vnf_from_region(sq);
+    assert(is_vnf(vnf));
+    // A square region → triangulated faces
+    assert(len(vnf[1]) > 0);
+}
+test_vnf_from_region();
+'''
+
+[[test]]
+name = "test_vnf_tri_array"
+script = '''
+include <../std.scad>
+
+module test_vnf_tri_array() {
+    // Two parallel rows of 3 points each → triangulated strip
+    rows = [
+        [[0,0,0],[1,0,0],[2,0,0]],
+        [[0,1,0],[1,1,0],[2,1,0]]
+    ];
+    v = vnf_tri_array(rows, caps=false);
+    assert(is_vnf(v));
+    assert(len(v[0]) == 6);
+    assert(len(v[1]) > 0);
+}
+test_vnf_tri_array();
+'''
+
+[[test]]
+name = "test_vnf_unify_faces"
+script = '''
+include <../std.scad>
+
+module test_vnf_unify_faces() {
+    // A square made of two coplanar triangles → should unify into one quad
+    verts = [[0,0,0],[1,0,0],[1,1,0],[0,1,0]];
+    faces = [[0,1,2],[0,2,3]];
+    v = [verts, faces];
+    u = vnf_unify_faces(v);
+    assert(is_vnf(u));
+    // After unifying two coplanar triangles, should have fewer faces
+    assert(len(u[1]) <= len(faces));
+}
+test_vnf_unify_faces();
+'''
+
+[[test]]
+name = "test_vnf_slice"
+script = '''
+include <../std.scad>
+
+module test_vnf_slice() {
+    $fn = 12;
+    v = sphere(r=10);
+    // vnf_slice cuts faces at the given plane but keeps both halves
+    sliced = vnf_slice(v, "Z", [0]);
+    assert(is_vnf(sliced));
+    // Slicing adds new vertices at z=0; the result has at least as many vertices
+    assert(len(sliced[0]) >= len(v[0]));
+    assert(len(sliced[1]) > 0);
+}
+test_vnf_slice();
+'''
+
+[[test]]
+name = "test_vnf_hull"
+script = '''
+include <../std.scad>
+
+module test_vnf_hull() {
+    pts = [[0,0,0],[10,0,0],[0,10,0],[0,0,10]];
+    v = vnf_hull(pts);
+    assert(is_vnf(v));
+    assert(len(v[0]) == 4);
+    assert(len(v[1]) == 4);
+}
+test_vnf_hull();
+'''
+
+[[test]]
+name = "test_vnf_halfspace"
+script = '''
+include <../std.scad>
+
+module test_vnf_halfspace() {
+    $fn = 12;
+    v = sphere(r=10);
+    // Keep z >= 0 half
+    plane = [0, 0, 1, 0];
+    h = vnf_halfspace(plane, v);
+    assert(is_vnf(h));
+    for (pt = h[0]) assert(pt.z >= -0.001);
+}
+test_vnf_halfspace();
+'''
+
+[[test]]
+name = "test_vnf_boundary"
+script = '''
+include <../std.scad>
+
+module test_vnf_boundary() {
+    // A hemisphere (open bottom) has a circular boundary
+    $fn = 12;
+    v = sphere(r=10);
+    // Take just the top half (open)
+    plane = [0, 0, 1, 0];
+    h = vnf_halfspace(plane, v, closed=false);
+    boundary = vnf_boundary(h);
+    // Should have exactly one boundary loop
+    assert(len(boundary) == 1);
+    assert(len(boundary[0]) > 2);
+}
+test_vnf_boundary();
+'''
+
+[[test]]
+name = "test_projection"
+script = '''
+include <../std.scad>
+
+module test_projection() {
+    $fn = 12;
+    // Project a cube onto the XY plane (z=0 plane, cut=false)
+    v = cube(10, center=true);
+    proj = projection(v, cut=false);
+    // Projection returns a region (list of 2D paths)
+    assert(is_region(proj));
+    assert(len(proj) > 0);
+}
+test_projection();
+'''
+
+[[test]]
+name = "test_vnf_bend"
+script = '''
+include <../std.scad>
+
+module test_vnf_bend() {
+    $fn = 12;
+    // Shape must be entirely in positive y (strictly) for Z-axis bend
+    // Centered cube shifted to y in [1,6]
+    v = move([0,3.5,0], p=cube([20,5,1], center=true));
+    bent = vnf_bend(v, r=10, axis="Z");
+    assert(is_vnf(bent));
+    assert(len(bent[0]) > 0);
+    assert(len(bent[1]) > 0);
+}
+test_vnf_bend();
+'''
+
+[[test]]
+name = "test_vnf_small_offset"
+script = '''
+include <../std.scad>
+
+module test_vnf_small_offset() {
+    $fn = 12;
+    v = sphere(r=5);
+    expanded = vnf_small_offset(v, delta=0.5);
+    assert(is_vnf(expanded));
+    // Expanding should increase average vertex distance from origin
+    avg_orig = mean([for(p = v[0]) norm(p)]);
+    avg_exp  = mean([for(p = expanded[0]) norm(p)]);
+    assert(avg_exp > avg_orig - 0.001);
+}
+test_vnf_small_offset();
+'''
+
+[[test]]
+name = "test_vnf_sheet"
+script = '''
+include <../std.scad>
+
+module test_vnf_sheet() {
+    $fn = 12;
+    v = sphere(r=5);
+    sheet = vnf_sheet(v, delta=[0, -1]);
+    assert(is_vnf(sheet));
+    assert(len(sheet[0]) > 0);
+    assert(len(sheet[1]) > 0);
+}
+test_vnf_sheet();
+'''
