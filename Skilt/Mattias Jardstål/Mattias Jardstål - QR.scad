@@ -20,7 +20,7 @@ fontsize=10;
 //fonttype="Liberation Sans";
 //fonttype="Avenir Next Condensed";
 fonttype="Big Shoulders Stencil 18pt";
-scale_to=[28/30,28/30,1];
+scale_to=[27/30,27/30,1];
 fontspacing=1;
 //tekst = "mintprint.karlsbakk.net";
 //tekst = "mintprint.local";
@@ -47,7 +47,7 @@ render(convexity=10) {
         }
     }
 
-    translate([1,1,label_thickness]) {
+    translate([1.5,1.5,label_thickness]) {
         linear_extrude(graphics_thickness) {
             scale(scale_to) {
                 import(qr_code);
