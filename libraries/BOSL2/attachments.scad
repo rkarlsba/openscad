@@ -612,8 +612,21 @@ module orient(anchor, spin) {
 //   Several options can adjust how the child is positioned.  You can specify `inset=` to inset the
 //   aligned object from its alignment location. If you set `inside=true` then the
 //   child appears inside the parent instead of on its surface so that you can use {{diff()}} to subract it.
-//   In this case the child recieved a default "remove" tag.   The `shiftout=` option works with `inside=true` to 
-//   shift the child out by the specified distance so that the child doesn't exactly align with the parent.
+//   In this case the child receives a default "remove" tag.
+//   .
+//   The overlap option and shiftout option both move the object away from its aligned position.  They
+//   can be used to prevent coincident faces from creating issues in OpenSCAD by ensuring that the child
+//   fully overlaps the parent's face(s).  The `overlap` parameter defaults to the value of `$overlap`, or
+//   0 if `$overlap` is not set.  It moves the child object in the direction of the `anchor` face when
+//   `inside=false` (sinking the child into the parent) and it moves the child in the opposite direction
+//   if `inside=true`, shifting the child outward away from the `anchor` face.  The child will remain exactly flush
+//   with edges it was aligned to using `align`. The `overlap` parameter is best suited to externally aligned objects (`inside=false`)
+//   where the aligned edges should remain perfectly aligned. The `shiftout` parameter shifts the child outward relative to
+//   the `anchor` face and also any aligned edges.  The direction of movement does not depend on the `inside` parameter.
+//   For an inside child this is equivalent to giving a positive overlap and negative inset value.
+//   For a child with `inside=false` it is equivalent to a negative overlap and negative inset.  The `shiftout` parameter
+//   is well suited to internal objects where `inside=true` because it shifts to overlap all coincident faces, including
+//   faces at aligned edges.  
 //   .
 //   In the description above, the anchor was said to define a "face".  You can also use this module
 //   with an edge anchor, in which case a corner of the child is placed in contact with the specified
@@ -630,7 +643,7 @@ module orient(anchor, spin) {
 //   inside = if true, place object inside the parent instead of outside.  Default: false
 //   inset = shift the child away from the alignment edge/corner by this amount.  Default: 0
 //   shiftout = Shift an inside object outward so that it overlaps all the aligned faces.  Default: 0
-//   overlap = Amount to sink the child into the parent.  Defaults to `$overlap`, which is zero by default.
+//   overlap = Amount to sink the child into the parent (or raise child out of parent if `inside=true`).  Defaults to `$overlap`, which is zero by default.
 // Side Effects:
 //   `$anchor` set to the anchor value used for the child.
 //   `$align` set to the align value used for the child.
@@ -706,9 +719,13 @@ module orient(anchor, spin) {
 module align(anchor,align=CENTER,inside=false,inset=0,shiftout=0,overlap)
 {
     req_children($children);
-    overlap = (overlap!=undef)? overlap : $overlap;
+    overlap = (inside?-1:1)*((overlap!=undef)? overlap : $overlap);
     dummy1=assert($parent_geom != undef, "\nNo object to align to.")
-           assert(is_undef($attach_to), "\nCannot use align() as a child of attach().");
+           assert(is_undef($attach_to), "\nCannot use align() as a child of attach().")
+           assert(is_finite(overlap), str("\noverlap must be a finite number but is ",overlap));
+    if (_is_shown() && inside && overlap!=0 && (is_undef($align_msg) || $align_msg))
+      echo("WARNING: overlap passed to align() with inside=true; handling has changed (May 2026): positive overlap moves child outward (change in sign). Set $align_msg=false to hide this message");
+
     anchor = is_vector(anchor) ? [anchor] : anchor;
     align = is_vector(align) ? [align] : align;
     two_d = _attach_geom_2d($parent_geom);
@@ -795,40 +812,42 @@ function _make_anchor_legal(anchor,geom) =
 //   spinning the object around the Z axis would change the child orientation so that the anchors are no longer parallel.
 //   .
 //   As with {{align()}} you can use the `align=` parameter to align the child to an edge or corner of the
-//   face where that child is attached.  For example, `attach(TOP,BOT,align=RIGHT)` would stand the child
-//   up on the top while aligning it with the right edge of the top face, and `attach(RIGHT,BOT,align=TOP)`, which
-//   stand the object on the right face while aligning with the top edge.  If you apply spin using the
+//   face where that child is attached.  For example, `attach(TOP,BOT,align=RIGHT)` stands the child
+//   up on the top while aligning it with the right edge of the top face, and `attach(RIGHT,BOT,align=TOP)` 
+//   stands the object on the right face while aligning with the top edge.  If you apply spin using the
 //   argument to `attach()`, then it is taken into account for the alignment. However, if you apply spin as
 //   a parameter to the child, it is **not** taken into account.  The special spin value "align"
 //   spins the child so that the child's BACK direction is pointed toward the aligned edge on the parent. 
 //   When you use `align=` you can also adjust the position using `inset=`, which shifts the child
-//   away from the edge or corner it is aligned to.
+//   inward away from the edge or corner it is aligned to.  The `inset=` parameter is not permitted without `align=`.
 //   .
 //   The concept of alignment doesn't always make sense for objects without corners, such as spheres or cylinders.
 //   In same cases, the alignments using such children may look odd because the alignment computation tries to
 //   place a non-existent corner somewhere.  Because attach() doesn't have in formation about the child when
 //   it runs, it cannot handle curved shapes differently from cubes, so this behavior cannot be changed.  
 //   .
-//   If you give `inside=true` then the anchor arrows are lined up so they point the same direction and
-//   the child object is located inside the parent.  In this case a default "remove" tag is applied to
-//   the children.  
-//   .
 //   Because the attachment process forces an orientation and anchor point for the child, it overrides
 //   any such specifications you give to the child:  **both `anchor=` and `orient=` given to the child are
 //   ignored** with the **double argument** version of `attach()`.  As noted above, you can give `spin=` to the
 //   child but using the `spin=` parameter to `attach()` is more likely to be useful.
 //   .
-//   You can overlap attached children into the parent by giving the `$overlap` value,
-//   which is 0 by default, or by the `overlap=` argument.    This is to prevent OpenSCAD
-//   from making non-manifold objects.  You can define `$overlap=` as an argument in a parent
-//   module to set the default for all attachments to it.  When you give `inside=true`, a positive overlap
-//   value shifts the child object outward.
+//   If you give `inside=true` then the anchor arrows are lined up so they point the same direction and
+//   the child object is located inside the parent.  In this case a default "remove" tag is applied to
+//   the children.  
 //   .
-//   If you specify an `inset=` value then the child is shifted away from any edges it is aligned to, toward the middle
-//   of the parent.  The `shiftout=` parameter is intended to simplify differences with aligned objects
-//   placed inside the parent.  It shifts the child outward along every direction where it is aligned with
-//   the parent.  For an inside child this is equivalent to giving a positive overlap and negative inset value.
-//   For a child with `inside=false` it is equivalent to a negative overlap and negative inset.  
+//   The overlap option and shiftout option both move the object away from its aligned position.  They
+//   can be used to prevent coincident faces from creating issues in OpenSCAD by ensuring that the child
+//   fully overlaps the parent's face(s).  The `overlap` parameter defaults to the value of `$overlap`, or
+//   0 if `$overlap` is not set.  It moves the child object in the direction of the `parent` face when
+//   `inside=false` (sinking the child into the parent) and it moves the child in the opposite direction
+//   if `inside=true`, shifting the child outward away from the `parent` face.  The child will remain exactly flush
+//   with edges it was aligned to using `align=`.  The `overlap` parameter is best suited to externally attached objects (`inside=false`)
+//   where the aligned edges should remain perfectly aligned.  The `shiftout` parameter shifts the child outward relative to
+//   the `parent` face and also any aligned edges.  The direction of movement does not depend on the `inside` parameter.
+//   For an inside child this is equivalent to giving a positive overlap and negative inset value.
+//   For a child with `inside=false` it is equivalent to a negative overlap and negative inset.  The `shiftout` parameter
+//   is well suited to internal objects where `inside=true` because it shifts to overlap all coincident faces, including
+//   faces at aligned edges.  
 //   .
 //   The single parameter version of `attach()` is rarely needed; to use it, you give only the `parent` anchor.  The `align` direction
 //   is not permitted.  In this case the child is placed at the specified parent anchor point
@@ -848,7 +867,7 @@ function _make_anchor_legal(anchor,geom) =
 //   ---
 //   align = If `child` is given you can specify alignment or list of alistnments to shift the child to an edge or corner of the parent. 
 //   inset = Shift aligned children away from their alignment edge/corner by this amount.  Default: 0
-//   overlap = Amount to sink child into the parent.  Equivalent to `down(X)` after the attach.  This defaults to the value in `$overlap`, which is `0` by default.
+//   overlap = Amount to sink child into the parent (or raise child out of parent if `inside=true`).  Equivalent to `down(X)` after the attach (or `up(X)` if `inside=true`).  This defaults to the value in `$overlap`, which is `0` by default.
 //   inside = If `child` is given you can set `inside=true` to attach the child to the inside of the parent for diff() operations.  Default: false
 //   shiftout = Shift an inside object outward so that it overlaps all the aligned faces.  Default: 0
 //   spin = Angle to rotate the child around the axis of the parent anchor.  Can set to "align" to align the child's BACK with the parent aligned edge.  (Permitted only in 3D.)
