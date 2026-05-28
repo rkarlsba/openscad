@@ -1,0 +1,19 @@
+{
+    "filament_cost": [
+        "400"
+    ],
+    "filament_max_volumetric_speed": [
+        "16"
+    ],
+    "filament_settings_id": [
+        "Clas Ohlson PLA"
+    ],
+    "filament_start_gcode": [
+        "; filament start gcode\n{if  (bed_temperature[current_extruder] >45)||(bed_temperature_initial_layer[current_extruder] >45)}\n;M106 P3 S255\nM106 P3 S144\n{elsif(bed_temperature[current_extruder] >35)||(bed_temperature_initial_layer[current_extruder] >35)}\n;M106 P3 S128\nM106 P3 S96\n{endif}\n;Prevent PLA from jamming"
+    ],
+    "from": "User",
+    "inherits": "Generic PLA",
+    "is_custom_defined": "0",
+    "name": "Clas Ohlson PLA",
+    "version": "1.4.1.4"
+}
