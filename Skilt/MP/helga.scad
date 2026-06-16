@@ -107,7 +107,7 @@ module skilt(dim, r=0, tekst=tekst, bilde=bilde, base=skilt_base, border=skilt_b
 
                     // Bilde
                     if (bilde) {
-                        translate([4,10]) {
+                        translate([4,13.3]) {
                             shrink=.8;
                             scale([shrink,shrink,shrink]) {
                                 import(bilde);
@@ -117,7 +117,7 @@ module skilt(dim, r=0, tekst=tekst, bilde=bilde, base=skilt_base, border=skilt_b
                     
                     // Tekst
                     if (tekst) {
-                        translate([26,21]) {
+                        translate([28,21]) {
                             text(tekst, size=font_size, font=font_face, spacing=1);
                         }
                     }
