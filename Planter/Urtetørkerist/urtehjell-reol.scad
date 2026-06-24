@@ -51,6 +51,8 @@ include <honeycomb/honeycomb.scad>
 // }}}
 // Code {{{
 
+box_size = [200,120,200];
+
 thickness = 3;
 x = 180;
 y = 100;
@@ -58,38 +60,25 @@ hccellsize = 15;
 border_width = 10;
 border_thickness = 5;
 
-lage_hylle = true;
-lage_reol = false;
-
-// Size er 2D
-module plate(size, thickness) {
+module hylle(x, y, thickness) {
     linear_extrude(thickness) {
-        translate([border_width, border_width]) {
-            honeycomb(size[0]-border_width, size[1]-border_width, hccellsize, thickness);
-        }
+        echo(str("DEBUG-1> x: ", x, ", y: ", y));
+        honeycomb(x, y, hccellsize, thickness);
     }
 
     linear_extrude(thickness) {
         difference() {
-            square(size);
-            translate([border_width,border_width]) {
-                square(size - [border_width*2, border_width*2]);
+            translate([-border_width,-border_width]) {
+                echo(str("DEBUG-1> x + border_width * 2: ", x + border_width * 2, ", y + border_width * 2: ", y + border_width * 2));
+                square([x+border_width*2,y+border_width*2]);
             }
+            square([x,y]);
+            echo(str("DEBUG-3> x: ", x, ", y: ", y));
         }
     }
 }
 
-// Size er 3D
-module reol(size, thickness) {
-}
-
-if (lage_hylle) {
-    plate([x, y], thickness);
-}
-
-if (lage_reol) {
-    reol([x, y, z], thickness);
-}
+hylle(box_size[0], box_size[1], y, thickness); // top
 
 
 // }}}

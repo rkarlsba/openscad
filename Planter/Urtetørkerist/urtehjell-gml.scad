@@ -43,53 +43,100 @@
  * }}} */
 // Libs {{{
 
-// ../../libraries/honeycomb/honeycomb.scad
-// module honeycomb(x, y, dia, wall)  {
-
-include <honeycomb/honeycomb.scad>
+include <BOSL2/std.scad>
 
 // }}}
-// Code {{{
+// Variables {{{
 
-thickness = 3;
-x = 180;
-y = 100;
-hccellsize = 15;
-border_width = 10;
-border_thickness = 5;
+rail = [
+    [0, 0],
+    [10, 5],
+    [20, 0],
+    [10, 10]
+];
 
-lage_hylle = true;
-lage_reol = false;
+neg_rail = [
+    [0, 0],
+    [10, 0],
+    [10, 10]
+];
 
-// Size er 2D
-module plate(size, thickness) {
-    linear_extrude(thickness) {
-        translate([border_width, border_width]) {
-            honeycomb(size[0]-border_width, size[1]-border_width, hccellsize, thickness);
-        }
+fixed_rail = rail * PI/2;
+fixed_neg_rail = neg_rail * PI/2;
+
+square_path = [
+    [0, 0, 0],
+    [rail_length, 0, 0],
+    [rail_length, rail_length, 0],
+    [0, rail_length, 0]
+];
+
+size = 150;
+pitch = 20;
+angle = 45;
+wall = 2;
+height = 20;
+inner_margin = 20;   // <-- viktig!
+
+// }}}
+// Debug {{{
+
+echo(fixed_rail);
+echo(fixed_neg_rail);
+
+// }}}
+// module grid_lines(size, pitch, angle) {{{
+
+module grid_lines(size, pitch, angle) {
+    dx = cos(angle);
+    dy = sin(angle);
+
+    // hvor mange linjer vi trenger
+    n = ceil(size / pitch) * 2;
+
+    for (i = [-n:n]) {
+        offset = i * pitch;
+
+        // flytt linja sidelengs
+        xoff = -dy * offset;
+        yoff =  dx * offset;
+
+        path = [
+            [xoff - dx*size, yoff - dy*size, 0],
+            [xoff + dx*size, yoff + dy*size, 0]
+        ];
+
+        path_sweep(
+            [[0,0],[2,0],[2,2],[0,2]],   // enkel tynn profil
+            path
+        );
     }
-
-    linear_extrude(thickness) {
-        difference() {
-            square(size);
-            translate([border_width,border_width]) {
-                square(size - [border_width*2, border_width*2]);
-            }
-        }
-    }
 }
 
-// Size er 3D
-module reol(size, thickness) {
+// }}}
+// module etasje() {{{
+
+module etasje() {
+    path_sweep(shape=rail, path=square_path, closed=true);
 }
 
-if (lage_hylle) {
-    plate([x, y], thickness);
+// }}}
+// Main program {{{
+
+
+module line(len=200) {
+    path_sweep([[0,0],[2,0],[2,2],[0,2]], [[-len,0,0],[len,0,0]]);
 }
 
-if (lage_reol) {
-    reol([x, y, z], thickness);
-}
+// rotert grid
+rotate([0,0,angle])
+grid2d(
+    spacing=pitch,
+    size=[rail_length*2, rail_length*2]
+)
+    line();
 
+
+path_sweep(shape=rail, path=square_path, closed=true);
 
 // }}}
