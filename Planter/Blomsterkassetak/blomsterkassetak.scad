@@ -3,24 +3,21 @@
  * }}} */
 /* Documentation and credits {{{
  *
- * urtehjell.scad
+ * blomsterkassetak.scad
  *
- * This is an attempt to make a form of drying stand for herbs, since I just got
- * a nice collection of those myself and they're growing all to fast and needs
- * to get dried. Problem is, if you just toss them in an open box, then the
- * ones at bottom, quite easily rots and that can spread, so, I thought of some
- * sort of rack where I could spread them out.
+ * INTRODUCTION AND NAME
  *
- * THE NAME
+ * Blomsterkassetak is Norwegian for "[balcony] planter box roof", so this is a
+ * roof/cover to be used with a balcony planter box. Mine has an internal width
+ * of 146mm or thereabout and this is made for just that. The size should have
+ * been easily adjustable, but not all the code is as good as it shouldn've been
+ * and I really should rewrite it all some time I find the time. This is a fine
+ * mix between copilot code and my own, since copilot can be pretty far out when
+ * it comes to OpenSCAD. 
  *
- * Urtehjell is a contraction of "urt", meaning "herb", a genitive-e and
- * "hjell", which best translates to fish flake, that is, a specialized rack for
- * drying fish. So I'll just borrow that word, becuse even it's very specific,
- * rules are there to be broken!
- * 
  * CHANGELOG
  *
- * v0.1.0, 2026-06-16:
+ * v0.1.0, 2026-06-25:
  *   Initial version
  *
  * Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net>.
@@ -43,11 +40,9 @@
  * }}} */
 // Libs {{{
 
-// ../../libraries/honeycomb/honeycomb.scad
-// module honeycomb(x, y, dia, wall)  {
 
+// module honeycomb(x, y, dia, wall)
 include <honeycomb/honeycomb.scad>
-// include <BOSL2/std.scad>;
 
 // }}}
 // Resolution {{{
@@ -59,15 +54,18 @@ $fa = 3;   // minimum fragment angle (angular)
 // }}}
 // Variables {{{
 
-kassebredde = 146;
-thickness = 2;
+box_width = 146;
+thickness = 3;
 x = 155;
-y = kassebredde;
+y = box_width;
 hccellsize = 15;
 border_width = 8;
 base_thickness = 20;
 roof_height = 150;
-sidevegg_type = "grid"; // Possible values are "grid", "honeycomb", "blank" and "none"
+side_wall_type = "grid"; // Possible values are "grid", "honeycomb", "blank" and "none"
+// side_wall_type = "honeycomb"; // Possible values are "grid", "honeycomb", "blank" and "none"
+// side_wall_type = "blank"; // Possible values are "grid", "honeycomb", "blank" and "none"
+// side_wall_type = "none"; // Possible values are "grid", "honeycomb", "blank" and "none"
 
 // }}}
 // module bunnramme(x, y, border_width, thickness) {{{
@@ -91,8 +89,8 @@ module bunnramme(x, y, border_width, thickness) {
 // }}}
 // module grid(size, step, thickness) {{{
 
-module grid(size, step, thickness, angle=0)
-{
+// grid(x, 20, thickness, 45);
+module grid(size, step, thickness, angle=0) {
     translate([size/2, size/2]) { // flytt sentrum til origo
         rotate([0,0,angle]) {
             translate([-size/2, -size/2]) { // flytt sentrum til origo
@@ -116,9 +114,17 @@ module grid(size, step, thickness, angle=0)
 }
 
 // }}}
-// module tak(x, y, thickness, hccellsize, height, border_height) {{{
+// module grid3d(size, step, thickness, angle=0, height=42) {{{
 
-module tak(x, y, thickness, hccellsize, height, border_height) {
+module grid3d(size, step, thickness, angle=0, height=42) {
+    linear_extrude(height)
+        grid(size, step, thickness, angle);
+}
+
+// }}}
+// module roof(x, y, thickness, hccellsize, height, border_height) {{{
+
+module roof(x, y, thickness, hccellsize, height, border_height) {
     translate([0, y/2]) {
         // for (a = [0:4.0:174]) {
         for (a = [0:hccellsize*.28:174]) {
@@ -207,39 +213,42 @@ module takkant(x, y, width, thickness) {
 }
 
 // }}}
-// module gavlvegg(x, y, width, thickness) {{{
+// module gable_wall(x, y, width, thickness, hccellsize, walltype="grid") // {{{
 
-module gavlvegg(x, y, width, thickness, hccellsize, type="grid") {
+module gable_wall(x, y, wall_width, thickness, hccellsize, walltype="grid") {
+    echo(str("DEBUG-4: x = ", x, ", y = ", y, ", wall_width = ", wall_width, ", thickness = ", thickness, ", hccellsize = ", hccellsize, " and walltype = \"", walltype, "\""));
     translate([0, y/2, 0]) {
         rotate([90,0,90]) {
             difference() {
-                cylinder(d=x-thickness, h=width);
-                cylinder(d=x-thickness*2, h=width);
+                cylinder(d=x-thickness*2, h=wall_width);
+                cylinder(d=x-thickness*3, h=wall_width);
                 translate([-x/2,-y,0]) {
-                    cube([x,y,width]);
+                    cube([x,y,wall_width]);
                 }
             }
-            translate([0, thickness-1, thickness/2]) {
+            translate([0, thickness, wall_width]) {
                 difference() {
                     intersection() {
-                        translate([-x/2,-y/2,0])
-                        linear_extrude(thickness) {
-                            if (sidevegg_type == "honeycomb") {
-                                honeycomb(x, y, hccellsize/4, thickness/4);
-                            } else if (sidevegg_type == "grid") {
-                                grid(x, 20, thickness/4, 45);
-                            } else if (sidevegg_type == "plain") {
-                                cube([x,y,width]);
-                            } else if (sidevegg_type == "none") {
-                                // nada
-                            } else {
-                                assert(str("Invalid wall type \"", sidevegg_type, "\". Giving up!\n"));
+                        translate([-x/2,-y/2,0]) {
+                            linear_extrude(thickness*2) {
+                                if (walltype == "honeycomb") {
+                                    // module honeycomb(x, y, dia, wall)
+                                    honeycomb(x, y, hccellsize/3, thickness/5);
+                                } else if (walltype == "grid") {
+                                    grid(x, 20, thickness, 45);
+                                } else if (walltype == "plain") {
+                                    cube([x, y, wall_width]);
+                                } else if (walltype == "none") {
+                                    // nada
+                                } else {
+                                    assert(str("Invalid wall type \"", walltype, "\". Giving up!\n"));
+                                }
                             }
                         }
                         translate([0,-6,-2]) cylinder(d=x-thickness*2, h=thickness);
                     }
                     translate([-x/2,-y,0]) {
-                        cube([x,y-7,width]);
+                        cube([x,y-7,wall_width]);
                     }
                 }
             }
@@ -254,22 +263,36 @@ render(convexity=4)
 {
     bunnramme(x, y, border_width, base_thickness);
     translate([0,0,base_thickness]) {
-        tak(x, y, thickness, hccellsize, roof_height);
+        roof(x, y, thickness, hccellsize, roof_height);
         translate([x-10, 0, 0]) {
-            gavlvegg(x, y, 10, 8, hccellsize);
             takkant(x, y, 10, 8);
+            gable_wall(
+                x = x,
+                y = y,
+                wall_width = border_width,
+                thickness = thickness,
+                hccellsize = hccellsize,
+                walltype = side_wall_type
+            );
         }
         takkant(x, y, 10, 8);
-        translate([thickness*5, 0, 0]) {
+        translate([10, 0, 0]) {
             mirror([1,0,0]) {
-                gavlvegg(x, y, 10, 8, hccellsize);
+                gable_wall(
+                    x = x,
+                    y = y,
+                    wall_width = border_width,
+                    thickness = thickness,
+                    hccellsize = hccellsize,
+                    walltype = side_wall_type
+                );
             }
         }
     }
     // buet_sidevegg(x, y, 10, hccellsize, thickness);
     // buet_sidevegg_glatt(x, y, 10);
     //
-    // width = 10;
+    // wall_width = 10;
     // translate([200,200,0]) rotate([90,0,90]) linear_extrude(5) grid(100, 10, 1, 45);
 }
 
