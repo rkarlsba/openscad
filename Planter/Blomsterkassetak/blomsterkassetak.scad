@@ -47,6 +47,14 @@
 // module honeycomb(x, y, dia, wall)  {
 
 include <honeycomb/honeycomb.scad>
+// include <BOSL2/std.scad>;
+
+// }}}
+// Resolution {{{
+
+$fn = 0;   // fixed number of fragments
+$fs = 0.5; // minimum fragment size (linear)
+$fa = 3;   // minimum fragment angle (angular)
 
 // }}}
 // Variables {{{
@@ -166,14 +174,67 @@ module buet_sidevegg_glatt(x, y, thickness, step=2) {
 }
 
 // }}}
+// module takkant(x, y, width, thickness) {{{
+
+module takkant(x, y, width, thickness) {
+    translate([0, y/2, thickness]) {
+        rotate([90,0,90]) {
+            difference() {
+                cylinder(d=x-thickness, h=width);
+                cylinder(d=x-thickness*2, h=width);
+                translate([-x/2,-y,0]) {
+                    cube([x,y,width]);
+                }
+            }
+        }
+    }
+}
+
+// }}}
+// module sidevegg(x, y, width, thickness) {{{
+
+module sidevegg(x, y, width, thickness, hccellsize) {
+    translate([0, y/2, thickness]) {
+        rotate([90,0,90]) {
+            difference() {
+                cylinder(d=x-thickness, h=width);
+                cylinder(d=x-thickness*2, h=width);
+                translate([-x/2,-y,0]) {
+                    cube([x,y,width]);
+                }
+            }
+            intersection()
+            {
+                translate([0, thickness, thickness/2]) {
+                    translate([-x/2,-y/2,0])
+                    linear_extrude(thickness) {
+                        honeycomb(x, y, hccellsize/4, thickness/4);
+                    }
+                    cylinder(d=x-thickness*2, h=thickness);
+                }
+            }
+        }
+    }
+}
+
+// }}}
 // main() {{{
 
-bunnramme(x, y, border_width, border_thickness);
-translate([0,0,border_thickness]) {
-    tak(x, y, thickness, hccellsize, roof_height);
+render(convexity=4)
+{
+    bunnramme(x, y, border_width, border_thickness);
+    translate([0,0,border_thickness]) {
+        tak(x, y, thickness, hccellsize, roof_height);
+    }
+    takkant(x, y, 10, 8);
+    translate([x-10, 0, 0]) {
+        sidevegg(x, y, 10, 8, hccellsize);
+    }
+    // buet_sidevegg(x, y, 10, hccellsize, thickness);
+    // buet_sidevegg_glatt(x, y, 10);
+    // gavlvegg(x, y, thickness);
+    //
+    width = 10;
 }
-// buet_sidevegg(x, y, 10, hccellsize, thickness);
-buet_sidevegg_glatt(x, y, 10);
-// gavlvegg(x, y, thickness);
 
 // }}}

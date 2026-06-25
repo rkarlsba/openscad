@@ -1,26 +1,35 @@
-use <honeycomb/honeycomb.scad>;
+/* Vim modline {{{
+ * vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:tw=80
+ * }}} */
+// Libs {{{
 
-/*
-radius = 100;
+// ../../libraries/honeycomb/honeycomb.scad
+// module honeycomb(x, y, dia, wall)  {
 
-for (a = [0:5.45:180]) {
-    rotate([a,0,0])
-        translate([0, radius, 0])
-            rotate([90,0,0])
-                linear_extrude(height=2)
-                    honeycomb(50,10,5,1);
-}
-*/
-module honey_panel(x, thickness, hccellsize) {
-    rotate([90,0,0])
-        linear_extrude(height=thickness)
-            honeycomb(x, hccellsize*2.9, hccellsize, 1);
-}
+include <honeycomb/honeycomb.scad>
 
-module tak(x, radius, thickness, hccellsize) {
-    for (a = [0:4:174]) {
-        rotate([a,0,0])
-            translate([0, radius, 0])
-                honey_panel(x, thickness, hccellsize);
+// }}}
+// Variables {{{
+
+test = false;
+kassebredde = 146;
+thickness = 2;
+x = 155;
+y = kassebredde;
+hccellsize = 15;
+border_width = test ? 4 : 8;
+border_thickness = test ? thickness : 10;
+roof_height = 150;
+
+// }}}
+// Code {{{
+
+
+intersection() {
+    honeycomb(x, y, hccellsize, thickness);
+    translate([x/2, y/2, 0]) {
+        cylinder(d=x-thickness, h=width);
     }
 }
+
+// }}}
