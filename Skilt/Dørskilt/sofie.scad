@@ -20,7 +20,7 @@ $fa = 3;   // minimum fragment angle (angular)
 skilt_r = 3;
 skilt_base = 1.5;
 skilt_border = 1;
-text_height = .6;
+text_height = 1;
 hole_d_bottom = 3;
 hole_d_top = 5.5;
 tekst = "Sofie Margrethe Eidsnes";
@@ -32,6 +32,7 @@ font_face = "Helvetica:style=Bold";
 font_size = 7.7;
 skilt_dim = [162,50,skilt_base];
 rounding_size = skilt_base;
+holes = false;
 
 // }}}
 // Functions {{{
@@ -127,23 +128,25 @@ module skilt(dim, r=0, tekst=tekst, bilde=bilde, base=skilt_base, border=skilt_b
         }
         // Høl
         // Nederst til venstre
-        translate([7,7]) {
-            cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
-        }
+        if (holes) {
+            translate([7,7]) {
+                cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
+            }
 
-        // Øverst til venstre
-        translate([7,43]) {
-            cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
-        }
+            // Øverst til venstre
+            translate([7,43]) {
+                cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
+            }
 
-        // Øverst til høyre
-        translate([skilt_dim[0]-7,43]) {
-            cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
-        }
+            // Øverst til høyre
+            translate([skilt_dim[0]-7,43]) {
+                cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
+            }
 
-        // Nederst til høyre
-        translate([skilt_dim[0]-7,7]) {
-            cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
+            // Nederst til høyre
+            translate([skilt_dim[0]-7,7]) {
+                cylinder(d1=hole_d_bottom, d2=hole_d_top, skilt_base+text_height);
+            }
         }
 
     }
