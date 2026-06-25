@@ -59,15 +59,15 @@ $fa = 3;   // minimum fragment angle (angular)
 // }}}
 // Variables {{{
 
-test = false;
 kassebredde = 146;
 thickness = 2;
 x = 155;
 y = kassebredde;
 hccellsize = 15;
-border_width = test ? 4 : 8;
-border_thickness = test ? thickness : 10;
+border_width = 8;
+base_thickness = 20;
 roof_height = 150;
+sidevegg_type = "grid"; // Possible values are "grid", "honeycomb", "blank" and "none"
 
 // }}}
 // module bunnramme(x, y, border_width, thickness) {{{
@@ -84,6 +84,33 @@ module bunnramme(x, y, border_width, thickness) {
                 square([x-border_width*2,y-border_width*2]);
             }
             echo(str("DEBUG-3> x: ", x, ", y: ", y));
+        }
+    }
+}
+
+// }}}
+// module grid(size, step, thickness) {{{
+
+module grid(size, step, thickness, angle=0)
+{
+    translate([size/2, size/2]) { // flytt sentrum til origo
+        rotate([0,0,angle]) {
+            translate([-size/2, -size/2]) { // flytt sentrum til origo
+                
+                // Vertical lines
+                for (x = [0:step:size]) {
+                    translate([x, 0]) {
+                        square([thickness, size + thickness]);
+                    }
+                }
+
+                // Horizontal lines
+                for (y = [0:step:size]) {
+                    translate([0, y]) {
+                        square([size + thickness, thickness]);
+                    }
+                }
+            }
         }
     }
 }
@@ -134,17 +161,6 @@ module buet_sidevegg(x, y, thickness, hccellsize, height) {
 }
 
 // }}}
-// module gavlvegg(x, y, thickness) {{{
-
-module gavlvegg(x, y, thickness) {
-    linear_extrude(thickness) {
-        projection(cut=true) {
-            tak(x, y, thickness, hccellsize, roof_height);
-        }
-    }
-}
-
-// }}}
 // module buet_sidevegg_glatt(x, y, thickness, step=2) {{{
 
 module buet_sidevegg_glatt(x, y, thickness, step=2) {
@@ -177,12 +193,12 @@ module buet_sidevegg_glatt(x, y, thickness, step=2) {
 // module takkant(x, y, width, thickness) {{{
 
 module takkant(x, y, width, thickness) {
-    translate([0, y/2, thickness]) {
+    translate([0, y/2, 0]) {
         rotate([90,0,90]) {
             difference() {
-                cylinder(d=x-thickness, h=width);
+                cylinder(d=x-thickness+2, h=width);
                 cylinder(d=x-thickness*2, h=width);
-                translate([-x/2,-y,0]) {
+                translate([-x/2,-y-15,0]) {
                     cube([x,y,width]);
                 }
             }
@@ -191,10 +207,10 @@ module takkant(x, y, width, thickness) {
 }
 
 // }}}
-// module sidevegg(x, y, width, thickness) {{{
+// module gavlvegg(x, y, width, thickness) {{{
 
-module sidevegg(x, y, width, thickness, hccellsize) {
-    translate([0, y/2, thickness]) {
+module gavlvegg(x, y, width, thickness, hccellsize, type="grid") {
+    translate([0, y/2, 0]) {
         rotate([90,0,90]) {
             difference() {
                 cylinder(d=x-thickness, h=width);
@@ -203,14 +219,28 @@ module sidevegg(x, y, width, thickness, hccellsize) {
                     cube([x,y,width]);
                 }
             }
-            intersection()
-            {
-                translate([0, thickness, thickness/2]) {
-                    translate([-x/2,-y/2,0])
-                    linear_extrude(thickness) {
-                        honeycomb(x, y, hccellsize/4, thickness/4);
+            translate([0, thickness-1, thickness/2]) {
+                difference() {
+                    intersection() {
+                        translate([-x/2,-y/2,0])
+                        linear_extrude(thickness) {
+                            if (sidevegg_type == "honeycomb") {
+                                honeycomb(x, y, hccellsize/4, thickness/4);
+                            } else if (sidevegg_type == "grid") {
+                                grid(x, 20, thickness/4, 45);
+                            } else if (sidevegg_type == "plain") {
+                                cube([x,y,width]);
+                            } else if (sidevegg_type == "none") {
+                                // nada
+                            } else {
+                                assert(str("Invalid wall type \"", sidevegg_type, "\". Giving up!\n"));
+                            }
+                        }
+                        translate([0,-6,-2]) cylinder(d=x-thickness*2, h=thickness);
                     }
-                    cylinder(d=x-thickness*2, h=thickness);
+                    translate([-x/2,-y,0]) {
+                        cube([x,y-7,width]);
+                    }
                 }
             }
         }
@@ -222,19 +252,25 @@ module sidevegg(x, y, width, thickness, hccellsize) {
 
 render(convexity=4)
 {
-    bunnramme(x, y, border_width, border_thickness);
-    translate([0,0,border_thickness]) {
+    bunnramme(x, y, border_width, base_thickness);
+    translate([0,0,base_thickness]) {
         tak(x, y, thickness, hccellsize, roof_height);
-    }
-    takkant(x, y, 10, 8);
-    translate([x-10, 0, 0]) {
-        sidevegg(x, y, 10, 8, hccellsize);
+        translate([x-10, 0, 0]) {
+            gavlvegg(x, y, 10, 8, hccellsize);
+            takkant(x, y, 10, 8);
+        }
+        takkant(x, y, 10, 8);
+        translate([thickness*5, 0, 0]) {
+            mirror([1,0,0]) {
+                gavlvegg(x, y, 10, 8, hccellsize);
+            }
+        }
     }
     // buet_sidevegg(x, y, 10, hccellsize, thickness);
     // buet_sidevegg_glatt(x, y, 10);
-    // gavlvegg(x, y, thickness);
     //
-    width = 10;
+    // width = 10;
+    // translate([200,200,0]) rotate([90,0,90]) linear_extrude(5) grid(100, 10, 1, 45);
 }
 
 // }}}
