@@ -102,11 +102,78 @@ module tak(x, y, thickness, hccellsize, height, border_height) {
 }
 
 // }}}
+// module buet_sidevegg(x, y, thickness, hccellsize, height) {{{
+
+module buet_sidevegg(x, y, thickness, hccellsize, height) {
+    translate([0, y/2, border_width+2]) {
+        for (a = [0:hccellsize*.28:174]) {
+            rotate([a,0,0]) {
+                translate([0, y/2, 0]) {
+                    rotate([90,0,0]) {
+                        
+                        // VENSTRE vegg
+                        translate([0, 0, 0])
+                            cube([thickness, hccellsize, thickness]);
+
+                        // HØYRE vegg
+                        translate([x-thickness, 0, 0])
+                            cube([thickness, hccellsize, thickness]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// }}}
+// module gavlvegg(x, y, thickness) {{{
+
+module gavlvegg(x, y, thickness) {
+    linear_extrude(thickness) {
+        projection(cut=true) {
+            tak(x, y, thickness, hccellsize, roof_height);
+        }
+    }
+}
+
+// }}}
+// module buet_sidevegg_glatt(x, y, thickness, step=2) {{{
+
+module buet_sidevegg_glatt(x, y, thickness, step=2) {
+    translate([0, y/2, border_width]) {
+
+        for (a = [0:step:180-step]) {
+            hull() {
+                for (aa = [a, a+step]) {
+                    rotate([aa,0,0]) {
+                        translate([0, y/2, 0]) {
+                            rotate([90,0,0]) {
+
+                                // VENSTRE
+                                translate([0,0,0])
+                                    cube([thickness, 1, thickness]);
+
+                                // HØYRE
+                                translate([x-thickness,0,0])
+                                    cube([thickness, 1, thickness]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// }}}
 // main() {{{
 
 bunnramme(x, y, border_width, border_thickness);
 translate([0,0,border_thickness]) {
     tak(x, y, thickness, hccellsize, roof_height);
 }
+// buet_sidevegg(x, y, 10, hccellsize, thickness);
+buet_sidevegg_glatt(x, y, 10);
+// gavlvegg(x, y, thickness);
 
 // }}}
