@@ -20,6 +20,9 @@
  * v0.1.0, 2026-06-25:
  *   Initial version
  *
+ * v0.1.1, 2026-06-25:
+ *   Code cleanup, translation to English for most of it.
+ *
  * Written by Roy Sigurd Karlsbakk <roy@karlsbakk.net>.
  *
  * GENERAL PERFORMANCE NOTE:
@@ -60,7 +63,7 @@ x = 155;
 y = box_width;
 hccellsize = 15;
 border_width = 8;
-base_thickness = 20;
+base_height = 20;
 roof_height = 150;
 side_wall_type = "grid"; // Possible values are "grid", "honeycomb", "blank" and "none"
 // side_wall_type = "honeycomb"; // Possible values are "grid", "honeycomb", "blank" and "none"
@@ -68,11 +71,10 @@ side_wall_type = "grid"; // Possible values are "grid", "honeycomb", "blank" and
 // side_wall_type = "none"; // Possible values are "grid", "honeycomb", "blank" and "none"
 
 // }}}
-// module bunnramme(x, y, border_width, thickness) {{{
+// module base(x, y, border_width, thickness) {{{
 
-module bunnramme(x, y, border_width, thickness) {
-    // Bunnramme
-    linear_extrude(thickness) {
+module base(x, y, border_width, height) {
+    linear_extrude(height) {
         difference() {
             {
                 echo(str("DEBUG-1> x + border_width * 2: ", x + border_width * 2, ", y + border_width * 2: ", y + border_width * 2));
@@ -143,67 +145,14 @@ module roof(x, y, thickness, hccellsize, height, border_height) {
 }
 
 // }}}
-// module buet_sidevegg(x, y, thickness, hccellsize, height) {{{
+// module roof_band(x, y, width, width) {{{
 
-module buet_sidevegg(x, y, thickness, hccellsize, height) {
-    translate([0, y/2, border_width+2]) {
-        for (a = [0:hccellsize*.28:174]) {
-            rotate([a,0,0]) {
-                translate([0, y/2, 0]) {
-                    rotate([90,0,0]) {
-                        
-                        // VENSTRE vegg
-                        translate([0, 0, 0])
-                            cube([thickness, hccellsize, thickness]);
-
-                        // HØYRE vegg
-                        translate([x-thickness, 0, 0])
-                            cube([thickness, hccellsize, thickness]);
-                    }
-                }
-            }
-        }
-    }
-}
-
-// }}}
-// module buet_sidevegg_glatt(x, y, thickness, step=2) {{{
-
-module buet_sidevegg_glatt(x, y, thickness, step=2) {
-    translate([0, y/2, border_width]) {
-
-        for (a = [0:step:180-step]) {
-            hull() {
-                for (aa = [a, a+step]) {
-                    rotate([aa,0,0]) {
-                        translate([0, y/2, 0]) {
-                            rotate([90,0,0]) {
-
-                                // VENSTRE
-                                translate([0,0,0])
-                                    cube([thickness, 1, thickness]);
-
-                                // HØYRE
-                                translate([x-thickness,0,0])
-                                    cube([thickness, 1, thickness]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// }}}
-// module takkant(x, y, width, thickness) {{{
-
-module takkant(x, y, width, thickness) {
+module roof_band(x, y, width, width) {
     translate([0, y/2, 0]) {
         rotate([90,0,90]) {
             difference() {
-                cylinder(d=x-thickness+2, h=width);
-                cylinder(d=x-thickness*2, h=width);
+                cylinder(d=x-width+2, h=width);
+                cylinder(d=x-width*2, h=width);
                 translate([-x/2,-y-15,0]) {
                     cube([x,y,width]);
                 }
@@ -229,8 +178,9 @@ module gable_wall(x, y, wall_width, thickness, hccellsize, walltype="grid") {
             translate([0, thickness, wall_width]) {
                 difference() {
                     intersection() {
-                        translate([-x/2,-y/2,0]) {
-                            linear_extrude(thickness*2) {
+                        translate([-x/2,-y/2,-thickness]) {
+                            linear_extrude(thickness*2)
+                            {
                                 if (walltype == "honeycomb") {
                                     // module honeycomb(x, y, dia, wall)
                                     honeycomb(x, y, hccellsize/3, thickness/5);
@@ -245,9 +195,11 @@ module gable_wall(x, y, wall_width, thickness, hccellsize, walltype="grid") {
                                 }
                             }
                         }
-                        translate([0,-6,-2]) cylinder(d=x-thickness*2, h=thickness);
+                        translate([0,-6,-4]) {
+                            cylinder(d=x-thickness*2, h=thickness*2);
+                        }
                     }
-                    translate([-x/2,-y,0]) {
+                    translate([-x/2,-y,-thickness]) {
                         cube([x,y-7,wall_width]);
                     }
                 }
@@ -261,11 +213,11 @@ module gable_wall(x, y, wall_width, thickness, hccellsize, walltype="grid") {
 
 render(convexity=4)
 {
-    bunnramme(x, y, border_width, base_thickness);
-    translate([0,0,base_thickness]) {
+    base(x, y, border_width, base_height);
+    translate([0,0,base_height]) {
         roof(x, y, thickness, hccellsize, roof_height);
         translate([x-10, 0, 0]) {
-            takkant(x, y, 10, 8);
+            roof_band(x, y, 10, 8);
             gable_wall(
                 x = x,
                 y = y,
@@ -275,7 +227,7 @@ render(convexity=4)
                 walltype = side_wall_type
             );
         }
-        takkant(x, y, 10, 8);
+        roof_band(x, y, 10, 8);
         translate([10, 0, 0]) {
             mirror([1,0,0]) {
                 gable_wall(
@@ -289,11 +241,6 @@ render(convexity=4)
             }
         }
     }
-    // buet_sidevegg(x, y, 10, hccellsize, thickness);
-    // buet_sidevegg_glatt(x, y, 10);
-    //
-    // wall_width = 10;
-    // translate([200,200,0]) rotate([90,0,90]) linear_extrude(5) grid(100, 10, 1, 45);
 }
 
 // }}}
