@@ -71,6 +71,62 @@ side_wall_type = "grid"; // Possible values are "grid", "honeycomb", "blank" and
 // side_wall_type = "none"; // Possible values are "grid", "honeycomb", "blank" and "none"
 
 // }}}
+// module honeycomb_cylinder(r_outer, wall_thickness, height, cell_d, spacing, rows, angle_span, start_angle, tilt) {{{
+
+module honeycomb_cylinder(
+    r_outer = 25,
+    wall_thickness = 2,
+    height = 80,
+    cell_d = 6,
+    spacing = 1.5,
+    rows = 10,
+    angle_span = 360,
+    start_angle = 0,
+    tilt = 20
+) {
+    r_inner = r_outer - wall_thickness;
+
+    difference() {
+        // Base hollow cylinder
+        difference() {
+            cylinder(h = height, r = r_outer, $fn = 120);
+
+            translate([0,0,-1]) {
+                cylinder(h = height + 2, r = r_inner, $fn = 120);
+            }
+        }
+
+        // Honeycomb holes
+        for (z_i = [0:rows-1]) {
+            z = (height / rows) * z_i + (height / rows) / 2;
+
+            // Offset every other row
+            angle_offset = (z_i % 2) * ((cell_d + spacing) / r_outer * 180);
+
+            angular_pitch = (cell_d + spacing) / r_outer * 180;
+            cols = floor(angle_span / angular_pitch);
+
+            for (a_i = [0:cols]) {
+                angle = start_angle + a_i * angular_pitch + angle_offset;
+
+                rotate([0,0,angle]) {
+                    rotate([0, tilt, 0]) {
+                        translate([r_inner, 0, z]) {
+                            cylinder(
+                                h = wall_thickness * 3,
+                                r = cell_d / 2,
+                                $fn = 6,
+                                center = true
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// }}}
 // module base(x, y, border_width, thickness) {{{
 
 module base(x, y, border_width, height) {
