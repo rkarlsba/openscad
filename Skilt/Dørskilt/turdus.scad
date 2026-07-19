@@ -23,18 +23,18 @@ skilt_border = 1;
 text_height = 1;
 hole_d_bottom = 3;
 hole_d_top = 5.5;
-tekst = "Merula";
+tekst = "Turdus";
 //bilde = false;
 bilde = "svarttrost-skilt3.svg";
 // font_face = "Chalkduster";
 // font_face = "Helvetica";
 // font_face = "Helvetica:style=Bold";
 font_face = "Cochin:style=Bold";
-font_size = 10;
-skilt_dim = [75,28,skilt_base];
+font_size = 10.5;
+skilt_dim = [78,33,skilt_base];
 rounding_size = skilt_base;
 holes = false;
-bildepos = [3,3];
+bildepos = [1,3];
 tekstpos = bildepos + [24,7.7];
 avrunding = 2.5;
 
@@ -57,7 +57,7 @@ module skilt(dim, r=0, tekst=tekst, bilde=bilde, base=skilt_base, border=skilt_b
                     difference() {
                         rect([dim.x, dim.y], rounding=avrunding, anchor=FRONT+LEFT);
                         translate([skilt_border,skilt_border]) {
-                            square([dim.x, dim.y]-[skilt_border*2,skilt_border*2]);
+                            rect([dim.x, dim.y]-[skilt_border*2,skilt_border*2], rounding=avrunding, anchor=FRONT+LEFT);
                         }
                     }
 
