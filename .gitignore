@@ -1,11 +1,15 @@
 .DS_Store
 *.3mf
+*.bin
 *.gcode
+*.glb
+*.obj
 *.stl
 *.sw[a-p]
+*.tar.[gx]z
+*.usdz
 *.wtf*
 *.zip
-*.tar.[gx]z
 tmp/
 wtf/
 !Bestillinger/
