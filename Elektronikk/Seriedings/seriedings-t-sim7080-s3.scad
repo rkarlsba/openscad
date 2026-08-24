@@ -177,22 +177,41 @@ module max3232_case(width, length, height, headers=0, rest_block_x=-1, rest_bloc
 // module t_sim_u080_s3_case(width, length, height, headers) {{{
 
 module t_sim_u080_s3_case(width, length, height, headers=0) {
+    pillar_size = [5,5,24];
+
+    module pillar(size=pillar_size) {
+        difference() {
+            cube(size);
+            translate([2.5,2.5,size.z-10]) {
+                cylinder(h=10, d=2.5);
+            }
+        }
+    }
+
     difference() {
-        case(length, width, height, headers, rest_block_x, rest_block_y);
-        up(5) {
-            left(-.5*length-1) {
-                cuboid([14.3, 32, 15.3], rounding=2, anchor=BOTTOM);
-            }
+        union() {
+            case(length, width, height, headers);
+            up(1) left(length/2+.2) fwd(width/2+.2) pillar();
+            up(1) right(length/2+.2-pillar_size.x) fwd(width/2+.2) pillar();
+            up(1) left(length/2+.2) back(width/2+.2-pillar_size.y) pillar();
+            up(1) right(length/2+.2-pillar_size.x) back(width/2+.2-pillar_size.y) pillar();
         }
-        up(1.3+headers) {
-            fwd(width/2) {
-                cuboid($fn=20,[21.5, 10, 3.9], rounding=2*k, anchor=BOTTOM); // USB-C
+        union() {
+            up(5) {
+                left(-.5*length-1) {
+                    cuboid([14.3, 32, 15.3], rounding=2, anchor=BOTTOM);
+                }
             }
-        }
-        up(1.3+headers) {
-            hull() {
-                back(width/1.5-3) left(13.5) cuboid($fn=20,[12, .1, 3.9], rounding=0, anchor=BOTTOM);
-                back(width/1.5-3-3) up(1) left(13.5) cuboid($fn=20,[9, .1, 2.0], rounding=0, anchor=BOTTOM);
+            up(1.3+headers) {
+                fwd(width/2) {
+                    cuboid($fn=20,[21.5, 10, 3.9], rounding=2*k, anchor=BOTTOM); // USB-C
+                }
+            }
+            up(1.3+headers) {
+                hull() {
+                    back(width/1.5-3) left(13.5) cuboid($fn=20,[12, .1, 3.9], rounding=0, anchor=BOTTOM);
+                    back(width/1.5-3-3) up(1) left(13.5) cuboid($fn=20,[9, .1, 2.0], rounding=0, anchor=BOTTOM);
+                }
             }
         }
     }
@@ -274,7 +293,7 @@ module lilygo_t_sim7080_s3_case(case=true, lid=true) {
     esp32_z = 28.0;
     t_sim7080_s3_x = 33.5;
     t_sim7080_s3_y = 111;
-    t_sim7080_s3_z = 28.0;
+    t_sim7080_s3_z = 35.0;
     esp32_headers = 0; // 1.8mm hvis de stikker ut nedover, denne ligger på rygg
     max3232_x = 32.5;
     max3232_y = 29.0;
@@ -285,8 +304,7 @@ module lilygo_t_sim7080_s3_case(case=true, lid=true) {
 
     render(convexity=4) {
         if (case) {
-            t_sim_u080_s3_case(t_sim7080_s3_x, t_sim7080_s3_y, t_sim7080_s3_z, esp32_headers,
-                               rest_block_x=0, rest_block_y=0);
+            t_sim_u080_s3_case(t_sim7080_s3_x, t_sim7080_s3_y, t_sim7080_s3_z, esp32_headers);
             back(13.0) {
                 cuboid([esp32_x+4.5,crossbar,esp32_z/sqrt(2)], anchor=BOTTOM);
             }
