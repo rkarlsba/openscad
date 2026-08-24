@@ -12,6 +12,7 @@
 *.zip
 tmp/
 wtf/
+backups/
 !Bestillinger/
 !Bestillinger/Jonas/
 !Bestillinger/Jonas/Varla stone/Monica/
