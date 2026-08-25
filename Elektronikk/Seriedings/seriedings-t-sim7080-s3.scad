@@ -73,7 +73,7 @@ delta = .15;
 // }}}
 // module case(width, length, height, headers, rest_block_x, rest_block_y) {{{
 
-module case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1, max3232_rest=0) {
+module case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1, max3232_rest=0, usb_c=1) {
     _rest_block_x = rest_block_x < 0 ? width-5+delta : rest_block_x;
     _rest_block_y = rest_block_y < 0 ? length+delta : rest_block_y;
 
@@ -91,7 +91,10 @@ module case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1, 
         }
 
         up(1) cuboid([width+delta,length+delta,height+headers], anchor=BOTTOM); // MAX3232
-        up(1.3+headers) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=2*k, anchor=BOTTOM); // USB-C
+        if (usb_c) {
+            echo(str("We have SUB_C!!! (", usb_c, ")"));
+            up(1.3+headers) fwd(length/2) cuboid($fn=20,[9.5, 20, 3.9], rounding=2*k, anchor=BOTTOM); // USB-C
+        }
         up(height-1.5+headers) prismoid(size2=[width+delta,length+delta], size1=[width+delta +.5,length+delta+.5], h=1.5, anchor=BOTTOM);
         up(height-1+headers) fwd(-1* length/2) cuboid([4,4, 4], anchor=BOTTOM); // Nook
     }
@@ -138,7 +141,7 @@ module lid_hex(width, length) {
 // }}}
 // module cable_case(width, length, height) {{{
 
-module cable_case(width, length, height, max3232_rest=false) {
+module cable_case(width, length, height, max3232_rest=0) {
     difference() {
         case(width, length, height, max3232_rest=max3232_rest);
         up(height-5.5) fwd(-.5*length-1) cuboid([1.5, 14, 5], rounding=k, anchor=BOTTOM);
@@ -160,11 +163,11 @@ module thickcable_case(width, length, height, headers=0) {
 }
 
 // }}}
-// module max3232_case(width, length, height, headers, rest_block_x, rest_block_y) {{{
+// module max3232_case(width, length, height, headers, rest_block_x, rest_block_y, usb_c) {{{
 
-module max3232_case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1) {
+module max3232_case(width, length, height, headers=0, rest_block_x=-1, rest_block_y=-1, usb_c=1) {
     difference() {
-        case(width, length, height, headers, rest_block_x, rest_block_y);
+        case(width, length, height, headers, rest_block_x, rest_block_y, usb_c);
         up(4) {
             fwd(-.5*length-1) {
                 cuboid([32, 14.3, 15.3], rounding=2, anchor=BOTTOM);
@@ -176,46 +179,60 @@ module max3232_case(width, length, height, headers=0, rest_block_x=-1, rest_bloc
 // }}}
 // module t_sim_u080_s3_case(width, length, height, headers) {{{
 
-module t_sim_u080_s3_case(width, length, height, headers=0) {
-    pillar_size = [5,5,24];
+module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0) {
+    pillar_size = [6,6,24];
+    minipillar_size = [pillar_size.x,pillar_size.y,5];
+    longpillar_size = [pillar_size.x+extra_x,pillar_size.y,pillar_size.z];
+    screwsize = 2.7;
+    screwlen = 10;
 
     module pillar(size=pillar_size) {
         difference() {
             cube(size);
-            translate([2.5,2.5,size.z-10]) {
-                cylinder(h=10, d=2.5);
+            translate([pillar_size.x/2,pillar_size.x/2,size.z-screwlen]) {
+                cylinder(h=10, d=screwsize);
             }
         }
     }
 
     difference() {
         union() {
-            case(length, width, height, headers);
-            up(1) left(length/2+.2) fwd(width/2+.2) pillar();
-            up(1) right(length/2+.2-pillar_size.x) fwd(width/2+.2) pillar();
-            up(1) left(length/2+.2) back(width/2+.2-pillar_size.y) pillar();
-            up(1) right(length/2+.2-pillar_size.x) back(width/2+.2-pillar_size.y) pillar();
+            case(length+extra_x, width, height, headers, usb_c=0);
+            up(1) left((length+extra_x)/2+.2) fwd(width/2+.2) pillar();
+            up(1) right((length-extra_x)/2+.2-pillar_size.x) fwd(width/2+.2) pillar(longpillar_size);
+            up(1) left((length+extra_x)/2+.2) back(width/2+.2-pillar_size.y) pillar();
+            up(1) right((length-extra_x)/2+.2-pillar_size.x) back(width/2+.2-pillar_size.y) pillar(longpillar_size);
+            up(1) right((length+extra_x)/2+.2-minipillar_size.x-22.5) fwd(width/2+.2) pillar(minipillar_size);
+            up(1) right((length+extra_x)/2+.2-minipillar_size.x-22.5) back(width/2+.2-minipillar_size.y) pillar(minipillar_size);
         }
         union() {
-            up(5) {
-                left(-.5*length-1) {
-                    cuboid([14.3, 32, 15.3], rounding=2, anchor=BOTTOM);
+            // MAX3232 D9-SUB
+            up(minipillar_size.z) {
+                moveleft = -.5*length-1;
+                echo(str("Moving left some ", moveleft, "mm"));
+                left(moveleft) {
+                    cuboid([28.3, 32, 15.3], rounding=2, edges=TOP, anchor=BOTTOM);
                 }
             }
-            up(1.3+headers) {
-                fwd(width/2) {
-                    cuboid($fn=20,[21.5, 10, 3.9], rounding=2*k, anchor=BOTTOM); // USB-C
+
+            // USB-C
+            up(25) {
+                left(1+extra_x/2) back(width/2) {
+                    cuboid($fn=20,[21.5, 10, 6.0], rounding=2*k, anchor=BOTTOM);
                 }
             }
-            up(1.3+headers) {
-                hull() {
-                    back(width/1.5-3) left(13.5) cuboid($fn=20,[12, .1, 3.9], rounding=0, anchor=BOTTOM);
-                    back(width/1.5-3-3) up(1) left(13.5) cuboid($fn=20,[9, .1, 2.0], rounding=0, anchor=BOTTOM);
+
+            // SIM card
+            up(26) {
+                left(19.0+extra_x/2) {
+                    hull() {
+                        fwd(width/1.5-3) cuboid($fn=20,[14, .1, 3.9], rounding=0, anchor=BOTTOM);
+                        fwd(width/1.5-3-3) cuboid($fn=20,[11, .1, 2.0], rounding=0, anchor=BOTTOM);
+                    }
                 }
             }
         }
     }
-
 }
 
 // }}}
@@ -247,7 +264,7 @@ module esp32_c3_max3232() {
     h = 1.8;
 
     render(convexity=4) {
-        thickcable_case(x, y, z, h, max3232_rest=true);          // ESP32-C3 med MAX3232
+        thickcable_case(x, y, z, h, max3232_rest=1);          // ESP32-C3 med MAX3232
         right(x*sqrt(2)) {
             lid_hex(x, y);                    // See-thorugh lid with hex pattern
         }
@@ -273,7 +290,7 @@ module esp32_classic38_usb_micro_max3232_case(case=true, lid=true) {
         if (case) {
             max3232_case(max3232_x, esp32_max3232_y, esp32_z, esp32_headers,
                          rest_block_x=rest_block_x, rest_block_y=rest_block_y,
-                         max3232_rest=true); // ESP32-C3 med MAX3232
+                         max3232_rest=1, usb_c=1); // ESP32-C3 med MAX3232
             back(13.0) cuboid([esp32_x+4.5,crossbar,esp32_z/sqrt(2)], anchor=BOTTOM);
         }
         if (lid) {
@@ -293,8 +310,9 @@ module lilygo_t_sim7080_s3_case(case=true, lid=true) {
     esp32_z = 28.0;
     t_sim7080_s3_x = 33.5;
     t_sim7080_s3_y = 111;
-    t_sim7080_s3_z = 35.0;
+    t_sim7080_s3_z = 39.0;
     esp32_headers = 0; // 1.8mm hvis de stikker ut nedover, denne ligger på rygg
+    usb_c = 0;
     max3232_x = 32.5;
     max3232_y = 29.0;
     crossbar = 0;
@@ -304,7 +322,7 @@ module lilygo_t_sim7080_s3_case(case=true, lid=true) {
 
     render(convexity=4) {
         if (case) {
-            t_sim_u080_s3_case(t_sim7080_s3_x, t_sim7080_s3_y, t_sim7080_s3_z, esp32_headers);
+            t_sim_u080_s3_case(t_sim7080_s3_x, t_sim7080_s3_y, t_sim7080_s3_z, esp32_headers, usb_c, extra_x=16);
             back(13.0) {
                 cuboid([esp32_x+4.5,crossbar,esp32_z/sqrt(2)], anchor=BOTTOM);
             }
