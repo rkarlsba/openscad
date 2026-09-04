@@ -35,8 +35,6 @@ font_name = "Liberation Sans:style=Bold";
 // }}}
 // Model {{{
 
-// }}}
-
 // ------------------
 // Hovedmodell
 // ------------------
@@ -61,19 +59,24 @@ difference() {
     }
 
     // Tekst
-    translate([0,0,height-top_thick-0.2])
-    linear_extrude(top_thick + 1)
-    text(
-        mylabel,
-        size = 8,
-        halign = "center",
-        valign = "center",
-        font = font_name
-    );
+    translate([0, 0, height - top_thick - 0.2]) {
+        linear_extrude(top_thick + 1) {
+            text(
+                mylabel,
+                size = 8,
+                halign = "center",
+                valign = "center",
+                font = font_name
+            );
+        }
+    }
 }
 
 // Broer gjennom tallene
 for (x = [-8.8, 0, 8.8]) {
-    translate([x,0,height-top_thick])
-        cube([1.2,6,top_thick+0.8], center=true);
+    translate([x, 0, height - top_thick]) {
+        cube([1.2, 6, top_thick + 0.8], center = true);
+    }
 }
+
+// }}}
