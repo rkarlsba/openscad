@@ -27,10 +27,16 @@ wall        = 2;     // veggtykkelse
 height      = 12;    // total høyde
 top_thick   = 2;     // tykkelse på topplokk
 rounding    = 1.2;   // avrunding toppkant
+fontsize    = 9.0;   // fontsize
 
-mylabel = "0,50";
+mylabel = "0,25";
 
-font_name = "Liberation Sans:style=Bold";
+// Bytt til en stencil-font du har installert (eksempler: "Stardos Stencil", "Stencil")
+font_name = "Stardos Stencil:style=Bold";
+
+// Chamfer-parametre
+chamfer_angle = 15;   // grader
+chamfer_depth = 1.0;  // mm (vertikal dybde på chamferen)
 
 // }}}
 // Model {{{
@@ -58,12 +64,12 @@ difference() {
         );
     }
 
-    // Tekst
+    // Tekst (gjennomskjært, men med stencil-font)
     translate([0, 0, height - top_thick - 0.2]) {
         linear_extrude(top_thick + 1) {
             text(
                 mylabel,
-                size = 8,
+                size = fontsize,
                 halign = "center",
                 valign = "center",
                 font = font_name
@@ -72,11 +78,6 @@ difference() {
     }
 }
 
-// Broer gjennom tallene
-for (x = [-8.8, 0, 8.8]) {
-    translate([x, 0, height - top_thick]) {
-        cube([1.2, 6, top_thick + 0.8], center = true);
-    }
-}
+// (FJERNET) Broer gjennom tallene – ikke nødvendig med stencil-font
 
 // }}}
