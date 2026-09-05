@@ -35,9 +35,9 @@ mylabel = "0,5  aaaimport(\"/Users/roysk/src/git/rkarlsba/openscad/Bestillinger/
 // Bytt til en stencil-font du har installert (eksempler: "Stardos Stencil", "Stencil")
 font_name = "Stardos Stencil:style=Bold";
 
-// Chamfer-parametre
-chamfer_angle = 15;   // grader (vinkel mellom chamferflaten og innerveggen/vertikalen)
-chamfer_depth = 1.0;  // mm (vertikal dybde på chamferen)
+// Lead-in chamfer (åpningsfas)
+chamfer_angle = 15;    // grader (vinkel mot vertikalen/innerveggen)
+chamfer_depth = 2.5;   // mm (vertikal dybde på fasen, f.eks. 2–3 mm)
 
 // }}}
 // Model {{{
@@ -57,7 +57,7 @@ difference() {
         anchor = BOT
     );
 
-    // Innvendig hulrom
+    // Innvendig hulrom (åpning ved bunn/z=0, topplokk i z=height)
     up(-0.01) {
         cylinder(
             d = inner_d,
@@ -65,24 +65,24 @@ difference() {
         );
     }
 
-    // Innvendig chamfer i toppen (overgang innervegg -> underside topplokk)
-    // Lager en konisk frustum som trekkes fra innsiden.
+    // Lead-in fas ved åpningen (innvendig kant ved bunn)
+    // Vi trekker fra en frustum som utvider åpningen med en konisk innføring.
     let(
         inner_r = inner_d/2,
         a = chamfer_angle,
-        // Sikkerhetsgrenser
-        max_depth_top = top_thick - 0.05,                 // ikke gjennom topplokk
-        max_depth_wall = (wall / tan(a)) - 0.05,          // ikke gjennom vegg (delta_r <= wall)
-        hch = max(0, min(chamfer_depth, max_depth_top, max_depth_wall)),
+        // Sikkerhetsgrenser: ikke gjennom vegg eller dypere enn hulrommet
+        max_depth_wall = (wall / tan(a)) - 0.05,
+        max_depth_hole = (height - top_thick) - 0.1,
+        hch = max(0, min(chamfer_depth, max_depth_wall, max_depth_hole)),
         delta_r = tan(a) * hch
     )
     if (hch > 0)
-    translate([0, 0, height - top_thick + 0.01])   // legg toppen av frustumen rett under topplokket
+    translate([0, 0, -0.01])     // litt ned for å unngå coplanar-flater
     cyl(
-        h = hch + 0.02,           // litt ekstra for å unngå coplanar-flater
-        r1 = inner_r,             // nederst (dypere inn)
-        r2 = inner_r + delta_r,   // øverst (ved undersiden av topplokket)
-        anchor = TOP
+        h = hch + 0.02,
+        r1 = inner_r + delta_r,   // ved åpningen (bunn)
+        r2 = inner_r,             // innover i delen
+        anchor = BOT
     );
 
     // Tekst (gjennomskjært, men med stencil-font)
