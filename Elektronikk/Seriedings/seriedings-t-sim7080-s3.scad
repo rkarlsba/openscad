@@ -186,6 +186,7 @@ module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0, 
     screwsize = 2.0;
     screwlen = 10;
     rj45_size = [33.3, 16.2, 14.2];
+    rj45_pcb_size = [rj45_size.x, 32.5, 5];
     moveleft = -.5*length-1;
 
     module pillar(size=pillar_size) {
@@ -209,7 +210,7 @@ module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0, 
             up(1) right((length+extra_x)/2+.2-minipillar_size.x-22.5) fwd(width/2+.2) pillar(minipillar_size);
             up(1) right((length+extra_x)/2+.2-minipillar_size.x-22.5) back(width/2+.2-minipillar_size.y) pillar(minipillar_size);
             if (rj45) {
-                right(length/2-rj45_size.x/4) cuboid([rj45_size.x, width, rj45_size.z], anchor=BOTTOM);
+                right(length/2-rj45_size.x/4) cuboid([rj45_size.x+1, width, minipillar_size.z+1], anchor=BOTTOM);
             }
         }
         union() {
@@ -224,10 +225,34 @@ module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0, 
             } else if (rj45) {
                 up(minipillar_size.z+1) {
                     echo(str("Moving left some ", moveleft, "mm"));
-                    left(moveleft+1)
-                    {
-                        echo("nasdf");
-                        cuboid(rj45_size, rounding=.6, edges=TOP, anchor=BOTTOM);
+                    left(moveleft+1) {
+                        up(2) {
+                            cuboid(rj45_size, rounding=.6, edges=TOP, anchor=BOTTOM);
+                            down(20) {
+                                cylinder(r=2, h=5);
+                            }
+                        }
+                    }
+                }
+                up(0.4) {
+                    fwd(12.50) {
+                        right(length/2+extra_x/2-rj45_size.x+3) {
+                            cylinder(r=1, h=10);
+                        }
+                    }
+                    back(12.50) {
+                        right(length/2+extra_x/2-rj45_size.x+3) {
+                            cylinder(r=1, h=10);
+                        }
+                    }
+                }
+                // PCB
+                up(3) {
+                    right(length/2+extra_x/2-rj45_size.x+16.4) {
+                        hull() {
+                            cuboid(rj45_pcb_size, rounding=.6, edges=TOP, anchor=BOTTOM);
+                            cuboid([rj45_pcb_size.x, 3, rj45_pcb_size.z*3], rounding=.6, edges=TOP, anchor=BOTTOM);
+                        }
                     }
                 }
             }
@@ -246,6 +271,24 @@ module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0, 
                         fwd(width/1.5-3) cuboid($fn=20,[14, .1, 3.9], rounding=0, anchor=BOTTOM);
                         fwd(width/1.5-3-3) cuboid($fn=20,[11, .1, 2.0], rounding=0, anchor=BOTTOM);
                     }
+                }
+            }
+        }
+    }
+    if (rj45) {
+        fwd(12.50) {
+            right(length/2+extra_x/2-rj45_size.x+3) {
+                difference() {
+                    cylinder(r=2, h=5.5);
+                    cylinder(r=1, h=5.5);
+                }
+            }
+        }
+        back(12.50) {
+            right(length/2+extra_x/2-rj45_size.x+3) {
+                difference() {
+                    cylinder(r=2, h=5.5);
+                    cylinder(r=1, h=5.5);
                 }
             }
         }
