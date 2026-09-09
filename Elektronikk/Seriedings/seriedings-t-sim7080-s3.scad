@@ -177,14 +177,16 @@ module max3232_case(width, length, height, headers=0, rest_block_x=-1, rest_bloc
 }
 
 // }}}
-// module t_sim_u080_s3_case(width, length, height, headers) {{{
+// module module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0, db9=1, rj45=0) {{{
 
-module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0) {
+module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0, db9=1, rj45=0) {
     pillar_size = [6,6,24];
     minipillar_size = [pillar_size.x,pillar_size.y,4];
     longpillar_size = [pillar_size.x+extra_x,pillar_size.y,pillar_size.z];
     screwsize = 2.0;
     screwlen = 10;
+    rj45_size = [33.3, 16.2, 14.2];
+    moveleft = -.5*length-1;
 
     module pillar(size=pillar_size) {
         difference() {
@@ -195,6 +197,8 @@ module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0) 
         }
     }
 
+    assert(!(db9 && rj45), "Can't both have db9 and rj45, dumbass!");
+
     difference() {
         union() {
             case(length+extra_x, width, height, headers, usb_c=0);
@@ -204,14 +208,27 @@ module t_sim_u080_s3_case(width, length, height, headers=0, usb_c=1, extra_x=0) 
             up(1) right((length-extra_x)/2+.2-pillar_size.x) back(width/2+.2-pillar_size.y) pillar(pillar_size);
             up(1) right((length+extra_x)/2+.2-minipillar_size.x-22.5) fwd(width/2+.2) pillar(minipillar_size);
             up(1) right((length+extra_x)/2+.2-minipillar_size.x-22.5) back(width/2+.2-minipillar_size.y) pillar(minipillar_size);
+            if (rj45) {
+                right(length/2-rj45_size.x/4) cuboid([rj45_size.x, width, rj45_size.z], anchor=BOTTOM);
+            }
         }
         union() {
             // MAX3232 D9-SUB
-            up(minipillar_size.z+1) {
-                moveleft = -.5*length-1;
-                echo(str("Moving left some ", moveleft, "mm"));
-                left(moveleft) {
-                    cuboid([33.3, 32, 15.3], rounding=2, edges=TOP, anchor=BOTTOM);
+            if (db9) {
+                up(minipillar_size.z+1) {
+                    echo(str("Moving left some ", moveleft, "mm"));
+                    left(moveleft) {
+                        cuboid([33.3, 32, 15.3], rounding=2, edges=TOP, anchor=BOTTOM);
+                    }
+                }
+            } else if (rj45) {
+                up(minipillar_size.z+1) {
+                    echo(str("Moving left some ", moveleft, "mm"));
+                    left(moveleft+1)
+                    {
+                        echo("nasdf");
+                        cuboid(rj45_size, rounding=.6, edges=TOP, anchor=BOTTOM);
+                    }
                 }
             }
 
@@ -337,11 +354,46 @@ module lilygo_t_sim7080_s3_case(case=true, lid=true) {
 }
 
 // }}}
+// module lilygo_t_sim7080_s3_rj45_case(case=true, lid=true) {{{
+
+module lilygo_t_sim7080_s3_rj45_case(case=true, lid=true) {
+    esp32_x = 28.5;
+    esp32_y = 55.5;
+    esp32_z = 28.0;
+    t_sim7080_s3_x = 33.5;
+    t_sim7080_s3_y = 111;
+    t_sim7080_s3_z = 39.0;
+    esp32_headers = 0; // 1.8mm hvis de stikker ut nedover, denne ligger på rygg
+    usb_c = 0;
+    max3232_x = 32.5;
+    max3232_y = 29.0;
+    crossbar = 0;
+    esp32_max3232_y = esp32_y+max3232_y+crossbar+delta;
+    rest_block_x = esp32_x-5+delta;
+    rest_block_y = esp32_y;
+    extra_x = 16;
+
+    render(convexity=4) {
+        if (case) {
+            t_sim_u080_s3_case(t_sim7080_s3_x, t_sim7080_s3_y, t_sim7080_s3_z, esp32_headers, usb_c, extra_x=extra_x, db9=0, rj45=1);
+            back(13.0) {
+                cuboid([esp32_x+4.5,crossbar,esp32_z/sqrt(2)], anchor=BOTTOM);
+            }
+        }
+        if (lid) {
+            fwd(t_sim7080_s3_x*sqrt(2)) {
+                lid_hex(t_sim7080_s3_y+extra_x, t_sim7080_s3_x);                          // See-thorugh lid with hex pattern
+            }
+        }
+    }
+}
+
+// }}}
 // module main() {{{
 
 module main() {
     // esp32_classic38_usb_micro_max3232_case(case=true, lid=true);
-    lilygo_t_sim7080_s3_case(case=true, lid=true);
+    lilygo_t_sim7080_s3_rj45_case(case=true, lid=false);
 }
 
 // }}}
