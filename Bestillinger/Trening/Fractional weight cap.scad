@@ -5,7 +5,23 @@
 // }}}
 // Copyright or left and author info {{{
 //
-// Copyleft 2026 Roy Sigurd Karlsbakk (lots of changes)
+// Copyleft 2026 Roy Sigurd Karlsbakk <roy@karlsbakk.net>
+//
+// Written with some kind help from the AI gods, but mostly on my own.
+//
+// Comments may be in Norwegian, which is fine if you understand such a language or have an LLM
+// handy.
+//
+// This code is licensed under AGPL 3.0 - see https://www.gnu.org/licenses/agpl-3.0.en.html for
+// details.
+//
+// I started this since the local gym has these fractional weights with caps that were missing or
+// tore or similar, so I thought I'd make new ones, since people there help me and are nice, so why
+// not. I don't know anything about the make or model of the stuff they're using, but it's probably
+// somewhat standard. Those small weights are sylinders 25mm in diameter. If yours are different,
+// well, the source code is below.
+//
+// roy
 //
 // }}}
 // Includes and usees {{{
@@ -30,7 +46,7 @@ rounding    = 1.2;   // avrunding toppkant
 fontsize    = 9.0;   // fontsize
 
 // Kun selve label-teksten
-mylabel = "0,5";
+mylabel = "0,25";
 
 // Bytt til en stencil-font du har installert (eksempler: "Stardos Stencil", "Stencil")
 font_name = "Stardos Stencil:style=Bold";
@@ -41,7 +57,7 @@ chamfer_depth   = 2.5;   // mm (vertikal dybde på fasen, f.eks. 2–3 mm)
 chamfer_enabled = true;  // slå av/på fas
 
 // Kun for innsiden (hulrom + fas). Sett f.eks. 96/128 for glattere innside. La være undef for standard.
-inner_fn = 16;
+inner_fn = undef;
 
 // }}}
 // Model {{{
@@ -122,7 +138,5 @@ difference() {
         }
     }
 }
-
-// (FJERNET) Broer gjennom tallene – ikke nødvendig med stencil-font
 
 // }}}
