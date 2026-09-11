@@ -21,6 +21,23 @@
 // somewhat standard. Those small weights are sylinders 25mm in diameter. If yours are different,
 // well, the source code is below.
 //
+// I've used PETG for this. 98A or even harder TPU might even work better, but I didn't have that.
+//
+// SMALL NOTE ON FIT
+//
+// I made these cylindrical and made small increments in the slicer, printed an embossed digit,
+// representing which version if was. I started out with a "perfect match" version, which of course
+// never matches, since plastic shrinks. Then I grew it 0.5% per step.
+//
+// I got hint from a friend, long after I'd finished these, to use 16-faceted "circles" to make it
+// fit easily. I haven't tried that, since I had something that fit very well.
+//
+// PS: I did a test and everything worked, I printed the rest overnight. The day after, when it all
+// was done and cooled down, only one of the colours fit. Plastic from one producer shrank a tad bit
+// more than the other. So do yourself a favour and print a lot of different ones, labelled so you
+// know which is which and let them cool down for some time before checking. They may be warm inside
+// and they *will* continue shrinking.
+//
 // roy
 //
 // }}}
