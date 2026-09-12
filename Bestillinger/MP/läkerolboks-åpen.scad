@@ -53,13 +53,14 @@ $fa = 0.75;  // minimum fragment angle (angular)
 // Se dokumentasjonen for mulige størrelser, det varierer litt.
 lakerol_small = [50,20,60]; // liten, 25g
 lakerol_large = [60,30,85]; // Stor, 75g
+lakerol_mamma = [72,30,85]; // Stor, 75g
 walls = 1.5;
 bottom = walls*1.5;
 edge_rounding = walls;
-lakerol_box = lakerol_large;
+lakerol_box = lakerol_mamma;
 lakerol_hull = lakerol_box - [walls*2,walls*2,bottom];
 kappa = true;
-kappvinkel = 45;
+kappvinkel = 60;
 
 // }}}
 // Kode {{{
