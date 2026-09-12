@@ -18,6 +18,19 @@
 //    c6_mini_size = [18, 28.3, 18.5]
 //
 
+// Please note that this script uses two external libraries that must be installed prior to using this
+//
+// 1. The Belfry OpenScad Library, v2, shortly BOSL2, which can be found at https://github.com/BelfrySCAD/BOSL2
+//
+// This is used extensively to make the objects
+//
+// 2. hex-grid.scad, available from https://www.printables.com/model/86604-hexagonal-grid-generator-in-openscad-v2
+//
+// This is used to draw hex stuff. It too uses BOSL2 extensively.
+//
+// In the latter, a module was recently(?) changed from create_grid(size, SW, wall) to create_grid(size, SW, cell_wall, frame_wall),
+// so a minor change had to be done here as well. People should make their APIs backward compatible!
+
 include <BOSL2/std.scad>;
 include <BOSL2/rounding.scad>
 use <hex-grid.scad>
@@ -53,19 +66,19 @@ module lid(width, length) {
             polygon(round_corners(rect([width+4,length+4]),  method="smooth", k=k, cut=cut, $fn=96));
          }
          
-         up(1.4) cuboid([width,length,1.6], anchor=BOTTOM);
-         up(1.5) prismoid(size1=[width/1.5,length], size2=[width/1.5,length+.7], h=1.5, anchor=BOTTOM);
-         up(1.5) prismoid(size1=[width,length/1.5], size2=[width+.7,length/1.5], h=1.5, anchor=BOTTOM);
+         up(1.4) cuboid([width, length, 1.6], anchor=BOTTOM);
+         up(1.5) prismoid(size1=[width/1.5, length], size2=[width/1.5, length+.7], h=1.5, anchor=BOTTOM);
+         up(1.5) prismoid(size1=[width, length/1.5], size2=[width+.7, length/1.5], h=1.5, anchor=BOTTOM);
     }
 }
 
 module lid_hex(width, length) {
     difference() {
         lid(width, length);
-        down(3) cuboid($fn=30, [width-2,length-2,10], anchor=BOTTOM);
+        down(3) cuboid($fn=30, [width-2, length-2,10], anchor=BOTTOM);
     }
     intersection() {
-        up(0.5) rotate([0,0, 20]) create_grid(size=[2*width,2.1*length,1],SW=4,wall=.8);
+        up(0.5) rotate([0, 0, 20]) create_grid(size=[2*width, 2.1*length, 1], SW=4, cell_wall=.8, frame_wall=.8);
         down(3) cuboid($fn=30, [width-2+delta, length-2+delta, 10], rounding=k, anchor=BOTTOM);
     }
 }
