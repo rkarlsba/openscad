@@ -58,6 +58,8 @@ bottom = walls*1.5;
 edge_rounding = walls;
 lakerol_box = lakerol_large;
 lakerol_hull = lakerol_box - [walls*2,walls*2,bottom];
+kappa = true;
+kappvinkel = 45;
 
 // }}}
 // Kode {{{
@@ -68,11 +70,21 @@ render(convexity=10) { // Make preview behave correctly
             edges=[
                 TOP+FRONT, TOP+RIGHT, TOP+LEFT, TOP+BACK,
                 FRONT+RIGHT, FRONT+LEFT, BACK+RIGHT, BACK+LEFT]);
-        translate([walls,walls,bottom]) {
+        translate([walls,walls,bottom]) { // burde kanskje endre til up() etc
             cuboid(lakerol_hull, anchor=FRONT+LEFT+BOT, rounding=edge_rounding,
                 edges=[
                     BOTTOM+FRONT, BOTTOM+RIGHT, BOTTOM+LEFT, BOTTOM+BACK,
                     FRONT+RIGHT, FRONT+LEFT, BACK+RIGHT, BACK+LEFT]);
+        }
+        if (kappa) {
+            up(lakerol_box.z) {
+                back(lakerol_box.y) {
+                    rotate([-kappvinkel,0,0])
+                    {
+                        cuboid(lakerol_box, anchor=TOP+LEFT+BACK);
+                    }
+                }
+            }
         }
     }
 }
