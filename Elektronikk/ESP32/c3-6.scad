@@ -22,11 +22,11 @@
 //
 // 1. The Belfry OpenScad Library, v2, shortly BOSL2, which can be found at https://github.com/BelfrySCAD/BOSL2
 //
-// This is used extensively to make the objects
+//    This is used extensively to make the objects
 //
 // 2. hex-grid.scad, available from https://www.printables.com/model/86604-hexagonal-grid-generator-in-openscad-v2
 //
-// This is used to draw hex stuff. It too uses BOSL2 extensively.
+//    This is used to draw hex stuff. It too uses BOSL2 extensively.
 //
 // In the latter, a module was recently(?) changed from create_grid(size, SW, wall) to create_grid(size, SW, cell_wall, frame_wall),
 // so a minor change had to be done here as well. People should make their APIs backward compatible!
