@@ -12,8 +12,8 @@ use <modules/module_gridfinity_cup.scad>
 use <modules/module_gridfinity.scad>
 
 width = [4, 0]; //0.1
-depth = [2, 0]; //0.1
-height = [6, 0]; //0.1
+depth = [1, 0]; //0.1
+height = [9, 0]; //0.1
 lip_style = "minimum";
 enable_magnets = false;
 enable_screws = false;

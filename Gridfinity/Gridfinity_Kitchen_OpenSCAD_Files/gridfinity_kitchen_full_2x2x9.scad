@@ -11,14 +11,14 @@ include <modules/gridfinity_constants.scad>
 use <modules/module_gridfinity_cup.scad>
 use <modules/module_gridfinity.scad>
 
-width = [4, 0]; //0.1
+width = [2, 0]; //0.1
 depth = [2, 0]; //0.1
-height = [6, 0]; //0.1
+height = [9, 0]; //0.1
 lip_style = "minimum";
 enable_magnets = false;
 enable_screws = false;
 label_style = "disabled";
-wallcutout_vertical ="enabled";
+wallcutout_vertical ="disabled";
 wallcutout_vertical_position=2.5;
 wallcutout_vertical_width=42*1+18;
 wallcutout_vertical_angle=90;

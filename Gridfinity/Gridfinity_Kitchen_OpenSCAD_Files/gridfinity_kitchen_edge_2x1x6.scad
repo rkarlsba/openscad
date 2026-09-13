@@ -195,6 +195,7 @@ enable_help = false;
 module end_of_customizer_opts() {}
 /*<!!end gridfinity_basic_cup!!>*/
 
+render()
 SetGridfinityEnvironment(
   width = width,
   depth = depth,

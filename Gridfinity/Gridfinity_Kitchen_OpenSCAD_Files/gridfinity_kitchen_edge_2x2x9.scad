@@ -22,7 +22,7 @@ wallcutout_vertical ="enabled";
 wallcutout_vertical_position=3;
 wallcutout_vertical_width=42*2+18;
 wallcutout_vertical_angle=90;
-wallcutout_vertical_height=61.05;
+wallcutout_vertical_height=40.09;
 wallcutout_vertical_corner_radius=10;
 extension_x_enabled = "front"; //[disabled, front, back]
 extension_x_position = 4;
@@ -195,6 +195,7 @@ enable_help = false;
 module end_of_customizer_opts() {}
 /*<!!end gridfinity_basic_cup!!>*/
 
+render()
 SetGridfinityEnvironment(
   width = width,
   depth = depth,
