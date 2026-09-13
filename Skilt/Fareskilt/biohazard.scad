@@ -29,7 +29,7 @@ border_width = 1;
 border_height = 1;
 text_height = $preview ? border_height + 3 : border_height;
 
-text_area_height = 0; // Set to <= 0 to disable text
+text_area_height = 60; // Set to <= 0 to disable text
 font_face = "Arial:style=Bold";
 
 holes = false;
@@ -37,6 +37,7 @@ hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
 
+graphics_enabled = true;
 graphics_file = "biohazard-symbol.svg";
 
 // ---- Derived sizes ----
@@ -46,6 +47,13 @@ base_size = [
 ];
 
 echo(str("Base size is ", base_size));
+
+// }}}
+// Sanity check {{{
+
+if (!graphics_enabled) {
+    echo("WARNING: Disabling graphics isn't very well supported");
+}
 
 // }}}
 // Functions {{{
@@ -101,16 +109,23 @@ module baseplate(size, text_area_height, border) {
         size.y + text_area_height
     ];
 
-    minisize = [size.x - shrink*2, size.y - shrink*2];
+    // Viktig: minisize basert på baseplate_size, ikke size
+    minisize = [baseplate_size.x - shrink*2, baseplate_size.y - shrink*2];
     echo(str("minisize is ", minisize));
 
     hull() {
+        // Nedre profil: hele platen inkl. tekstområde
         rounded_cube(baseplate_size, corners, .1);
-        translate([shrink,shrink,height]) {
+        // Øvre profil: samme footprint, bare trukket inn med 'shrink'
+        translate([shrink, shrink, height]) {
             rounded_cube(minisize, corners, .1);
         }
     }
+
     if (border) {
+        // Beholder border rundt hovedfeltet (uten tekstområde)
+        // Hvis du vil ha border rundt hele platen inkl. tekstområde,
+        // bytt til: border_shape(baseplate_size);
         border_shape(size);
     }
 }
@@ -137,15 +152,17 @@ module sign(size, image_location=BACK, border) {
     }
     
     // SVG
-    back(image_location == BACK ? text_area_height :
-         image_location == CENTER ? text_area_height / 2 : 0) {
-        translate([
-            (size[0] - svg_size[0]) / 2,
-            (size[1] - svg_size[1]) / 2,
-            height
-        ]) {
-            linear_extrude(text_height)
-                import(graphics_file);
+    if (graphics_enabled) {
+        back(image_location == BACK ? text_area_height :
+             image_location == CENTER ? text_area_height / 2 : 0) {
+            translate([
+                (size[0] - svg_size[0]) / 2,
+                (size[1] - svg_size[1]) / 2,
+                height
+            ]) {
+                linear_extrude(text_height)
+                    import(graphics_file);
+            }
         }
     }
 
