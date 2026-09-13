@@ -29,7 +29,7 @@ border_width = 1;
 border_height = 1;
 text_height = $preview ? border_height + 3 : border_height;
 
-text_area_height = 60; // Set to <= 0 to disable text
+text_area_height = 57; // Set to <= 0 to disable text
 font_face = "Arial:style=Bold";
 
 holes = false;
@@ -167,7 +167,7 @@ module sign(size, image_location=BACK, border) {
     }
 
     // Text
-    txtpos1 = 3;
+    txtpos1 = 6;
     txtpos2 = 34;
 
     up(height) {
