@@ -2,14 +2,9 @@
 vim:ts=4:sw=4:sts=4:et:ai:si:fdm=marker:tw=100
 }}} -->
 
-En kompis ville ha blinklys på sykkelen. Med det blinklyset (fra ali), kom det en fæl piip fra lyset
-når blinklyset lyste. Gjorde kort prosess av det ved å nappe ut piezoelementet inni, men han lurte
-på om det var mulig med en indikator av ett eller annet slag så man visste om det blinka eller ikke,
-så, vel, tja, hvorfor ikke gjøre som biler? De klikker jo. Moderne bilere klikker vel med små
-høyttalere, mens det tradisjonelle var releer, lyden har bare blitt sittende, på amme måte som
-speilrefleks-med-film-lyden du har på en iphone. Så, jeg fant et relé for 3,3V, kobla opp mot
-høyttalerutgangen inni blinklyset og vips, så hadde jeg en bittelite, forferdelig dårlig høyttaler.
-Litt videre, så la jeg en kondis på 220µF i parallell med releet og vips, så klikka det som det
-skulle. La en 1N4007 i revers, også i parallell med releet som flybackdiode for å hindre at spolen
-der skulle fritere elektronikken. Det klikker kanskje ikke så høyt, men det klikker! Jeg laga også
-en liten boks til den, da, så den i hvert fall er litt beskytta mot elementene.
+A friend of mine wanted turn a symbol for his new ebike. I found one from Ali, it was ok, but it gave a horrible sound when the turn symbol was alight. Finding it was no way to turn that shit off, I opened it and ripped out the piezo element to shut it up for good. All well installed, my friend noted that it'd be nice to know if it was flashing. The lights came with a remote, presumably something 433MHz, but apparently only simplex communication, no feedback whatsoever. So I thought, well, all cars make a click sound, although they stopped using mechanical relays years ago, they still stick to the sound, because that's what people know. Same way as with your iPhone making a sound of the mirror slapping and then the film winding, just because people think that's the way a camera should sound. So, I found a 3,3V relay, connected it to the piezo output and the relay played a very low, lousy, beep when the light was lit. So, guessing this was just a square wave, I added a 220µF cap in parallel with the relay and it worked. I added an 1N4007 in reverse as well as flyback diode, just to save the electronics for a potential strike from the relay. It may not be a very loud click, but it certainy is one! I then made and 3d printed a small box to slightly protect it againstthe elements.
+
+I'm pretty satisfied :)
+
+[Before](https://karlsbakk.net/blinklys/blinklys1.mp4)
+[After](https://karlsbakk.net/blinklys/blinklys2.mp4)
