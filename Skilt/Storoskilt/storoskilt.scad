@@ -1,6 +1,21 @@
-$fn = 128;
+// vim modeline {{{
+//
+// vim:ts=4:sw=4:ts=4:et:ai:si:fdm=marker:tw=120
+//
+// }}}
+// Libraries {{{
 
-bugfix = $preview ? .1 : 0;
+include <BOSL2/std.scad>
+
+// }}}
+// Resolution {{{
+
+$fn = 0;   // fixed number of fragments
+$fs = 0.5; // minimum fragment size (linear)
+$fa = 3;   // minimum fragment angle (angular)
+
+// }}}
+// Variables {{{
 
 corners = 8;
 height = 1.5;
@@ -10,10 +25,13 @@ top_size = [bottom_size[0]-shrink*2,bottom_size[1]-shrink*2];
 border = true;
 border_width = 1;
 border_height = 1;
-holes = true;
+holes = false;
 hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
+
+// }}}
+// module rounded_square() {{{
 
 module rounded_square(size, radius) {
     translate([radius,radius]) {
@@ -24,11 +42,17 @@ module rounded_square(size, radius) {
     }
 }
 
+// }}}
+// module rounded_cube() {{{
+
 module rounded_cube(size, radius, height) {
     linear_extrude(height) {
         rounded_square(size, radius);
     }
 }
+
+// }}}
+// module border() {{{
 
 module border() {
     translate([shrink,shrink,height]) {
@@ -43,6 +67,9 @@ module border() {
     }
 }
 
+// }}}
+// module bunnplate() {{{
+
 module bunnplate() {
     hull() {
         rounded_cube(size=bottom_size,radius=corners, .1);
@@ -55,17 +82,22 @@ module bunnplate() {
     }
 }
 
+// }}}
+// main() {{{
+
 render() {
     difference() {
         bunnplate();
         if (holes) {
-            translate([hole_dist,bottom_size[1]-hole_dist,-bugfix]) {
-                cylinder(d=hole_d,h=hole_h+bugfix*2);
+            translate([hole_dist,bottom_size[1]-hole_dist,0]) {
+                cylinder(d=hole_d,h=hole_h);
             }
             translate([bottom_size[0]-hole_dist,
-                bottom_size[1]-hole_dist,-bugfix]) {
-                cylinder(d=hole_d,h=hole_h+bugfix*2);
+                bottom_size[1]-hole_dist,]) {
+                cylinder(d=hole_d,h=hole_h);
             }
         }
     }
 }
+
+// }}}
