@@ -55,15 +55,17 @@ module bunnplate() {
     }
 }
 
-difference() {
-    bunnplate();
-    if (holes) {
-        translate([hole_dist,bottom_size[1]-hole_dist,-bugfix]) {
-            cylinder(d=hole_d,h=hole_h+bugfix*2);
-        }
-        translate([bottom_size[0]-hole_dist,
-            bottom_size[1]-hole_dist,-bugfix]) {
-            cylinder(d=hole_d,h=hole_h+bugfix*2);
+render() {
+    difference() {
+        bunnplate();
+        if (holes) {
+            translate([hole_dist,bottom_size[1]-hole_dist,-bugfix]) {
+                cylinder(d=hole_d,h=hole_h+bugfix*2);
+            }
+            translate([bottom_size[0]-hole_dist,
+                bottom_size[1]-hole_dist,-bugfix]) {
+                cylinder(d=hole_d,h=hole_h+bugfix*2);
+            }
         }
     }
 }
