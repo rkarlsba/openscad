@@ -22,10 +22,10 @@ height = 1.5;
 shrink = height;
 bottom_size = [100,110];
 top_size = [bottom_size[0]-shrink*2,bottom_size[1]-shrink*2];
-border = true;
+use_border = true;
 border_width = 1;
 border_height = 1;
-holes = false;
+use_holes = true;
 hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
@@ -77,8 +77,21 @@ module bunnplate() {
             rounded_cube(size=top_size,radius=corners, .1);
         }
     }
-    if (border) {
+    if (use_border) {
         border();
+    }
+}
+
+// }}}
+// module holes() {{{
+
+module holes(hole_dist, hole_d, hole_h) {
+    translate([hole_dist,bottom_size[1]-hole_dist,0]) {
+        cylinder(d=hole_d,h=hole_h);
+    }
+    translate([bottom_size[0]-hole_dist,
+        bottom_size[1]-hole_dist,]) {
+        cylinder(d=hole_d,h=hole_h);
     }
 }
 
@@ -88,16 +101,11 @@ module bunnplate() {
 render() {
     difference() {
         bunnplate();
-        if (holes) {
-            translate([hole_dist,bottom_size[1]-hole_dist,0]) {
-                cylinder(d=hole_d,h=hole_h);
-            }
-            translate([bottom_size[0]-hole_dist,
-                bottom_size[1]-hole_dist,]) {
-                cylinder(d=hole_d,h=hole_h);
-            }
+        if (use_holes) { 
+            holes(hole_dist, hole_d, hole_h);
         }
     }
 }
 
 // }}}
+
