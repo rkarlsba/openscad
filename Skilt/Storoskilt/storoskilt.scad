@@ -20,15 +20,16 @@ $fa = 3;   // minimum fragment angle (angular)
 corners = 8;
 height = 1.5;
 shrink = height;
-bottom_size = [100,110];
+bottom_size = [150,140];
 top_size = [bottom_size[0]-shrink*2,bottom_size[1]-shrink*2];
 use_border = true;
 border_width = 1;
 border_height = 1;
-use_holes = true;
+use_holes = false;
 hole_d = 5;
 hole_h = height*2;
 hole_dist = 10;
+svg_filename = "storoskilt2-exp.svg";
 
 // }}}
 // module rounded_square() {{{
@@ -96,11 +97,28 @@ module holes(hole_dist, hole_d, hole_h) {
 }
 
 // }}}
+// module grafikk() {{{
+
+module grafikk(filename, height, scalexy=[1,1]) {
+    linear_extrude(height) {
+        scale(scalexy) {
+            import(filename);
+        }
+    }
+}
+
+// }}}
 // main() {{{
 
 render() {
     difference() {
-        bunnplate();
+        union() {
+            bunnplate();
+            translate([10, 10, height]) {
+                echo(str("height is ", height));
+                grafikk(svg_filename, border_height);
+            }
+        }
         if (use_holes) { 
             holes(hole_dist, hole_d, hole_h);
         }
